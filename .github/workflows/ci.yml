@@ -21,7 +21,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U postgres -d recording_studio_root_switchable_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -48,24 +48,28 @@ jobs:
       env:
         BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
         DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_root_switchable_test
+        DB_NAME: recording_studio_root_switchable_test
     
     - name: Run database migrations
       run: bundle exec rake db:migrate RAILS_ENV=test
       working-directory: test/dummy
       env:
         DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_root_switchable_test
+        DB_NAME: recording_studio_root_switchable_test
 
     - name: Build dummy app Tailwind assets
       run: bundle exec rails tailwindcss:build RAILS_ENV=test
       working-directory: test/dummy
       env:
         DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_root_switchable_test
+        DB_NAME: recording_studio_root_switchable_test
 
     - name: Verify dummy app boots
       run: bundle exec ruby -e 'ENV["RAILS_ENV"] = "test"; require_relative "config/environment"; puts Rails.application.class.name'
       working-directory: test/dummy
       env:
         DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_root_switchable_test
+        DB_NAME: recording_studio_root_switchable_test
 
     - name: Verify dummy app root-switch demo
       run: |
@@ -102,6 +106,7 @@ jobs:
         DB_PORT: 5432
         DB_USER: postgres
         DB_PASSWORD: postgres
+        DB_NAME: recording_studio_root_switchable_test
 
     - name: Run RuboCop
       run: bundle exec rubocop
@@ -110,3 +115,4 @@ jobs:
       run: bundle exec rake app:test
       env:
         DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_root_switchable_test
+        DB_NAME: recording_studio_root_switchable_test
