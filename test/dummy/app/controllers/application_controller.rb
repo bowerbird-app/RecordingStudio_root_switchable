@@ -10,6 +10,8 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_user!
   before_action :set_current_actor
 
+  include RecordingStudio::RootSwitchable::ControllerSupport
+
   private
 
   def application_layout

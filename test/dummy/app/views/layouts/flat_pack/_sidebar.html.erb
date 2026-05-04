@@ -2,7 +2,7 @@
   <% sidebar.header do %>
     <%= render FlatPack::Sidebar::Header::Component.new(
       brand_abbr: "RS",
-      title: "Addon Template",
+      title: "Root Switchable",
       subtitle: "Recording Studio"
     ) %>
   <% end %>
@@ -16,15 +16,21 @@
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Recording Studio",
-        href: "/recording_studio",
+        label: "Root switch page",
+        href: "/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces",
         icon: :folder
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Health",
-        href: "/up",
+        label: "Recording Studio",
+        href: "/recording_studio",
         icon: :activity
+      ) %>
+
+      <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Access demo",
+        href: "/recording_studio_accessible",
+        icon: :users
       ) %>
 
     </nav>

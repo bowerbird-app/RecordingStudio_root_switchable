@@ -1,131 +1,131 @@
-# GemTemplate
+# RecordingStudio Root Switchable
 
-Internal template for building Rails engine addons on top of RecordingStudio.
+RecordingStudioRootSwitchable is a Rails engine addon for `RecordingStudio`.
 
-## What's Included
+It lets a host app resolve and persist a current root recording per actor, per device, and per scope without mutating recordings, recordables, or events.
 
-- **RecordingStudio** gem installed and configured
-- **Devise** authentication with a pre-seeded admin user
-- **Workspace** root recording set up following RecordingStudio's Quick Start pattern
-- **FlatPack** UI component library for all views
-- **Dummy app** (`test/dummy/`) with a working login screen and FlatPack default sidebar layout for authenticated pages
+## What the gem provides
 
-## Quick Start
+- a gem-owned `recording_studio_root_switchable_selections` table
+- request-local state under `RecordingStudio::RootSwitchable::Current`
+- per-device persistence through an encrypted cookie-backed `device_key`
+- configuration hooks for scopes, available roots, defaults, labels, descriptions, and page copy
+- helper APIs for `current_root`, `current_root_recording`, `current_root_recordable`, and `current_root_scope_key`
+- a dedicated FlatPack-powered v1 root-switch page
+- default access integration through `RecordingStudioAccessible`
 
-### GitHub Codespaces (Recommended)
+## Installation
 
-1. Click **Code** → **Codespaces** → **Create codespace**
-2. Wait for setup to complete
-3. Run:
-   ```bash
-   cd test/dummy
-   bin/rails db:setup
-   bin/dev
-   ```
-4. Open port 3000 — you'll see the login screen
-
-The dummy app already includes FlatPack generator output (`flat_pack:install` and default sidebar layout scaffold) so authenticated pages render with the FlatPack sidebar shell by default.
-
-### Login Credentials
-
-| Field    | Value             |
-|----------|-------------------|
-| Email    | admin@admin.com   |
-| Password | Password          |
-
-The login form is prefilled with these credentials for fast access.
-
-## Architecture
-
-### Root Recording Pattern
-
-This template follows RecordingStudio's root recording pattern:
-
-- **Workspace** is the top-level recordable
-- A root `RecordingStudio::Recording` wraps the Workspace
-- The admin user has root-level admin access via `RecordingStudio::Access`
-- `Current.actor` is set from `current_user` (Devise) in `ApplicationController`
-
-### Extending RecordingStudio
-
-To add new recordable types:
-
-1. Create your model (e.g., `Page`, `Comment`)
-2. Register it in `config/initializers/recording_studio.rb`:
-   ```ruby
-   RecordingStudio.configure do |config|
-     config.recordable_types = ["Workspace", "YourNewType"]
-   end
-   ```
-3. Leave optional behavior off by default, then opt into capabilities on the specific recordable models that need them:
-   ```ruby
-   class YourNewType < ApplicationRecord
-     include RecordingStudio::Capabilities::Movable.to("Workspace")
-     include RecordingStudio::Capabilities::Copyable.to("Workspace")
-   end
-   ```
-4. If you want per-device root persistence, wire it explicitly in your controller layer:
-   ```ruby
-   class ApplicationController < ActionController::Base
-     include RecordingStudio::Concerns::DeviceSessionConcern
-   end
-   ```
-5. Create recordings under the root:
-   ```ruby
-   root_recording.record(YourNewType) do |record|
-     record.title = "Example"
-   end
-   ```
-
-### Capabilities
-
-This template uses the current RecordingStudio approach: built-in capabilities are off by default and are enabled per recordable type by including the relevant module on the model.
-
-- `movable`
-- `copyable`
-
-Device session persistence is separate from capabilities. It is enabled only when you include `RecordingStudio::Concerns::DeviceSessionConcern` in your controller layer.
-
-Enable behavior intentionally where it belongs:
+Add the gems to your host app:
 
 ```ruby
-class RecordingStudioPage < ApplicationRecord
-  include RecordingStudio::Capabilities::Movable.to("Workspace")
-  include RecordingStudio::Capabilities::Copyable.to("Workspace")
-end
+gem "recording_studio"
+gem "recording_studio_accessible"
+gem "recording_studio_root_switchable"
+```
 
+Then run:
+
+```bash
+bundle install
+bin/rails generate recording_studio_root_switchable:install
+bin/rails generate recording_studio_root_switchable:migrations
+bin/rails db:migrate
+```
+
+## Host app setup
+
+Include the controller concern anywhere you want request-local helper methods:
+
+```ruby
 class ApplicationController < ActionController::Base
-  include RecordingStudio::Concerns::DeviceSessionConcern
+  before_action :authenticate_user!
+  before_action { Current.actor = current_user }
+
+  include RecordingStudio::RootSwitchable::ControllerSupport
 end
 ```
 
-### FlatPack UI Components
+Configure scopes in `config/initializers/recording_studio_root_switchable.rb`:
 
-All views use FlatPack ViewComponents. Available components include:
+```ruby
+RecordingStudioRootSwitchable.configure do |config|
+  config.current_actor_resolver = ->(controller:) { Current.actor || controller.current_user }
 
-- `FlatPack::Button::Component` — Buttons (`:primary`, `:secondary`, `:ghost`)
-- `FlatPack::Card::Component` — Cards (`:default`, `:elevated`, `:outlined`)
-- `FlatPack::Alert::Component` — Alerts (`:success`, `:error`, `:warning`, `:info`)
-- `FlatPack::Badge::Component` — Status badges
-- `FlatPack::Table::Component` — Data tables
-- `FlatPack::TextInput::Component`, `EmailInput`, `PasswordInput` — Form inputs
-- `FlatPack::Breadcrumb::Component` — Navigation breadcrumbs
-- `FlatPack::Navbar::Component` — Navigation sidebar
+  config.scope :all_workspaces do |scope|
+    scope.label = "All workspaces"
+    scope.description = "Every accessible workspace root"
+    scope.available_roots = lambda do |actor:, **|
+      RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
+    end
+    scope.default_root = ->(roots:, **) { roots.first }
+  end
+end
+```
 
-See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full documentation.
+## Public API
 
-## Tech Stack
+```ruby
+RecordingStudio::RootSwitchable.current_root
+RecordingStudio::RootSwitchable.current_root_recording
+RecordingStudio::RootSwitchable.current_root_recordable
+RecordingStudio::RootSwitchable.current_root_scope_key
 
-| Component       | Version |
-|-----------------|---------|
-| Ruby            | 3.3+    |
-| Rails           | 8.1+    |
-| PostgreSQL      | 16      |
-| TailwindCSS     | 4       |
-| RecordingStudio | v0.1.0-alpha (pinned in `test/dummy/Gemfile`) |
-| FlatPack        | v0.1.33 (pinned in `test/dummy/Gemfile`) |
-| Devise          | latest  |
+RecordingStudio::RootSwitchable.resolve_current_root(
+  controller: self,
+  actor: Current.actor,
+  device_key: RecordingStudio::RootSwitchable.current_device_key,
+  scope_key: "all_workspaces"
+)
+```
+
+## Behavior notes
+
+- selections point at existing `RecordingStudio::Recording` rows
+- only root recordings are valid selections
+- saved selections are invalidated when they fall out of scope or fail access/validity checks
+- fallback uses the configured default root for the active scope, then the first available root
+- default access checks use `RecordingStudioAccessible.authorized?`
+
+## Mounted engine routes
+
+Mount the engine wherever you want:
+
+```ruby
+mount RecordingStudioRootSwitchable::Engine, at: "/recording_studio_root_switchable"
+```
+
+The gem exposes a dedicated v1 page at:
+
+```text
+/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces
+```
+
+## Dummy app
+
+The dummy app in `test/dummy/` demonstrates:
+
+- Devise authentication with `Current.actor`
+- multiple accessible workspace roots
+- two scopes (`all_workspaces` and `client_workspaces`)
+- per-device persistence through the encrypted cookie-backed device key
+- fallback behavior when a persisted selection is no longer valid
+
+Login:
+
+- Email: `admin@admin.com`
+- Password: `Password`
+
+## Validation
+
+Standard validation:
+
+```bash
+bundle exec rake test
+```
+
+If dummy app boot, migrations, or assets change, also validate the dummy app flow used in CI.
 
 ## Documentation
 
-The original gem template documentation is preserved in `docs/gem_template/` as architectural reference material. Use it as background on the engine conventions; the README and dummy app are the source of truth for the Recording Studio addon workflow.
+Template reference material remains archived under `docs/gem_template/`.

@@ -5,17 +5,17 @@ require "rake/testtask"
 
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
-  t.test_files = FileList["test/**/*_test.rb"].exclude("test/rename_verification_test.rb")
+  t.test_files = FileList["test/**/*_test.rb"]
   t.verbose = false
 end
 
 namespace :test do
-  desc "Run rename verification tests to validate gem naming consistency"
+  desc "Run root-switchable naming verification tests"
   task :rename_verification do
     ruby "test/rename_verification_test.rb", verbose: true
   end
 
-  desc "Run rename verification tests in verbose mode"
+  desc "Run root-switchable naming verification tests in verbose mode"
   task :rename_verification_verbose do
     ruby "test/rename_verification_test.rb", "--verbose", verbose: true
   end

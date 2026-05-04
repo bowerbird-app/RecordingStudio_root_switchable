@@ -1,0 +1,137 @@
+<div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: @page_copy.fetch(:title),
+    subtitle: @page_copy.fetch(:subtitle),
+    variant: :h1
+  ) %>
+
+  <% if flash[:notice].present? %>
+    <%= render FlatPack::Alert::Component.new(style: :success, title: flash[:notice]) %>
+  <% end %>
+
+  <% if flash[:alert].present? %>
+    <%= render FlatPack::Alert::Component.new(style: :danger, title: flash[:alert]) %>
+  <% end %>
+
+  <div class="grid gap-6 lg:grid-cols-[minmax(260px,1fr)_minmax(0,2fr)]">
+    <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
+      <% card.header do %>
+        <%= render FlatPack::PageTitle::Component.new(
+          title: @page_copy.fetch(:scope_heading),
+          subtitle: @page_copy.fetch(:persistence_hint),
+          variant: :h3,
+          class: "mb-0 pb-0"
+        ) %>
+      <% end %>
+
+      <% card.body do %>
+        <div class="space-y-4">
+          <% @supported_scopes.each do |scope| %>
+            <div class="space-y-2 rounded-xl border border-[var(--surface-border-color)] p-4">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <p class="font-semibold"><%= scope.label_for(controller: self, actor: RecordingStudio::RootSwitchable::Current.actor, device_key: current_root_device_key) %></p>
+                  <% description = scope.description_for(controller: self, actor: RecordingStudio::RootSwitchable::Current.actor, device_key: current_root_device_key) %>
+                  <% if description.present? %>
+                    <p class="text-sm text-[var(--surface-muted-content-color)]"><%= description %></p>
+                  <% end %>
+                </div>
+
+                <% if scope.key == @scope.key %>
+                  <%= render FlatPack::Badge::Component.new(text: "Active scope", style: :success, size: :sm) %>
+                <% end %>
+              </div>
+
+              <%= link_to root_switch_path(scope: scope.key), class: "inline-flex" do %>
+                <%= render FlatPack::Button::Component.new(
+                  text: scope.key == @scope.key ? "Viewing scope" : "Open scope",
+                  style: scope.key == @scope.key ? :primary : :secondary,
+                  size: :sm
+                ) %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% card.footer do %>
+        <dl class="space-y-2 text-sm">
+          <div>
+            <dt class="text-[var(--surface-muted-content-color)]"><%= @page_copy.fetch(:device_label) %></dt>
+            <dd class="font-mono text-xs"><%= current_root_device_key %></dd>
+          </div>
+          <div>
+            <dt class="text-[var(--surface-muted-content-color)]"><%= @page_copy.fetch(:current_selection_label) %></dt>
+            <dd class="font-medium"><%= @selected_root.present? ? @scope.root_label_for(controller: self, actor: RecordingStudio::RootSwitchable::Current.actor, device_key: current_root_device_key, recording: @selected_root) : "None selected" %></dd>
+          </div>
+        </dl>
+      <% end %>
+    <% end %>
+
+    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+      <% card.header do %>
+        <%= render FlatPack::PageTitle::Component.new(
+          title: @page_copy.fetch(:roots_heading),
+          subtitle: @scope.label_for(controller: self, actor: RecordingStudio::RootSwitchable::Current.actor, device_key: current_root_device_key),
+          variant: :h3,
+          class: "mb-0 pb-0"
+        ) %>
+      <% end %>
+
+      <% card.body do %>
+        <% if @available_roots.empty? %>
+          <%= render FlatPack::Alert::Component.new(
+            style: :info,
+            title: @page_copy.fetch(:empty_state_title),
+            description: @page_copy.fetch(:empty_state_body)
+          ) %>
+        <% else %>
+          <div class="space-y-4">
+            <% @available_roots.each do |root_recording| %>
+              <% selected = @selected_root&.id == root_recording.id %>
+              <div class="rounded-2xl border border-[var(--surface-border-color)] p-5">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div class="space-y-2">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <h3 class="text-base font-semibold">
+                        <%= @scope.root_label_for(controller: self, actor: RecordingStudio::RootSwitchable::Current.actor, device_key: current_root_device_key, recording: root_recording) %>
+                      </h3>
+
+                      <% if selected %>
+                        <%= render FlatPack::Badge::Component.new(
+                          text: @page_copy.fetch(:selected_badge),
+                          style: :success,
+                          size: :sm
+                        ) %>
+                      <% end %>
+                    </div>
+
+                    <p class="text-sm text-[var(--surface-muted-content-color)]">
+                      <%= @scope.root_description_for(controller: self, actor: RecordingStudio::RootSwitchable::Current.actor, device_key: current_root_device_key, recording: root_recording) %>
+                    </p>
+
+                    <p class="font-mono text-xs text-[var(--surface-muted-content-color)]">
+                      Recording ID: <%= root_recording.id %>
+                    </p>
+                  </div>
+
+                  <% unless selected %>
+                    <%= form_with url: root_switch_path(scope: @scope.key), method: :patch, class: "inline-flex" do |form| %>
+                      <%= form.hidden_field :root_recording_id, name: "root_switch[root_recording_id]", value: root_recording.id %>
+                      <%= render FlatPack::Button::Component.new(
+                        text: @page_copy.fetch(:switch_action_label),
+                        style: :primary,
+                        size: :md,
+                        type: "submit"
+                      ) %>
+                    <% end %>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

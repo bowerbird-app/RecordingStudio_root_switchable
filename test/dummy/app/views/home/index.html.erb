@@ -1,7 +1,7 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
-    title: @workspace&.name || "Recording Studio addon template",
-    subtitle: "Use this dummy app to validate authentication, root recording setup, and addon UI wiring before you rename the engine.",
+    title: current_root_recordable&.name || "Recording Studio Root Switchable",
+    subtitle: "Use this dummy app to validate actor-aware, device-persisted root switching across multiple scopes.",
     variant: :h1
   ) %>
 
@@ -9,8 +9,8 @@
     <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
       <% card.header do %>
         <%= render FlatPack::PageTitle::Component.new(
-          title: "Template workflow",
-          subtitle: "The first things to change when you turn this into a real addon.",
+          title: "What this demo proves",
+          subtitle: "The addon stores root selections without mutating recordings, recordables, or events.",
           variant: :h3,
           class: "mb-0 pb-0"
         ) %>
@@ -19,18 +19,30 @@
       <% card.body do %>
         <ol class="space-y-4 text-sm leading-6 text-[var(--surface-content-color)]">
           <li>
-            Rename the gem with <code>bin/rename_gem your_addon_name</code> once the engine structure looks right.
+            Selections persist per actor, device, and scope in the gem-owned table.
           </li>
           <li>
-            Replace the sample migration with your addon's real tables and then run <code>rails generate gem_template:migrations</code> in the host app.
+            Accessible roots are resolved through <code>RecordingStudioAccessible.root_recordings_for</code>.
           </li>
           <li>
-            Register your recordable types in <code>test/dummy/config/initializers/recording_studio.rb</code> and add capabilities only where they are needed.
+            The dedicated v1 page uses FlatPack components instead of a navigation dropdown.
           </li>
           <li>
-            Use this dummy app to check layout, authentication, Tailwind sources, and root recording behavior before shipping the engine.
+            If a saved root falls out of scope or access, resolution falls back to the configured default accessible root.
           </li>
         </ol>
+      <% end %>
+
+      <% card.footer do %>
+        <div class="flex flex-wrap gap-3">
+          <%= link_to "/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces", class: "inline-flex" do %>
+            <%= render FlatPack::Button::Component.new(text: "Open all-workspaces scope", style: :primary, size: :md) %>
+          <% end %>
+
+          <%= link_to "/recording_studio_root_switchable/v1/root_switch?scope=client_workspaces", class: "inline-flex" do %>
+            <%= render FlatPack::Button::Component.new(text: "Open client-workspaces scope", style: :secondary, size: :md) %>
+          <% end %>
+        </div>
       <% end %>
     <% end %>
 
@@ -38,8 +50,8 @@
       <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
         <% card.header do %>
           <%= render FlatPack::PageTitle::Component.new(
-            title: "Workspace state",
-            subtitle: "The seeded Recording Studio baseline for local development.",
+            title: "Current request state",
+            subtitle: "Resolved from the signed-in actor plus the encrypted device key cookie.",
             variant: :h3,
             class: "mb-0 pb-0"
           ) %>
@@ -48,16 +60,20 @@
         <% card.body do %>
           <dl class="space-y-3 text-sm">
             <div>
-              <dt class="text-[var(--surface-muted-content-color)]">Workspace</dt>
-              <dd class="font-medium"><%= @workspace&.name || "Not seeded" %></dd>
-            </div>
-            <div>
-              <dt class="text-[var(--surface-muted-content-color)]">Root recording</dt>
-              <dd class="font-mono text-xs"><%= @root_recording&.id || "Missing" %></dd>
-            </div>
-            <div>
-              <dt class="text-[var(--surface-muted-content-color)]">Signed in as</dt>
+              <dt class="text-[var(--surface-muted-content-color)]">Actor</dt>
               <dd class="font-medium"><%= current_user.email %></dd>
+            </div>
+            <div>
+              <dt class="text-[var(--surface-muted-content-color)]">Scope</dt>
+              <dd class="font-medium"><%= current_root_scope_key || "Not resolved" %></dd>
+            </div>
+            <div>
+              <dt class="text-[var(--surface-muted-content-color)]">Current root</dt>
+              <dd class="font-medium"><%= current_root_recordable&.name || "None selected" %></dd>
+            </div>
+            <div>
+              <dt class="text-[var(--surface-muted-content-color)]">Device key</dt>
+              <dd class="font-mono text-xs"><%= current_root_device_key %></dd>
             </div>
           </dl>
         <% end %>
@@ -66,18 +82,33 @@
       <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
         <% card.header do %>
           <%= render FlatPack::PageTitle::Component.new(
-            title: "Useful routes",
-            subtitle: "Quick links for checking the mounted engine and local app shell.",
+            title: "Configured scopes",
+            subtitle: "This dummy app seeds multiple accessible roots to demonstrate per-scope behavior.",
             variant: :h3,
             class: "mb-0 pb-0"
           ) %>
         <% end %>
 
         <% card.body do %>
-          <div class="space-y-3 text-sm">
-            <p><strong>App home:</strong> <code>/</code></p>
-            <p><strong>Recording Studio mount:</strong> <code>/recording_studio</code></p>
-            <p><strong>Health check:</strong> <code>/up</code></p>
+          <div class="space-y-4 text-sm">
+            <% @scope_rows.each do |row| %>
+              <div class="rounded-xl border border-[var(--surface-border-color)] p-4">
+                <div class="flex items-center justify-between gap-3">
+                  <div>
+                    <p class="font-semibold"><%= row[:scope_label] %></p>
+                    <p class="text-[var(--surface-muted-content-color)]"><%= row[:scope_description] %></p>
+                  </div>
+
+                  <% if row[:scope_key] == current_root_scope_key %>
+                    <%= render FlatPack::Badge::Component.new(text: "Active request scope", style: :success, size: :sm) %>
+                  <% end %>
+                </div>
+
+                <p class="mt-3"><strong>Current root:</strong> <%= row[:current_root_label] || "None available" %></p>
+                <p><strong>Resolved via:</strong> <%= row[:selected_via] %></p>
+                <p><strong>Available roots:</strong> <%= row[:available_roots].presence&.join(", ") || "None" %></p>
+              </div>
+            <% end %>
           </div>
         <% end %>
       <% end %>

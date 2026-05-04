@@ -4,49 +4,43 @@ require "test_helper"
 
 class ConfigurationTest < Minitest::Test
   def setup
-    @configuration = GemTemplate::Configuration.new
+    @configuration = RecordingStudioRootSwitchable::Configuration.new
   end
 
-  def test_merge_updates_known_attributes
-    @configuration.merge!(api_key: "abc123", timeout: 9, enable_feature_x: true)
-
-    assert_equal "abc123", @configuration.api_key
-    assert_equal 9, @configuration.timeout
-    assert_equal true, @configuration.enable_feature_x
+  def test_starts_without_scopes_until_the_host_app_registers_them
+    assert_empty @configuration.scopes
   end
 
-  def test_merge_ignores_unknown_keys
-    @configuration.merge!(unknown_key: "ignored", timeout: 7)
+  def test_scope_registration_preserves_configuration_hooks
+    @configuration.scope(:clients) do |scope|
+      scope.label = ->(**) { "Client roots" }
+      scope.description = "Customer-facing workspaces"
+      scope.page_copy = { title: "Client root switcher" }
+    end
 
-    refute_respond_to @configuration, :unknown_key
-    assert_equal 7, @configuration.timeout
+    scope = @configuration.scopes.fetch("clients")
+
+    assert_equal "Client roots", scope.label_for
+    assert_equal "Customer-facing workspaces", scope.description_for
+    assert_equal "Client root switcher", @configuration.page_copy_for(scope: scope).fetch(:title)
   end
 
-  def test_merge_with_non_enumerable_is_noop
-    original = @configuration.to_h
+  def test_resolve_scope_uses_default_scope_key_resolver
+    @configuration.scope(:clients)
+    @configuration.default_scope_key_resolver = ->(scopes:, **) { scopes.last.key }
 
-    @configuration.merge!(nil)
+    scope = @configuration.resolve_scope(key: nil, controller: nil, actor: Object.new, device_key: "device-1")
 
-    assert_nil @configuration.api_key if original[:api_key].nil?
-    assert_equal original[:api_key], @configuration.api_key unless original[:api_key].nil?
-    assert_equal original[:timeout], @configuration.timeout
-    assert_equal original[:enable_feature_x], @configuration.enable_feature_x
+    assert_equal "clients", scope.key
   end
 
-  def test_to_h_reports_registered_hook_counts
-    @configuration.hooks.before_initialize { nil }
-    @configuration.hooks.before_initialize { nil }
-    @configuration.hooks.after_service { nil }
+  def test_merge_supports_page_copy_and_cookie_options
+    @configuration.merge!(
+      page_copy: { switch_action_label: "Activate root" },
+      device_key_cookie_options: { same_site: :strict }
+    )
 
-    result = @configuration.to_h
-
-    assert_equal 2, result.fetch(:hooks_registered).fetch(:before_initialize)
-    assert_equal 1, result.fetch(:hooks_registered).fetch(:after_service)
-  end
-
-  def test_configure_without_block_is_safe
-    GemTemplate.configure
-
-    assert_kind_of GemTemplate::Configuration, GemTemplate.configuration
+    assert_equal "Activate root", @configuration.page_copy.fetch(:switch_action_label)
+    assert_equal :strict, @configuration.device_key_cookie_options.fetch(:same_site)
   end
 end
