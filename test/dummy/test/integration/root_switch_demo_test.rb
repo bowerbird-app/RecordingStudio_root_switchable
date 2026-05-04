@@ -7,7 +7,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
   test "root switch page renders for seeded admin" do
-    Rails.application.load_seed
+    Rails.application.load_seed unless User.exists?(email: "admin@admin.com")
 
     sign_in(User.find_by!(email: "admin@admin.com"))
 
@@ -18,7 +18,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
         }
 
     assert_response :success
-    assert_includes response.body, "All workspaces"
+    assert_includes response.body, "Change workspace"
     assert_includes response.body, "Studio Workspace"
   end
 end

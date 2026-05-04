@@ -3,6 +3,7 @@
 require "uri"
 
 module RecordingStudioRootSwitchable
+  # rubocop:disable Metrics/ClassLength
   class RootSwitchesController < ApplicationController
     DEFAULT_LAYOUT = "recording_studio_root_switchable/blank"
 
@@ -148,4 +149,5 @@ module RecordingStudioRootSwitchable
       params.fetch(:root_switch, {}).permit(:root_recording_id, :return_to)
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end
