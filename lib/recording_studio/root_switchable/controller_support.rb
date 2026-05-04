@@ -10,6 +10,7 @@ module RecordingStudio
 
         helper_method :current_root,
                       :current_root_device_key,
+                      :current_root_device_key_preview,
                       :current_root_recordable,
                       :current_root_recording,
                       :current_root_scope_key
@@ -33,6 +34,14 @@ module RecordingStudio
 
       def current_root_device_key
         RecordingStudio::RootSwitchable.current_device_key
+      end
+
+      def current_root_device_key_preview
+        device_key = current_root_device_key.to_s
+        return "Unavailable" if device_key.blank?
+        return "••••" if device_key.length <= 12
+
+        "#{device_key.first(8)}…#{device_key.last(4)}"
       end
 
       def current_root_resolution

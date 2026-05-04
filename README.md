@@ -78,6 +78,7 @@ Selections are remembered by `actor + device_key + scope_key`.
 - `device_key` is a generated random identifier stored in an encrypted cookie
 - clearing cookies creates a new device context
 - the cookie does not replace authentication; access is revalidated against the current actor on every restore
+- production hosts should set `config.device_key_cookie_options[:secure] = true` and serve the mounted page over HTTPS
 
 ### Scope keys
 
@@ -147,6 +148,8 @@ Login:
 
 - Email: `admin@admin.com`
 - Password: `Password`
+
+These dummy credentials are for local demonstration only and should never be deployed as-is.
 
 ## Validation
 

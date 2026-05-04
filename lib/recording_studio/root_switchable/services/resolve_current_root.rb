@@ -18,16 +18,11 @@ module RecordingStudio
         end
 
         def call
-          resolved_scope = configuration.resolve_scope(
-            key: @scope_key,
-            controller: @controller,
-            actor: @actor,
-            device_key: @device_key
-          )
+          resolved_scope = scope_context.resolve_scope
 
           return empty_result unless resolved_scope
 
-          roots = available_roots_for(resolved_scope)
+          roots = scope_context.available_roots_for(resolved_scope)
           selection = find_selection(resolved_scope)
           selected_via = :none
           root_recording = nil
@@ -42,7 +37,7 @@ module RecordingStudio
           end
 
           if root_recording.blank?
-            root_recording = default_root_for(resolved_scope, roots)
+            root_recording = scope_context.default_root_for(resolved_scope, roots)
             selected_via = root_recording.present? ? :default : :none
           end
 
@@ -63,6 +58,16 @@ module RecordingStudio
           RecordingStudioRootSwitchable.configuration
         end
 
+        def scope_context
+          @scope_context ||= ScopeContext.new(
+            configuration: configuration,
+            controller: @controller,
+            actor: @actor,
+            device_key: @device_key,
+            scope_key: @scope_key
+          )
+        end
+
         def empty_result
           assign_current(scope: nil, root_recording: nil, selection: nil)
 
@@ -74,26 +79,6 @@ module RecordingStudio
             selected_via: :none,
             selection: nil
           )
-        end
-
-        def available_roots_for(scope)
-          scope.available_roots_for(controller: @controller, actor: @actor, device_key: @device_key)
-               .select do |root_recording|
-            scope.valid?(controller: @controller, actor: @actor, device_key: @device_key, recording: root_recording) &&
-              scope.allowed?(controller: @controller, actor: @actor, device_key: @device_key, recording: root_recording)
-          end
-        end
-
-        def default_root_for(scope, roots)
-          default_root = scope.default_root_for(
-            controller: @controller,
-            actor: @actor,
-            device_key: @device_key,
-            roots: roots
-          )
-          return default_root if default_root.present? && roots.any? { |root| root.id == default_root.id }
-
-          roots.first
         end
 
         def find_selection(scope)

@@ -22,15 +22,10 @@ module RecordingStudio
           scope = nil
           roots = []
 
-          scope = configuration.resolve_scope(
-            key: @scope_key,
-            controller: @controller,
-            actor: @actor,
-            device_key: @device_key
-          )
+          scope = scope_context.resolve_scope
           return failure_result(errors: ["Scope could not be resolved."], scope: scope) unless scope
 
-          roots = available_roots_for(scope)
+          roots = scope_context.available_roots_for(scope)
           root_recording = roots.find { |root| root.id.to_s == @root_recording_id.to_s }
           unless root_recording
             return failure_result(
@@ -74,12 +69,14 @@ module RecordingStudio
           RecordingStudioRootSwitchable.configuration
         end
 
-        def available_roots_for(scope)
-          scope.available_roots_for(controller: @controller, actor: @actor, device_key: @device_key)
-               .select do |root_recording|
-            scope.valid?(controller: @controller, actor: @actor, device_key: @device_key, recording: root_recording) &&
-              scope.allowed?(controller: @controller, actor: @actor, device_key: @device_key, recording: root_recording)
-          end
+        def scope_context
+          @scope_context ||= ScopeContext.new(
+            configuration: configuration,
+            controller: @controller,
+            actor: @actor,
+            device_key: @device_key,
+            scope_key: @scope_key
+          )
         end
 
         def failure_result(errors:, scope:, available_roots: [])

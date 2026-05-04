@@ -35,11 +35,11 @@
 
       <% card.footer do %>
         <div class="flex flex-wrap gap-3">
-          <%= link_to "/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces", class: "inline-flex" do %>
+          <%= link_to recording_studio_root_switchable.root_switch_path(scope: "all_workspaces"), class: "inline-flex" do %>
             <%= render FlatPack::Button::Component.new(text: "Open all-workspaces scope", style: :primary, size: :md) %>
           <% end %>
 
-          <%= link_to "/recording_studio_root_switchable/v1/root_switch?scope=client_workspaces", class: "inline-flex" do %>
+          <%= link_to recording_studio_root_switchable.root_switch_path(scope: "client_workspaces"), class: "inline-flex" do %>
             <%= render FlatPack::Button::Component.new(text: "Open client-workspaces scope", style: :secondary, size: :md) %>
           <% end %>
         </div>
@@ -73,7 +73,7 @@
             </div>
             <div>
               <dt class="text-[var(--surface-muted-content-color)]">Device key</dt>
-              <dd class="font-mono text-xs"><%= current_root_device_key %></dd>
+              <dd class="font-mono text-xs"><%= current_root_device_key_preview %></dd>
             </div>
           </dl>
         <% end %>

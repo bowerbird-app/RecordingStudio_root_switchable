@@ -99,23 +99,16 @@ module RecordingStudio
       end
 
       def default_available_roots(actor:, **)
-        if defined?(::RecordingStudioAccessible) && ::RecordingStudioAccessible.respond_to?(:root_recordings_for)
-          return [] if actor.blank?
+        return [] unless recording_studio_accessible_supports_root_queries?
+        return [] if actor.blank?
 
-          Array(::RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view))
-        elsif defined?(::RecordingStudio::Recording)
-          ::RecordingStudio::Recording.unscoped.where(parent_recording_id: nil).order(:created_at, :id)
-        else
-          []
-        end
+        Array(::RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view))
       end
 
       def default_access_allowed?(actor:, recording:, **)
-        if defined?(::RecordingStudioAccessible) && ::RecordingStudioAccessible.respond_to?(:authorized?)
-          actor.present? && ::RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: :view)
-        else
-          true
-        end
+        return false unless recording_studio_accessible_supports_authorization?
+
+        actor.present? && ::RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: :view)
       end
 
       def default_root_label(recording:, **)
@@ -143,6 +136,14 @@ module RecordingStudio
         value.each_pair.with_object({}) do |(key, nested_value), memo|
           memo[key.to_sym] = nested_value
         end
+      end
+
+      def recording_studio_accessible_supports_authorization?
+        defined?(::RecordingStudioAccessible) && ::RecordingStudioAccessible.respond_to?(:authorized?)
+      end
+
+      def recording_studio_accessible_supports_root_queries?
+        defined?(::RecordingStudioAccessible) && ::RecordingStudioAccessible.respond_to?(:root_recordings_for)
       end
     end
   end

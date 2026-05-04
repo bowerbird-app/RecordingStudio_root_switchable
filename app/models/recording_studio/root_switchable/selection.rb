@@ -22,12 +22,36 @@ module RecordingStudio
         end
 
         def upsert_for(actor:, device_key:, scope_key:, root_recording:)
-          selection = lookup(actor: actor, device_key: device_key, scope_key: scope_key)
-          selection ||= new(actor: actor, device_key: device_key, scope_key: scope_key)
-          selection.root_recording = root_recording
-          selection.last_used_at = Time.current
-          selection.save!
-          selection
+          with_upsert_retry do
+            selection = find_or_initialize_selection(actor: actor, device_key: device_key, scope_key: scope_key)
+            selection.root_recording = root_recording
+            selection.last_used_at = Time.current
+            selection.save!
+            selection
+          end
+        end
+
+        private
+
+        def find_or_initialize_selection(actor:, device_key:, scope_key:)
+          find_or_initialize_by(
+            actor: actor,
+            device_key: device_key.to_s,
+            scope_key: scope_key.to_s
+          )
+        end
+
+        def with_upsert_retry
+          attempts = 0
+
+          begin
+            yield
+          rescue ActiveRecord::RecordNotUnique
+            attempts += 1
+            raise if attempts > 1
+
+            retry
+          end
         end
       end
 

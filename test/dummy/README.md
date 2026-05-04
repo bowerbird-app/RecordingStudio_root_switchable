@@ -24,6 +24,8 @@ Then open the app and sign in with:
 - Email: `admin@admin.com`
 - Password: `Password`
 
+These seeded credentials are for local demo use only.
+
 ## Useful Routes
 
 - `/` - dummy app home page and root-switch summary

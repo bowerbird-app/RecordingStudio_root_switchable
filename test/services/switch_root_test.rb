@@ -59,6 +59,7 @@ class SwitchRootTest < Minitest::Test
     RecordingStudioRootSwitchable.configure do |config|
       config.scope(:roots) do |scope|
         scope.available_roots = ->(**) { roots }
+        scope.access_check = ->(**) { true }
       end
     end
   end

@@ -15,14 +15,12 @@
             <%= render FlatPack::EmailInput::Component.new(
               name: "user[email]",
               label: "Email",
-              value: "admin@admin.com",
               placeholder: "you@example.com"
             ) %>
 
             <%= render FlatPack::PasswordInput::Component.new(
               name: "user[password]",
               label: "Password",
-              value: "Password",
               required: true
             ) %>
 
@@ -45,7 +43,7 @@
 
       <% card.footer do %>
         <%= render FlatPack::Badge::Component.new(
-          text: "Default: admin@admin.com / Password",
+          text: "Local demo account available in the README",
           style: :info,
           size: :sm
         ) %>

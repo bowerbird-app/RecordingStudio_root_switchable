@@ -5,6 +5,9 @@ RecordingStudioRootSwitchable.configure do |config|
     Current.actor || controller.current_user
   end
 
+  # For production hosts, enable secure cookies and force SSL in the host app.
+  # config.device_key_cookie_options = config.device_key_cookie_options.merge(secure: Rails.env.production?)
+
   config.scope :roots do |scope|
     scope.label = "Roots"
     scope.description = "All accessible root recordings"
