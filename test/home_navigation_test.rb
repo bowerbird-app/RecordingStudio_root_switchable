@@ -115,7 +115,7 @@ class HomeNavigationTest < Minitest::Test
     assert_includes controller, "def method_docs"
     assert_includes controller, "def documented_methods"
     assert_includes controller, "code: <<~'CODE'"
-    assert_includes controller, "Rails.logger.info(\"Active root scope: \\#{scope_key}\")"
+    assert_includes controller, 'Rails.logger.info("Active root scope: #{scope_key}")'
     assert_includes view, "title: \"Method\""
     assert_includes view, "FlatPack::SectionTitle::Component.new"
     assert_includes view, "anchor_link: true"
