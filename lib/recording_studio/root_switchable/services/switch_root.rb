@@ -38,6 +38,7 @@ module RecordingStudio
           selection = RecordingStudio::RootSwitchable::Selection.upsert_for(
             actor: @actor,
             device_key: @device_key,
+            device_metadata: RecordingStudio::RootSwitchable::DeviceMetadata.capture(controller: @controller),
             root_recording: root_recording,
             scope_key: scope.key
           )

@@ -1,0 +1,113 @@
+<div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Usage",
+    subtitle: "Resolve the current root once per request, then use it only in the parts of the app that need workspace-aware behavior.",
+    variant: :h1
+  ) %>
+
+  <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+    <% card.header do %>
+      <%= render FlatPack::PageTitle::Component.new(
+        title: "What the gem does",
+        subtitle: "The gem tracks an active root recording per actor, per device, and per scope.",
+        variant: :h3,
+        class: "mb-0 pb-0"
+      ) %>
+    <% end %>
+
+    <% card.body do %>
+      <div class="space-y-3 text-sm leading-6 text-(--surface-content-color)">
+        <p>
+          The gem resolves the current root once for the current request and stores it in
+          <code>RecordingStudio::RootSwitchable::Current</code>.
+        </p>
+        <p>
+          It does <strong>not</strong> automatically rewrite every query in the host app to be workspace-scoped.
+          Your app decides where the active workspace matters and reads the resolved root in those places.
+        </p>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+    <% card.header do %>
+      <%= render FlatPack::PageTitle::Component.new(
+        title: "Typical request flow",
+        subtitle: "Set the actor, include the concern, and let the current root be available to controllers and views.",
+        variant: :h3,
+        class: "mb-0 pb-0"
+      ) %>
+    <% end %>
+
+    <% card.body do %>
+      <%= render FlatPack::CodeBlock::Component.new(
+        title: "ApplicationController",
+        language: "ruby",
+        code: <<~CODE
+class ApplicationController < ActionController::Base
+  before_action :authenticate_user!
+  before_action { Current.actor = current_user }
+
+  include RecordingStudio::RootSwitchable::ControllerSupport
+end
+CODE
+      ) %>
+    <% end %>
+  <% end %>
+
+  <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+    <% card.header do %>
+      <%= render FlatPack::PageTitle::Component.new(
+        title: "Examples",
+        subtitle: "Use the resolved root where your app actually needs workspace-aware behavior.",
+        variant: :h3,
+        class: "mb-0 pb-0"
+      ) %>
+    <% end %>
+
+    <% card.body do %>
+      <%= render FlatPack::CodeBlock::Component.new(
+        title: "Controller query",
+        language: "ruby",
+        code: <<~CODE
+class ProjectsController < ApplicationController
+  def index
+    workspace = current_root_recordable
+    @projects = Project.where(workspace: workspace)
+  end
+end
+CODE
+      ) %>
+
+      <%= render FlatPack::CodeBlock::Component.new(
+        title: "Service object",
+        language: "ruby",
+        code: <<~CODE
+class SyncWorkspace
+  def self.call
+    root_recording = RecordingStudio::RootSwitchable.current_root_recording
+    return unless root_recording
+
+    WorkspaceSyncJob.perform_later(root_recording.id)
+  end
+end
+CODE
+      ) %>
+
+      <%= render FlatPack::CodeBlock::Component.new(
+        title: "Explicit resolution",
+        language: "ruby",
+        code: <<~CODE
+resolution = RecordingStudio::RootSwitchable.resolve_current_root(
+  controller: self,
+  actor: Current.actor,
+  device_key: RecordingStudio::RootSwitchable.current_device_key,
+  scope_key: "all_workspaces"
+)
+
+workspace = resolution.root_recording&.recordable
+CODE
+      ) %>
+    <% end %>
+  <% end %>
+</div>

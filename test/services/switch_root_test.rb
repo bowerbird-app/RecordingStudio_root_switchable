@@ -20,11 +20,23 @@ class SwitchRootTest < Minitest::Test
     alpha_root = RootRecord.new(id: "alpha", recordable: Struct.new(:name).new("Alpha"), parent_recording_id: nil)
     beta_root = RootRecord.new(id: "beta", recordable: Struct.new(:name).new("Beta"), parent_recording_id: nil)
     persisted_selection = Struct.new(:root_recording_id).new("beta")
+    controller = Struct.new(:request).new(
+      Struct.new(:user_agent).new(
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " \
+        "(KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+      )
+    )
 
     configure_roots([alpha_root, beta_root])
 
-    RecordingStudio::RootSwitchable::Selection.stub(:upsert_for, persisted_selection) do
+    RecordingStudio::RootSwitchable::Selection.stub(:upsert_for, lambda { |**attributes|
+      assert_equal "device-1", attributes[:device_key]
+      assert_equal "Chrome", attributes.dig(:device_metadata, :device_browser)
+      assert_equal "Chrome on macOS", attributes.dig(:device_metadata, :device_label)
+      persisted_selection
+    }) do
       result = RecordingStudio::RootSwitchable::Services::SwitchRoot.call(
+        controller: controller,
         actor: Object.new,
         device_key: "device-1",
         root_recording_id: "beta",

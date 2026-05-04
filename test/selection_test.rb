@@ -3,7 +3,17 @@
 require "test_helper"
 
 class SelectionTest < Minitest::Test
-  FakeSelection = Struct.new(:root_recording, :last_used_at, :save_behavior, keyword_init: true) do
+  FakeSelection = Struct.new(
+    :device_browser,
+    :device_label,
+    :device_platform,
+    :device_type,
+    :last_used_at,
+    :root_recording,
+    :save_behavior,
+    :user_agent,
+    keyword_init: true
+  ) do
     def save!
       save_behavior.call(self)
     end
@@ -29,13 +39,25 @@ class SelectionTest < Minitest::Test
       selection = RecordingStudio::RootSwitchable::Selection.upsert_for(
         actor: nil,
         device_key: "device-1",
+        device_metadata: {
+          device_browser: "Chrome",
+          device_label: "Chrome on macOS",
+          device_platform: "macOS",
+          device_type: "desktop",
+          user_agent: "Mozilla/5.0"
+        },
         scope_key: "scope-1",
         root_recording: root_recording
       )
 
       assert_equal persisted_selection, selection
+      assert_equal "Chrome", persisted_selection.device_browser
+      assert_equal "Chrome on macOS", persisted_selection.device_label
+      assert_equal "macOS", persisted_selection.device_platform
+      assert_equal "desktop", persisted_selection.device_type
       assert_equal root_recording, persisted_selection.root_recording
       assert_instance_of Time, persisted_selection.last_used_at
+      assert_equal "Mozilla/5.0", persisted_selection.user_agent
       assert_equal 2, find_calls
     end
   end

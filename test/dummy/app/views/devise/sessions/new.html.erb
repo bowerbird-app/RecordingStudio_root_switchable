@@ -1,4 +1,6 @@
 <div class="fixed inset-0 p-4">
+  <% demo_user = DemoUsers.primary %>
+
   <%= render FlatPack::Grid::Component.new(cols: 1, align: :center, class: "h-full w-full place-content-center justify-items-center") do %>
     <%= render FlatPack::Card::Component.new(style: :default, class: "w-full max-w-md h-auto") do |card| %>
       <% card.header do %>
@@ -12,15 +14,24 @@
       <% card.body do %>
         <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
           <div class="space-y-4">
+            <%= render FlatPack::TextInput::Component.new(
+              name: "demo_user[name]",
+              label: "Demo User",
+              value: demo_user.fetch(:name),
+              disabled: true
+            ) %>
+
             <%= render FlatPack::EmailInput::Component.new(
               name: "user[email]",
               label: "Email",
+              value: demo_user.fetch(:email),
               placeholder: "you@example.com"
             ) %>
 
             <%= render FlatPack::PasswordInput::Component.new(
               name: "user[password]",
               label: "Password",
+              value: demo_user.fetch(:password),
               required: true
             ) %>
 
@@ -43,7 +54,7 @@
 
       <% card.footer do %>
         <%= render FlatPack::Badge::Component.new(
-          text: "Local demo account available in the README",
+          text: "Sign in with the prefilled seeded demo account or switch to viewer@admin.com.",
           style: :info,
           size: :sm
         ) %>

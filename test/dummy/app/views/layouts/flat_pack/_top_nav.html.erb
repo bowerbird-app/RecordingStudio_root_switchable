@@ -16,17 +16,26 @@
   <% end %>
 
   <% nav.center do %>
-    <div class="hidden text-sm font-medium text-(--surface-muted-content-color) md:block">
-      Recording Studio Root Switchable demo
-    </div>
+    <span aria-hidden="true" class="hidden"></span>
   <% end %>
 
   <% nav.right do %>
     <% if user_signed_in? %>
-      <%= render FlatPack::Avatar::Component.new(
-        name: current_user.try(:name).presence || current_user.email,
-        size: :sm
-      ) %>
+      <div class="flex items-center gap-3">
+        <% if current_root_scope_key.present? %>
+          <%= render FlatPack::Chip::Component.new(
+            text: current_root_recordable&.name || "None selected",
+            size: :md,
+            type: :link,
+            href: recording_studio_root_switchable.root_switch_path(scope: current_root_scope_key)
+          ) %>
+        <% end %>
+
+        <%= render FlatPack::Avatar::Component.new(
+          name: current_user.try(:name).presence || current_user.email,
+          size: :sm
+        ) %>
+      </div>
     <% end %>
   <% end %>
 <% end %>

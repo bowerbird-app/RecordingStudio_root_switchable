@@ -36,7 +36,8 @@ class MigrationsGeneratorTest < Minitest::Test
 
       migration_files = Dir.glob(File.join(dir, "db/migrate/*.rb")).map { |path| File.basename(path) }
 
-      assert_equal 2, migration_files.size
+      assert_equal 3, migration_files.size
+      assert_includes migration_files.join("\n"), "add_device_metadata_to_recording_studio_root_switchable_selections.rb"
       assert_includes migration_files.join("\n"), "change_recording_studio_root_switchable_selection_actor_id_to_string.rb"
       assert_equal 1, migration_files.grep(/create_recording_studio_root_switchable_selections/).size
     end

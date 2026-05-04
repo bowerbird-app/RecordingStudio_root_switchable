@@ -21,6 +21,7 @@ bin/dev
 
 Then open the app and sign in with:
 
+- The sign-in form is prefilled with the seeded admin demo user.
 - Email: `admin@admin.com`
 - Password: `Password`
 

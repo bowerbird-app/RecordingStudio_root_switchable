@@ -1,7 +1,13 @@
 # frozen_string_literal: true
 
+require "uri"
+
 module RecordingStudioRootSwitchable
   class RootSwitchesController < ApplicationController
+    DEFAULT_LAYOUT = "recording_studio_root_switchable/blank"
+
+    layout :resolved_layout
+
     before_action :set_scope
     before_action :authorize_page!
 
@@ -19,7 +25,7 @@ module RecordingStudioRootSwitchable
       )
 
       if result.success?
-        redirect_to root_switch_path(scope: @scope.key), notice: switch_success_notice(result.root_recording)
+        redirect_to after_switch_redirect_location(result), notice: switch_success_notice(result.root_recording)
       else
         prepare_page(result: result)
         flash.now[:alert] = result.errors.to_sentence
@@ -60,6 +66,14 @@ module RecordingStudioRootSwitchable
         device_key: RecordingStudio::RootSwitchable::Current.device_key
       )
       @page_copy = page_copy
+      @root_type_label = root_type_label
+    end
+
+    def root_type_label
+      recordable = @selected_root&.recordable || @available_roots.first&.recordable
+      return "root" unless recordable
+
+      recordable.class.model_name.human.downcase
     end
 
     def selected_root_label(root_recording)
@@ -75,8 +89,63 @@ module RecordingStudioRootSwitchable
       "#{selected_root_label(root_recording)} is now active."
     end
 
+    def resolved_layout
+      layout_value = RecordingStudioRootSwitchable.configuration.layout_for(
+        controller: self,
+        actor: RecordingStudio::RootSwitchable::Current.actor,
+        device_key: RecordingStudio::RootSwitchable::Current.device_key,
+        scope: @scope,
+        current_root_recording: current_root_recording
+      )
+
+      case layout_value
+      when nil
+        DEFAULT_LAYOUT
+      when Symbol
+        send(layout_value).presence || DEFAULT_LAYOUT
+      else
+        layout_value.presence || DEFAULT_LAYOUT
+      end
+    rescue StandardError
+      DEFAULT_LAYOUT
+    end
+
+    def after_switch_redirect_location(result)
+      configured_target = RecordingStudioRootSwitchable.configuration.after_switch_redirect_for(
+        controller: self,
+        actor: RecordingStudio::RootSwitchable::Current.actor,
+        device_key: RecordingStudio::RootSwitchable::Current.device_key,
+        scope: @scope,
+        root_recording: result.root_recording,
+        return_to: root_switch_params[:return_to]
+      )
+
+      sanitize_after_switch_redirect(configured_target) || default_after_switch_redirect_location
+    rescue StandardError
+      default_after_switch_redirect_location
+    end
+
+    def default_after_switch_redirect_location
+      root_switch_path(scope: @scope.key)
+    end
+
+    def sanitize_after_switch_redirect(target)
+      return if target.blank?
+
+      candidate = target.to_s
+      return unless candidate.start_with?("/")
+      return if candidate.start_with?("//")
+
+      parsed = URI.parse(candidate)
+      return if parsed.scheme.present? || parsed.host.present?
+
+      candidate
+    rescue URI::InvalidURIError
+      nil
+    end
+
     def root_switch_params
-      params.fetch(:root_switch, {}).permit(:root_recording_id)
+      params.fetch(:root_switch, {}).permit(:root_recording_id, :return_to)
     end
   end
 end

@@ -19,5 +19,13 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
+  get "setup", to: "home#setup"
+  get "config", to: "home#configuration"
+  get "usage", to: "home#usage"
+  get "switch_log", to: "home#switch_log"
+   get "persistence", to: redirect("/switch_log")
+  get "method", to: "home#method_docs"
+  get "gem_views", to: "home#gem_views"
+  get "gem_views/*view_path", to: "home#gem_view", as: :gem_view
   root "home#index"
 end

@@ -1,0 +1,45 @@
+<div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Switch log",
+    subtitle: "Saved workspace selections for the current actor and device contexts.",
+    variant: :h1
+  ) %>
+
+  <div class="overflow-hidden rounded-xl border border-(--surface-border-color) bg-(--surface-background-color) shadow-sm">
+    <table class="min-w-full divide-y divide-(--table-border-color)">
+      <thead class="bg-(--surface-muted-background-color)">
+        <tr>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-(--surface-content-color)">User</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-(--surface-content-color)">Workspace name</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-(--surface-content-color)">Device</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-(--surface-content-color)">Device key</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-(--surface-content-color)">Scope</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-(--surface-content-color)">Timestamp</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-(--table-border-color) bg-(--surface-background-color)">
+        <% if @saved_sessions.any? %>
+          <% @saved_sessions.each do |selection| %>
+            <tr>
+              <td class="px-4 py-3 text-sm text-(--surface-content-color)"><%= saved_session_user(selection) %></td>
+              <td class="px-4 py-3 text-sm text-(--surface-content-color)"><%= saved_session_workspace_name(selection) %></td>
+              <td class="px-4 py-3 text-sm text-(--surface-content-color)">
+                <div><%= saved_session_device(selection) %></div>
+                <div class="mt-1 text-xs text-(--surface-muted-content-color)"><%= saved_session_device_context(selection) %></div>
+              </td>
+              <td class="px-4 py-3 font-mono text-sm text-(--surface-muted-content-color)" title="<%= selection.device_key %>"><%= saved_session_device_key(selection) %></td>
+              <td class="px-4 py-3 text-sm text-(--surface-muted-content-color)"><%= selection.scope_key %></td>
+              <td class="px-4 py-3 text-sm text-(--surface-muted-content-color)"><%= saved_session_timestamp(selection) %></td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="6" class="px-4 py-6 text-sm text-(--surface-muted-content-color)">
+              No saved workspace sessions have been recorded yet.
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -56,6 +56,16 @@ Configure scopes in `config/initializers/recording_studio_root_switchable.rb`:
 RecordingStudioRootSwitchable.configure do |config|
   config.current_actor_resolver = ->(controller:) { Current.actor || controller.current_user }
 
+  # Optional: render the mounted page inside a host layout instead of the gem blank layout.
+  # Accepts a String, Symbol, callable, or nil.
+  # config.layout = :application_layout
+
+  # Optional: choose where to redirect after a successful switch.
+  # Available args: controller:, actor:, device_key:, scope:, root_recording:, return_to:
+  # config.after_switch_redirect = ->(controller:, return_to:, **) do
+  #   return_to.presence || controller.main_app.root_path
+  # end
+
   config.scope :all_workspaces do |scope|
     scope.label = "All workspaces"
     scope.description = "Every accessible workspace root"
@@ -66,6 +76,94 @@ RecordingStudioRootSwitchable.configure do |config|
   end
 end
 ```
+
+## How query scoping works
+
+The gem does not automatically scope every query in your app to a workspace.
+
+Instead, it resolves a current root once per request and exposes that root through request-local state:
+
+- `RecordingStudio::RootSwitchable.current_root`
+- `RecordingStudio::RootSwitchable.current_root_recording`
+- `RecordingStudio::RootSwitchable.current_root_recordable`
+- `RecordingStudio::RootSwitchable.current_root_scope_key`
+
+That means a host app does **not** need to start every query by re-discovering the workspace. The usual pattern is:
+
+1. set the current actor
+2. include `RecordingStudio::RootSwitchable::ControllerSupport`
+3. let the gem resolve the active root for the request
+4. use the resolved root only in the parts of the app that are meant to be workspace-aware
+
+### Typical controller usage
+
+```ruby
+class ProjectsController < ApplicationController
+  def index
+    workspace = current_root_recordable
+    return head :not_found unless workspace
+
+    @projects = Project.where(workspace: workspace)
+  end
+end
+```
+
+### Service usage
+
+```ruby
+class SyncWorkspace
+  def self.call
+    root_recording = RecordingStudio::RootSwitchable.current_root_recording
+    return unless root_recording
+
+    WorkspaceSyncJob.perform_later(root_recording.id)
+  end
+end
+```
+
+### Explicit resolution when you need it
+
+```ruby
+resolution = RecordingStudio::RootSwitchable.resolve_current_root(
+  controller: self,
+  actor: Current.actor,
+  device_key: RecordingStudio::RootSwitchable.current_device_key,
+  scope_key: "all_workspaces"
+)
+
+workspace = resolution.root_recording&.recordable
+```
+
+### What the gem owns vs what the host app owns
+
+The gem answers: "Which root is current for this actor, on this device, in this scope?"
+
+The host app answers: "Which queries or services should use that current root?"
+
+This separation is intentional. It keeps the gem from applying hidden global query scoping across the host app.
+
+### Configuration sources and precedence
+
+The engine loads optional configuration from two places during boot, in this order:
+
+1. `config/recording_studio_root_switchable.yml`
+2. `config.x.recording_studio_root_switchable`
+
+If both sources set the same key, `config.x.recording_studio_root_switchable` wins because it is merged second.
+
+If `config/recording_studio_root_switchable.yml` is absent, the engine skips it and continues booting. If either configuration source is malformed, uses unsupported keys, or provides values with the wrong shape, boot now fails fast with `RecordingStudioRootSwitchable::ConfigurationError` so the host app does not silently fall back to defaults.
+
+Supported boot-time configuration keys are:
+
+- `device_key_cookie_name`
+- `device_key_cookie_options`
+- `layout`
+- `page_copy`
+- `after_switch_redirect`
+
+`page_copy` must be a hash whose keys match the documented copy fields exposed by the gem, and each value must be a string.
+
+`layout` controls which Rails layout the mounted root-switch page renders inside. When `layout` is `nil`, the gem uses its own blank layout. Host apps can set `layout` to a String such as `"application"`, a Symbol such as `:application_layout`, or a callable that returns either value per request.
 
 ### Actor expectations
 
@@ -133,6 +231,11 @@ From a mounted host app, you can link to it with the engine route helper:
 ```ruby
 recording_studio_root_switchable.root_switch_path(scope: "all_workspaces")
 ```
+
+If you want to return the user to the page that launched the switcher, pass a `return_to`
+param when linking to the mounted page and set `config.after_switch_redirect` to prefer that
+path. The gem validates redirect targets and falls back to the root-switch page when the target
+is blank or unsafe.
 
 ## Dummy app
 

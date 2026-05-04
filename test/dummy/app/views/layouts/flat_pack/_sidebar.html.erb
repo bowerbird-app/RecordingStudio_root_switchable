@@ -16,21 +16,39 @@
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Root switch page",
-        href: "/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces",
+        label: "Setup",
+        href: "/setup",
         icon: :folder
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Recording Studio",
-        href: "/recording_studio",
-        icon: :activity
+        label: "Config",
+        href: "/config",
+        icon: :cog_6_tooth
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Access demo",
-        href: "/recording_studio_accessible",
-        icon: :users
+        label: "Usage",
+        href: "/usage",
+        icon: :light_bulb
+      ) %>
+
+      <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Switch log",
+        href: "/switch_log",
+        icon: :server_stack
+      ) %>
+
+      <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Method",
+        href: "/method",
+        icon: :book_open
+      ) %>
+
+      <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Gem views",
+        href: "/gem_views",
+        icon: :folder
       ) %>
 
     </nav>

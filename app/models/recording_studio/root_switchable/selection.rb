@@ -3,6 +3,14 @@
 module RecordingStudio
   module RootSwitchable
     class Selection < ActiveRecord::Base
+      DEVICE_METADATA_ATTRIBUTES = %i[
+        device_label
+        device_platform
+        device_browser
+        device_type
+        user_agent
+      ].freeze
+
       self.table_name = "recording_studio_root_switchable_selections"
 
       belongs_to :actor, polymorphic: true, optional: true
@@ -21,9 +29,10 @@ module RecordingStudio
           actor.present? ? relation.find_by(actor: actor) : relation.find_by(actor: nil)
         end
 
-        def upsert_for(actor:, device_key:, scope_key:, root_recording:)
+        def upsert_for(actor:, device_key:, scope_key:, root_recording:, device_metadata: {})
           with_upsert_retry do
             selection = find_or_initialize_selection(actor: actor, device_key: device_key, scope_key: scope_key)
+            assign_device_metadata(selection, device_metadata)
             selection.root_recording = root_recording
             selection.last_used_at = Time.current
             selection.save!
@@ -39,6 +48,20 @@ module RecordingStudio
             device_key: device_key.to_s,
             scope_key: scope_key.to_s
           )
+        end
+
+        def assign_device_metadata(selection, device_metadata)
+          normalized_device_metadata(device_metadata).each do |attribute, value|
+            writer = "#{attribute}="
+            selection.public_send(writer, value) if selection.respond_to?(writer)
+          end
+        end
+
+        def normalized_device_metadata(device_metadata)
+          DEVICE_METADATA_ATTRIBUTES.each_with_object({}) do |attribute, result|
+            value = device_metadata[attribute] || device_metadata[attribute.to_s]
+            result[attribute] = value.to_s.strip.presence
+          end.compact
         end
 
         def with_upsert_retry
@@ -60,6 +83,9 @@ module RecordingStudio
       def normalize_attributes
         self.device_key = device_key.to_s.strip
         self.scope_key = scope_key.to_s.strip
+        DEVICE_METADATA_ATTRIBUTES.each do |attribute|
+          public_send("#{attribute}=", public_send(attribute).to_s.strip.presence)
+        end
         self.last_used_at ||= Time.current
       end
 

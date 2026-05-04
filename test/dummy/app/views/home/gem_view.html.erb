@@ -1,0 +1,20 @@
+<div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
+  <%= render FlatPack::Breadcrumb::Component.new(
+    show_back: true,
+    back_text: "Gem views",
+    back_icon: "chevron-left",
+    back_href: "/gem_views"
+  ) %>
+
+  <%= render FlatPack::PageTitle::Component.new(
+    title: File.basename(@gem_view_path),
+    subtitle: File.join("app/views", @gem_view_path),
+    variant: :h1
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    title: @gem_view_path,
+    language: "erb",
+    code: @gem_view_source
+  ) %>
+</div>
