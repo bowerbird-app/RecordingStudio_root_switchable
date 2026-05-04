@@ -72,32 +72,7 @@ jobs:
         DB_NAME: recording_studio_root_switchable_test
 
     - name: Verify dummy app root-switch demo
-      run: |
-        bundle exec rails db:seed
-        bundle exec rails runner <<'RUBY'
-          require "action_dispatch/testing/integration"
-          require "devise/test/integration_helpers"
-
-          class DummyRootSwitchDemo < ActionDispatch::IntegrationTest
-            include Devise::Test::IntegrationHelpers
-          end
-
-          test = DummyRootSwitchDemo.new(:root_switch_demo)
-          test.host!("localhost")
-          test.sign_in(User.find_by!(email: "admin@admin.com"))
-          test.get(
-            "/recording_studio_root_switchable/v1/root_switch",
-            params: { scope: "all_workspaces" },
-            headers: {
-              "HTTP_USER_AGENT" => "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
-            }
-          )
-
-          raise "Expected root switch page to render" unless test.response.successful?
-          body = test.response.body
-          raise "Missing scope label" unless body.include?("All workspaces")
-          raise "Missing seeded root label" unless body.include?("Studio Workspace")
-        RUBY
+      run: bundle exec rails test test/integration/root_switch_demo_test.rb
       working-directory: test/dummy
       env:
         RAILS_ENV: test
