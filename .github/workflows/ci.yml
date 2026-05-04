@@ -69,8 +69,8 @@ jobs:
 
     - name: Verify dummy app root-switch demo
       run: |
-        bundle exec rails db:seed RAILS_ENV=test
-        bundle exec rails runner '
+        bundle exec rails db:seed
+        bundle exec rails runner <<'RUBY'
           require "action_dispatch/testing/integration"
           require "devise/test/integration_helpers"
 
@@ -93,10 +93,15 @@ jobs:
           body = test.response.body
           raise "Missing scope label" unless body.include?("All workspaces")
           raise "Missing seeded root label" unless body.include?("Studio Workspace")
-        '
+        RUBY
       working-directory: test/dummy
       env:
+        RAILS_ENV: test
         DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_root_switchable_test
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_USER: postgres
+        DB_PASSWORD: postgres
 
     - name: Run RuboCop
       run: bundle exec rubocop
