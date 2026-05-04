@@ -35,6 +35,8 @@ bin/rails generate recording_studio_root_switchable:migrations
 bin/rails db:migrate
 ```
 
+If you generated an earlier copy of the selection migration before the actor compatibility fix, rerun `bin/rails generate recording_studio_root_switchable:migrations` so the follow-up actor-id conversion migration is copied into your host app.
+
 ## Host app setup
 
 Include the controller concern anywhere you want request-local helper methods:

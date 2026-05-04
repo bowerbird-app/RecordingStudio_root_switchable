@@ -23,7 +23,7 @@ module RecordingStudio
         @supported_if = ->(**) { true }
         @available_roots = method(:default_available_roots)
         @default_root = ->(roots:, **) { roots.first }
-        @access_check = method(:default_access_check)
+        @access_check = method(:default_access_allowed?)
         @validity_check = ->(recording:, **) { recording.present? && recording.parent_recording_id.nil? }
         @root_label = method(:default_root_label)
         @root_description = method(:default_root_description)
@@ -39,56 +39,56 @@ module RecordingStudio
         end
       end
 
-      def supported?(**kwargs)
-        !!resolve_callable(supported_if, **kwargs)
+      def supported?(**)
+        !!resolve_callable(supported_if, **)
       rescue StandardError
         false
       end
 
-      def label_for(**kwargs)
-        resolve_callable(label, **kwargs)
+      def label_for(**)
+        resolve_callable(label, **)
       end
 
-      def description_for(**kwargs)
-        resolve_callable(description, **kwargs)
+      def description_for(**)
+        resolve_callable(description, **)
       end
 
-      def available_roots_for(**kwargs)
-        Array(resolve_callable(available_roots, **kwargs))
+      def available_roots_for(**)
+        Array(resolve_callable(available_roots, **))
           .filter_map { |candidate| normalize_root_recording(candidate) }
-          .uniq { |recording| recording.id }
+          .uniq(&:id)
       end
 
-      def default_root_for(**kwargs)
-        normalize_root_recording(resolve_callable(default_root, **kwargs))
+      def default_root_for(**)
+        normalize_root_recording(resolve_callable(default_root, **))
       end
 
-      def allowed?(**kwargs)
-        !!resolve_callable(access_check, **kwargs)
+      def allowed?(**)
+        !!resolve_callable(access_check, **)
       rescue StandardError
         false
       end
 
-      def valid?(**kwargs)
-        !!resolve_callable(validity_check, **kwargs)
+      def valid?(**)
+        !!resolve_callable(validity_check, **)
       rescue StandardError
         false
       end
 
-      def root_label_for(**kwargs)
-        resolve_callable(root_label, **kwargs)
+      def root_label_for(**)
+        resolve_callable(root_label, **)
       end
 
-      def root_description_for(**kwargs)
-        resolve_callable(root_description, **kwargs)
+      def root_description_for(**)
+        resolve_callable(root_description, **)
       end
 
       private
 
-      def resolve_callable(value, **kwargs)
+      def resolve_callable(value, **)
         return value unless value.respond_to?(:call)
 
-        value.call(**kwargs)
+        value.call(**)
       end
 
       def normalize_root_recording(candidate)
@@ -110,7 +110,7 @@ module RecordingStudio
         end
       end
 
-      def default_access_check(actor:, recording:, **)
+      def default_access_allowed?(actor:, recording:, **)
         if defined?(::RecordingStudioAccessible) && ::RecordingStudioAccessible.respond_to?(:authorized?)
           actor.present? && ::RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: :view)
         else

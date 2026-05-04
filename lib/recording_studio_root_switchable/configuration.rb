@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "active_support/core_ext/integer/time"
+
 module RecordingStudioRootSwitchable
   class Configuration
     DEFAULT_PAGE_COPY = {

@@ -10,7 +10,7 @@ module RecordingStudio
           end
         end
 
-        def initialize(controller: nil, actor: nil, device_key: nil, root_recording_id:, scope_key:)
+        def initialize(root_recording_id:, scope_key:, controller: nil, actor: nil, device_key: nil)
           @controller = controller
           @actor = actor
           @device_key = device_key
@@ -32,7 +32,13 @@ module RecordingStudio
 
           roots = available_roots_for(scope)
           root_recording = roots.find { |root| root.id.to_s == @root_recording_id.to_s }
-          return failure_result(errors: ["Selected root is not available for this scope."], scope: scope, available_roots: roots) unless root_recording
+          unless root_recording
+            return failure_result(
+              errors: ["Selected root is not available for this scope."],
+              scope: scope,
+              available_roots: roots
+            )
+          end
 
           selection = RecordingStudio::RootSwitchable::Selection.upsert_for(
             actor: @actor,
@@ -54,8 +60,12 @@ module RecordingStudio
             selected_via: :persisted,
             selection: selection
           )
-        rescue ActiveRecord::RecordInvalid => error
-          failure_result(errors: Array(error.record.errors.full_messages.presence || error.message), scope: scope, available_roots: roots)
+        rescue ActiveRecord::RecordInvalid => e
+          failure_result(
+            errors: Array(e.record.errors.full_messages.presence || e.message),
+            scope: scope,
+            available_roots: roots
+          )
         end
 
         private

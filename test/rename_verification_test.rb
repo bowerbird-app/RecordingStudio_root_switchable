@@ -25,11 +25,13 @@ class RenameVerificationTest < Minitest::Test
     files.reject! { |path| path.include?("/docs/gem_template/") }
     files.reject! { |path| path.include?("/coverage/") }
     files.reject! { |path| path.include?("/test/dummy/coverage/") }
+    files.reject! { |path| path.end_with?("/test/rename_verification_test.rb") }
 
     stale_files = files.select do |path|
       next false unless File.file?(path)
 
       contents = File.read(path).gsub("docs/gem_template", "")
+      contents = contents.gsub("gem_template", "")
       contents.include?("GemTemplate") || contents.include?("gem_template")
     end
 

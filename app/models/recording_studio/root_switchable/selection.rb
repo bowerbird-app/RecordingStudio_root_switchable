@@ -22,8 +22,8 @@ module RecordingStudio
         end
 
         def upsert_for(actor:, device_key:, scope_key:, root_recording:)
-          selection = lookup(actor: actor, device_key: device_key, scope_key: scope_key) ||
-                       new(actor: actor, device_key: device_key, scope_key: scope_key)
+          selection = lookup(actor: actor, device_key: device_key, scope_key: scope_key)
+          selection ||= new(actor: actor, device_key: device_key, scope_key: scope_key)
           selection.root_recording = root_recording
           selection.last_used_at = Time.current
           selection.save!

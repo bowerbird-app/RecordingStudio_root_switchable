@@ -37,11 +37,11 @@ grant_access = lambda do |actor:, role:, workspace_name:|
 end
 
 Current.actor = admin
-%w[Studio Workspace Client Alpha Client Beta].each do |workspace_name|
+["Studio Workspace", "Client Alpha", "Client Beta"].each do |workspace_name|
   grant_access.call(actor: admin, role: :admin, workspace_name: workspace_name)
 end
 
-%w[Studio Workspace Client Alpha].each do |workspace_name|
+["Studio Workspace", "Client Alpha"].each do |workspace_name|
   grant_access.call(actor: viewer, role: :view, workspace_name: workspace_name)
 end
 

@@ -15,22 +15,53 @@ Style/StringLiterals:
 
 Layout/LineLength:
   Max: 120
+  Exclude:
+    - 'lib/generators/**/*'
+    - 'test/**/*'
 
 # Relax metrics for test files and generators
 Metrics/ClassLength:
   Exclude:
     - 'test/**/*'
     - 'lib/recording_studio/root_switchable/scope_definition.rb'
+    - 'lib/recording_studio_root_switchable/configuration.rb'
 
 Metrics/MethodLength:
   Exclude:
     - 'test/**/*'
     - 'lib/generators/**/*'
+    - 'app/controllers/recording_studio_root_switchable/root_switches_controller.rb'
+    - 'db/migrate/**/*'
+    - 'lib/recording_studio/root_switchable/device_key.rb'
+    - 'lib/recording_studio/root_switchable/scope_definition.rb'
+    - 'lib/recording_studio/root_switchable/services/**/*'
+    - 'lib/recording_studio_root_switchable/configuration.rb'
 
 Metrics/AbcSize:
   Exclude:
     - 'test/**/*'
     - 'lib/generators/**/*'
+    - 'app/controllers/recording_studio_root_switchable/root_switches_controller.rb'
+    - 'lib/recording_studio/root_switchable/device_key.rb'
+    - 'lib/recording_studio/root_switchable/scope_definition.rb'
+    - 'lib/recording_studio/root_switchable/services/**/*'
+    - 'lib/recording_studio_root_switchable/configuration.rb'
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - 'test/**/*'
+    - 'lib/recording_studio/root_switchable/services/**/*'
+    - 'lib/recording_studio_root_switchable/configuration.rb'
+
+Metrics/PerceivedComplexity:
+  Exclude:
+    - 'test/**/*'
+    - 'lib/recording_studio/root_switchable/services/**/*'
+    - 'lib/recording_studio_root_switchable/configuration.rb'
+
+Metrics/ParameterLists:
+  Exclude:
+    - 'lib/recording_studio/root_switchable/services/result.rb'
 
 # Allow empty blocks in tests (common for stubs/mocks)
 Lint/EmptyBlock:

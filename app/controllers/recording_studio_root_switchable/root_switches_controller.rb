@@ -19,7 +19,7 @@ module RecordingStudioRootSwitchable
       )
 
       if result.success?
-        redirect_to root_switch_path(scope: @scope.key), notice: "#{selected_root_label(result.root_recording)} is now active."
+        redirect_to root_switch_path(scope: @scope.key), notice: switch_success_notice(result.root_recording)
       else
         prepare_page(result: result)
         flash.now[:alert] = result.errors.to_sentence
@@ -69,6 +69,10 @@ module RecordingStudioRootSwitchable
         device_key: RecordingStudio::RootSwitchable::Current.device_key,
         recording: root_recording
       )
+    end
+
+    def switch_success_notice(root_recording)
+      "#{selected_root_label(root_recording)} is now active."
     end
 
     def root_switch_params
