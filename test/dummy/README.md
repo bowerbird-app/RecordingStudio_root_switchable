@@ -1,14 +1,15 @@
 # Dummy App
 
-This Rails app exists to validate the Recording Studio addon template in a real host application.
+This Rails app exists to validate RecordingStudioRootSwitchable in a real host application.
 
 ## What It Covers
 
 - Devise authentication with a seeded admin user
 - `Current.actor` wiring for Recording Studio events
-- Root workspace and root recording setup
-- FlatPack layout integration and Tailwind source scanning
-- Mounted `RecordingStudio::Engine` route behavior inside a host app
+- Multiple accessible root recordings
+- Two configured root-switch scopes (`all_workspaces` and `client_workspaces`)
+- Device-key-backed selection persistence through `RecordingStudio::RootSwitchable::ControllerSupport`
+- FlatPack layout integration and mounted engine routes for RecordingStudio, RecordingStudioAccessible, and RecordingStudioRootSwitchable
 
 ## Quick Start
 
@@ -20,16 +21,22 @@ bin/dev
 
 Then open the app and sign in with:
 
+- The sign-in form is prefilled with the seeded admin demo user.
 - Email: `admin@admin.com`
 - Password: `Password`
 
+These seeded credentials are for local demo use only.
+
 ## Useful Routes
 
-- `/` - dummy app home page and template guidance
+- `/` - dummy app home page and root-switch summary
 - `/recording_studio` - mounted Recording Studio engine
+- `/recording_studio_accessible` - mounted Recording Studio Accessible engine
+- `/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces` - root switch page for all accessible workspace roots
+- `/recording_studio_root_switchable/v1/root_switch?scope=client_workspaces` - root switch page filtered to client workspaces
 - `/users/sign_in` - Devise sign-in page
 - `/up` - Rails health check
 
 ## Why This App Exists
 
-Use this app to verify the generated addon experience before renaming the gem or copying patterns into another host app. If a layout, route, asset source, or Recording Studio initializer change breaks here, the template likely needs adjustment before reuse.
+Use this app to verify the root-switching addon end to end. It demonstrates per-device persistence, actor-aware access filtering, multiple scopes, and fallback to the default accessible root when a saved selection no longer qualifies.

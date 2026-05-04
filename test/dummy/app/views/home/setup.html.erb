@@ -1,0 +1,29 @@
+<div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Setup",
+    subtitle: "Install the gem, copy the engine migrations, and wire the controller support into your host app.",
+    variant: :h1
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    title: "Host app setup",
+    language: "ruby",
+    code: <<~CODE
+gem "recording_studio"
+gem "recording_studio_accessible"
+gem "recording_studio_root_switchable"
+
+bundle install
+bin/rails generate recording_studio_root_switchable:install
+bin/rails generate recording_studio_root_switchable:migrations
+bin/rails db:migrate
+
+class ApplicationController &lt; ActionController::Base
+  before_action :authenticate_user!
+  before_action { Current.actor = current_user }
+
+  include RecordingStudio::RootSwitchable::ControllerSupport
+end
+CODE
+  ) %>
+</div>

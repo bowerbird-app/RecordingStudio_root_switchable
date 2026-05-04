@@ -1,0 +1,36 @@
+<div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Config",
+    subtitle: "Register the actor resolver and one or more scopes so the root switcher can resolve available roots for each signed-in user.",
+    variant: :h1
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    title: "recording_studio_root_switchable.rb",
+    language: "ruby",
+    code: <<~CODE
+# current_actor_resolver tells the gem which actor to use for root lookup
+# on every request that includes ControllerSupport.
+RecordingStudioRootSwitchable.configure do |config|
+  config.current_actor_resolver = -&gt;(controller:) { Current.actor || controller.current_user }
+
+  # Optional: render the gem page inside your app layout instead of the gem blank layout.
+  config.layout = :application_layout
+
+  # Each scope defines a switcher tab and the set of roots available inside it.
+  config.scope :all_workspaces do |scope|
+    scope.label = "All workspaces"
+    scope.description = "Every accessible workspace root"
+
+    # available_roots receives the resolved actor and should return root recordings.
+    scope.available_roots = lambda do |actor:, **|
+      RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
+    end
+
+    # default_root chooses the initial selection when the device has no saved root yet.
+    scope.default_root = -&gt;(roots:, **) { roots.first }
+  end
+end
+CODE
+  ) %>
+</div>

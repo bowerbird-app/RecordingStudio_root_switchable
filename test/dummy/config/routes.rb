@@ -5,6 +5,8 @@ Rails.application.routes.draw do
   # Keep legacy links working by redirecting the base path to the app home.
   get "/recording_studio", to: redirect("/"), as: nil
   mount RecordingStudio::Engine, at: "/recording_studio"
+  mount RecordingStudioAccessible::Engine, at: "/recording_studio_accessible"
+  mount RecordingStudioRootSwitchable::Engine, at: "/recording_studio_root_switchable"
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -17,5 +19,13 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
+  get "setup", to: "home#setup"
+  get "config", to: "home#configuration"
+  get "usage", to: "home#usage"
+  get "switch_log", to: "home#switch_log"
+   get "persistence", to: redirect("/switch_log")
+  get "method", to: "home#method_docs"
+  get "gem_views", to: "home#gem_views"
+  get "gem_views/*view_path", to: "home#gem_view", as: :gem_view
   root "home#index"
 end

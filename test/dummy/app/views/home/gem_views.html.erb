@@ -1,0 +1,16 @@
+<div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Gem views",
+    subtitle: "ERB templates currently shipped by recording_studio_root_switchable.",
+    variant: :h1
+  ) %>
+
+  <%= render FlatPack::List::Component.new(class: "w-full") do %>
+    <% @gem_views.each do |view| %>
+      <%= render FlatPack::List::Item.new(href: view.fetch(:href), hover: true) do %>
+        <div class="font-semibold"><%= view.fetch(:name) %></div>
+        <div class="text-sm text-[var(--surface-muted-content-color)]"><%= view.fetch(:path) %></div>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

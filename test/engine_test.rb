@@ -1,156 +1,132 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "fileutils"
+require "logger"
+require "tmpdir"
 
 class EngineTest < Minitest::Test
   def setup
-    @original_configuration = GemTemplate.instance_variable_get(:@configuration)
-    GemTemplate.instance_variable_set(:@configuration, GemTemplate::Configuration.new)
+    @original_configuration = RecordingStudioRootSwitchable.instance_variable_get(:@configuration)
+    RecordingStudioRootSwitchable.reset_configuration!
   end
 
   def teardown
-    GemTemplate.configuration.hooks.clear!
-    GemTemplate.instance_variable_set(:@configuration, @original_configuration)
+    RecordingStudioRootSwitchable.instance_variable_set(:@configuration, @original_configuration)
   end
 
-  def test_before_and_after_initialize_initializers_run_hooks
-    before_called = false
-    after_called = false
-
-    GemTemplate.configuration.hooks.before_initialize { |_engine| before_called = true }
-    GemTemplate.configuration.hooks.after_initialize { |_engine| after_called = true }
-
-    find_initializer("gem_template.before_initialize").block.call(Object.new)
-    find_initializer("gem_template.after_initialize").block.call(Object.new)
-
-    assert before_called
-    assert after_called
-  end
-
-  def test_load_config_merges_config_sources_and_runs_on_configuration_hook
-    hook_called = false
-    hook_payload = nil
-    GemTemplate.configuration.hooks.on_configuration do |cfg|
-      hook_called = true
-      hook_payload = cfg
-    end
-
-    xcfg = Struct.new(:gem_template).new({ enable_feature_x: true })
-    app_config = Struct.new(:x).new(xcfg)
-    app = Struct.new(:config) do
+  def test_load_config_merges_config_for_and_x_config
+    x_config = Struct.new(:recording_studio_root_switchable).new(
+      { page_copy: { switch_action_label: "Use this root" } }
+    )
+    app_config = Struct.new(:x).new(x_config)
+    app = build_app(config: app_config, create_yaml_file: true) do
       def config_for(_name)
-        { api_key: "from_yaml", timeout: 12 }
+        { device_key_cookie_options: { same_site: :strict } }
       end
-    end.new(app_config)
+    end
 
-    find_initializer("gem_template.load_config").block.call(app)
+    find_initializer("recording_studio_root_switchable.load_config").block.call(app)
 
-    assert hook_called
-    assert_equal GemTemplate.configuration, hook_payload
-    assert_equal "from_yaml", GemTemplate.configuration.api_key
-    assert_equal 12, GemTemplate.configuration.timeout
-    assert_equal true, GemTemplate.configuration.enable_feature_x
+    assert_equal :strict, RecordingStudioRootSwitchable.configuration.device_key_cookie_options.fetch(:same_site)
+    assert_equal "Use this root", RecordingStudioRootSwitchable.configuration.page_copy.fetch(:switch_action_label)
   end
 
-  def test_load_config_handles_errors_and_each_pair_fallback
-    pair_config = Class.new do
-      def each_pair
-        yield(:timeout, 15)
-      end
-    end.new
-
-    xcfg = Struct.new(:gem_template).new(pair_config)
-    app_config = Struct.new(:x).new(xcfg)
-
-    app = Struct.new(:config) do
+  def test_load_config_initializer_runs_in_engine_instance_context
+    x_config = Struct.new(:recording_studio_root_switchable).new(nil)
+    app_config = Struct.new(:x).new(x_config)
+    app = build_app(config: app_config) do
       def config_for(_name)
-        raise "missing file"
+        { page_copy: { title: "Loaded from initializer" } }
       end
-    end.new(app_config)
+    end
+    File.write(File.join(app.root, "config", "recording_studio_root_switchable.yml"), "test: true\n")
 
-    find_initializer("gem_template.load_config").block.call(app)
+    RecordingStudioRootSwitchable::Engine.instance.instance_exec(
+      app,
+      &find_initializer("recording_studio_root_switchable.load_config").block
+    )
 
-    assert_equal 15, GemTemplate.configuration.timeout
+    assert_equal "Loaded from initializer", RecordingStudioRootSwitchable.configuration.page_copy.fetch(:title)
   end
 
-  def test_load_config_swallow_each_pair_errors
-    bad_pair_config = Class.new do
-      def each_pair
-        raise "bad pair"
-      end
-    end.new
-
-    xcfg = Struct.new(:gem_template).new(bad_pair_config)
-    app_config = Struct.new(:x).new(xcfg)
-    app = Struct.new(:config) do
+  def test_load_config_prefers_config_x_when_both_sources_set_the_same_key
+    x_config = Struct.new(:recording_studio_root_switchable).new(
+      { page_copy: { switch_action_label: "Use x config" } }
+    )
+    app_config = Struct.new(:x).new(x_config)
+    app = build_app(config: app_config, create_yaml_file: true) do
       def config_for(_name)
-        { api_key: "ok" }
+        { page_copy: { switch_action_label: "Use yaml config" } }
       end
-    end.new(app_config)
+    end
 
-    # Should not raise even if xcfg.each_pair fails.
-    find_initializer("gem_template.load_config").block.call(app)
+    find_initializer("recording_studio_root_switchable.load_config").block.call(app)
 
-    assert_equal "ok", GemTemplate.configuration.api_key
+    assert_equal "Use x config", RecordingStudioRootSwitchable.configuration.page_copy.fetch(:switch_action_label)
   end
 
-  def test_apply_extension_initializers_register_active_support_on_load_callbacks
-    to_prepare_blocks = []
-    config_stub = Object.new
-    config_stub.define_singleton_method(:to_prepare) do |&block|
-      to_prepare_blocks << block
-    end
+  def test_load_config_ignores_missing_optional_yaml_file
+    x_config = Struct.new(:recording_studio_root_switchable).new({ page_copy: { title: "Configured via x" } })
+    app_config = Struct.new(:x).new(x_config)
+    log_output = StringIO.new
+    logger = Logger.new(log_output)
+    app = build_app(config: app_config, logger: logger)
 
-    GemTemplate::Engine.stub(:config, config_stub) do
-      find_initializer("gem_template.apply_model_extensions").block.call
-      find_initializer("gem_template.apply_controller_extensions").block.call
-    end
+    find_initializer("recording_studio_root_switchable.load_config").block.call(app)
 
-    assert_equal 2, to_prepare_blocks.size
+    assert_equal "Configured via x", RecordingStudioRootSwitchable.configuration.page_copy.fetch(:title)
+    assert_includes log_output.string, "config/recording_studio_root_switchable.yml not found; using config.x.recording_studio_root_switchable"
   end
 
-  def test_apply_model_extensions_adds_registered_methods_once
-    model_class = Class.new do
-      def self.name
-        "ExampleRecord"
+  def test_load_config_wraps_unexpected_config_for_errors_in_configuration_error
+    x_config = Struct.new(:recording_studio_root_switchable).new(nil)
+    app_config = Struct.new(:x).new(x_config)
+    app = build_app(config: app_config, create_yaml_file: true) do
+      def config_for(_name)
+        raise "YAML syntax error occurred while parsing /tmp/recording_studio_root_switchable.yml"
       end
     end
 
-    GemTemplate.configuration.hooks.extend_model(:ExampleRecord) do
-      def template_extension_method
-        :applied
-      end
+    error = assert_raises(RecordingStudioRootSwitchable::ConfigurationError) do
+      find_initializer("recording_studio_root_switchable.load_config").block.call(app)
     end
 
-    GemTemplate::Engine.apply_model_extensions(model_class)
-    GemTemplate::Engine.apply_model_extensions(model_class)
-
-    instance = model_class.new
-    assert_equal :applied, instance.template_extension_method
+    assert_includes error.message, "YAML syntax error occurred while parsing"
+    assert_equal "config/recording_studio_root_switchable.yml", error.source
+    assert_equal :recording_studio_root_switchable, error.config_key
   end
 
-  def test_apply_controller_extensions_matches_demodulized_name
-    controller_class = Class.new do
-      def self.name
-        "Admin::DashboardController"
+  def test_load_config_rejects_invalid_x_config_payloads
+    x_config = Struct.new(:recording_studio_root_switchable).new(["invalid"])
+    app_config = Struct.new(:x).new(x_config)
+    app = build_app(config: app_config) do
+      def config_for(_name)
+        nil
       end
     end
 
-    GemTemplate.configuration.hooks.extend_controller(:DashboardController) do
-      def template_controller_extension
-        :applied
-      end
+    error = assert_raises(RecordingStudioRootSwitchable::ConfigurationError) do
+      find_initializer("recording_studio_root_switchable.load_config").block.call(app)
     end
 
-    GemTemplate::Engine.apply_controller_extensions(controller_class)
-
-    instance = controller_class.new
-    assert_equal :applied, instance.template_controller_extension
+    assert_equal "config.x.recording_studio_root_switchable", error.source
+    assert_includes error.message, "expected a hash-like value"
   end
 
   private
 
+  def build_app(config:, logger: nil, create_yaml_file: false, &)
+    root = Dir.mktmpdir
+    config_dir = File.join(root, "config")
+    FileUtils.mkdir_p(config_dir)
+    File.write(File.join(config_dir, "recording_studio_root_switchable.yml"), "test: true\n") if create_yaml_file
+
+    klass = Struct.new(:config, :root, :logger, &)
+    klass.new(config, root, logger)
+  end
+
   def find_initializer(name)
-    GemTemplate::Engine.initializers.find { |initializer| initializer.name == name }
+    RecordingStudioRootSwitchable::Engine.initializers.find { |initializer| initializer.name == name }
   end
 end

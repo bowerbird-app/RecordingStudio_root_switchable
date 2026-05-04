@@ -2,7 +2,7 @@
   <% sidebar.header do %>
     <%= render FlatPack::Sidebar::Header::Component.new(
       brand_abbr: "RS",
-      title: "Addon Template",
+      title: "Root Switchable",
       subtitle: "Recording Studio"
     ) %>
   <% end %>
@@ -16,15 +16,39 @@
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Recording Studio",
-        href: "/recording_studio",
+        label: "Setup",
+        href: "/setup",
         icon: :folder
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Health",
-        href: "/up",
-        icon: :activity
+        label: "Config",
+        href: "/config",
+        icon: :cog_6_tooth
+      ) %>
+
+      <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Usage",
+        href: "/usage",
+        icon: :light_bulb
+      ) %>
+
+      <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Switch log",
+        href: "/switch_log",
+        icon: :server_stack
+      ) %>
+
+      <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Method",
+        href: "/method",
+        icon: :book_open
+      ) %>
+
+      <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Gem views",
+        href: "/gem_views",
+        icon: :folder
       ) %>
 
     </nav>
@@ -34,7 +58,7 @@
     <%= render FlatPack::Sidebar::Footer::Component.new(class: "text-sm text-[var(--surface-muted-content-color)]") do %>
       <%= render FlatPack::Sidebar::Item::Component.new(
         label: "Sign out",
-        href: destroy_user_session_path,
+        href: main_app.destroy_user_session_path,
         icon: :lock,
         class: "mx-0",
         data: { turbo_method: :delete }
