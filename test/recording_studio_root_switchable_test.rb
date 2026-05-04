@@ -13,8 +13,10 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
 
   def test_public_current_helpers_are_exposed
     RecordingStudio::RootSwitchable::Current.scope_key = "roots"
+    RecordingStudio::RootSwitchable::Current.root = :example_root
 
     assert_equal "roots", RecordingStudio::RootSwitchable.current_root_scope_key
+    assert_equal :example_root, RecordingStudio::RootSwitchable::Current.root
   ensure
     RecordingStudio::RootSwitchable::Current.reset
   end

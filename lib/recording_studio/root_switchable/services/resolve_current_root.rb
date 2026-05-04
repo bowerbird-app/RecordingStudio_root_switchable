@@ -34,6 +34,7 @@ module RecordingStudio
 
           if selection && roots.any? { |root| root.id == selection.root_recording_id }
             root_recording = roots.find { |root| root.id == selection.root_recording_id }
+            selection.update_columns(last_used_at: Time.current) if selection.respond_to?(:update_columns)
             selected_via = :persisted
           elsif selection
             selection.destroy

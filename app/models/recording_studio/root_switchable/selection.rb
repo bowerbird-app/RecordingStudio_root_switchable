@@ -9,6 +9,7 @@ module RecordingStudio
       belongs_to :root_recording, class_name: "RecordingStudio::Recording"
 
       validates :device_key, :scope_key, :root_recording, presence: true
+      validates :last_used_at, presence: true
       validate :actor_reference_is_complete
       validate :root_recording_is_a_root
 
@@ -22,8 +23,9 @@ module RecordingStudio
 
         def upsert_for(actor:, device_key:, scope_key:, root_recording:)
           selection = lookup(actor: actor, device_key: device_key, scope_key: scope_key) ||
-                      new(actor: actor, device_key: device_key, scope_key: scope_key)
+                       new(actor: actor, device_key: device_key, scope_key: scope_key)
           selection.root_recording = root_recording
+          selection.last_used_at = Time.current
           selection.save!
           selection
         end
@@ -34,6 +36,7 @@ module RecordingStudio
       def normalize_attributes
         self.device_key = device_key.to_s.strip
         self.scope_key = scope_key.to_s.strip
+        self.last_used_at ||= Time.current
       end
 
       def actor_reference_is_complete

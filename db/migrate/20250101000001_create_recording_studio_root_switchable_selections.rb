@@ -8,6 +8,7 @@ class CreateRecordingStudioRootSwitchableSelections < ActiveRecord::Migration[8.
       t.string :device_key, null: false
       t.uuid :root_recording_id, null: false
       t.string :scope_key, null: false
+      t.datetime :last_used_at, null: false
 
       t.timestamps
     end

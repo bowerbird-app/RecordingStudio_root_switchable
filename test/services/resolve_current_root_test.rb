@@ -19,7 +19,11 @@ class ResolveCurrentRootTest < Minitest::Test
   def test_prefers_persisted_selection_when_it_is_still_available
     alpha_root = RootRecord.new(id: "alpha", recordable: Struct.new(:name).new("Alpha"), parent_recording_id: nil)
     beta_root = RootRecord.new(id: "beta", recordable: Struct.new(:name).new("Beta"), parent_recording_id: nil)
-    selection = Struct.new(:root_recording_id).new("beta")
+    selection = Struct.new(:root_recording_id, :last_used_at) do
+      def update_columns(attributes)
+        self.last_used_at = attributes.fetch(:last_used_at)
+      end
+    end.new("beta", nil)
 
     configure_roots([alpha_root, beta_root])
 
@@ -34,6 +38,7 @@ class ResolveCurrentRootTest < Minitest::Test
       assert_equal "beta", result.root_recording.id
       assert_equal :persisted, result.selected_via
       assert_equal "beta", RecordingStudio::RootSwitchable.current_root_recording.id
+      assert selection.last_used_at
     end
   end
 

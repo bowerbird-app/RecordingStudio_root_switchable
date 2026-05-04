@@ -14,6 +14,8 @@ It lets a host app resolve and persist a current root recording per actor, per d
 - a dedicated FlatPack-powered v1 root-switch page
 - default access integration through `RecordingStudioAccessible`
 
+This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
+
 ## Installation
 
 Add the gems to your host app:
@@ -63,6 +65,27 @@ RecordingStudioRootSwitchable.configure do |config|
 end
 ```
 
+### Actor expectations
+
+The gem is actor-agnostic. It persists selections through a polymorphic `actor` reference and expects the host app to expose the current actor through `Current.actor` or a custom `config.current_actor_resolver`.
+
+### Device-key persistence
+
+Selections are remembered by `actor + device_key + scope_key`.
+
+- `device_key` is a generated random identifier stored in an encrypted cookie
+- clearing cookies creates a new device context
+- the cookie does not replace authentication; access is revalidated against the current actor on every restore
+
+### Scope keys
+
+Scope keys are host-defined identifiers such as `workspace`, `team`, or `account`. Each scope decides:
+
+- which roots are available
+- which root is the default
+- how labels and descriptions are rendered
+- whether a candidate root is valid and accessible
+
 ## Public API
 
 ```ruby
@@ -83,6 +106,7 @@ RecordingStudio::RootSwitchable.resolve_current_root(
 
 - selections point at existing `RecordingStudio::Recording` rows
 - only root recordings are valid selections
+- selections record `last_used_at` so host apps can inspect recent usage
 - saved selections are invalidated when they fall out of scope or fail access/validity checks
 - fallback uses the configured default root for the active scope, then the first available root
 - default access checks use `RecordingStudioAccessible.authorized?`
@@ -99,6 +123,12 @@ The gem exposes a dedicated v1 page at:
 
 ```text
 /recording_studio_root_switchable/v1/root_switch?scope=all_workspaces
+```
+
+From a mounted host app, you can link to it with the engine route helper:
+
+```ruby
+recording_studio_root_switchable.root_switch_path(scope: "all_workspaces")
 ```
 
 ## Dummy app
@@ -125,6 +155,13 @@ bundle exec rake test
 ```
 
 If dummy app boot, migrations, or assets change, also validate the dummy app flow used in CI.
+
+## V1 non-goals
+
+- no business-specific workspace/account semantics in gem internals
+- no mutation of the RecordingStudio graph when switching roots
+- no automatic global query scoping across the host app
+- no dropdown-style switcher; v1 intentionally uses a dedicated page flow
 
 ## Documentation
 
