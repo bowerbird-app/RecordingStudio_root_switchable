@@ -71,18 +71,19 @@ pages_by_workspace = {
 
 root_recordings = workspace_names.index_with do |name|
   workspace = Workspace.find_or_create_by!(name: name)
-  RecordingStudio::Recording.unscoped.find_or_create_by!(recordable: workspace, parent_recording_id: nil)
+  RecordingStudio.root_recording_for(workspace)
 end
 
 grant_access = lambda do |actor:, role:, workspace_name:|
-  access = RecordingStudio::Access.find_or_create_by!(actor: actor, role: role)
   root_recording = root_recordings.fetch(workspace_name)
 
-  RecordingStudio::Recording.unscoped.find_or_create_by!(
-    parent_recording_id: root_recording.id,
-    recordable: access,
-    root_recording_id: root_recording.id
+  result = RecordingStudioAccessible.grant_access(
+    recording: root_recording,
+    actor: actor,
+    role: role,
+    manager_actor: admin
   )
+  raise result.error if result.failure?
 end
 
 Current.actor = admin

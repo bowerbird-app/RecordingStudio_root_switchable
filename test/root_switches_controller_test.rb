@@ -56,6 +56,41 @@ class RootSwitchesControllerTest < Minitest::Test
     end
   end
 
+  def test_after_switch_redirect_location_rejects_protocol_relative_redirects
+    RecordingStudioRootSwitchable.configuration.after_switch_redirect = lambda do |return_to:, **|
+      return_to
+    end
+
+    @controller.stub(:root_switch_params, ActionController::Parameters.new(return_to: "//example.com/phish")) do
+      assert_equal "/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces",
+                   @controller.send(:after_switch_redirect_location, @result)
+    end
+  end
+
+  def test_after_switch_redirect_location_rejects_malformed_redirects
+    RecordingStudioRootSwitchable.configuration.after_switch_redirect = lambda do |return_to:, **|
+      return_to
+    end
+
+    @controller.stub(:root_switch_params, ActionController::Parameters.new(return_to: "/bad[uri")) do
+      assert_equal "/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces",
+                   @controller.send(:after_switch_redirect_location, @result)
+    end
+  end
+
+  def test_return_anchor_url_prefers_safe_return_to_param
+    @controller.stub(:params, ActionController::Parameters.new(return_to: "/projects/current")) do
+      assert_equal "/projects/current", @controller.send(:return_anchor_url)
+    end
+  end
+
+  def test_return_anchor_url_rejects_unsafe_return_to_param
+    @controller.stub(:params, ActionController::Parameters.new(return_to: "https://example.com/phish")) do
+      assert_equal "/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces",
+                   @controller.send(:return_anchor_url)
+    end
+  end
+
   def test_after_switch_redirect_location_supports_nominated_path_string
     RecordingStudioRootSwitchable.configuration.after_switch_redirect = "/workspace_home"
 

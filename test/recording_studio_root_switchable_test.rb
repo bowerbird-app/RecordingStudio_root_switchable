@@ -73,11 +73,13 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes layout_source, "yield"
   end
 
-  def test_root_switch_view_uses_breadcrumb_and_list_based_selector_without_item_subtitles
+  def test_root_switch_view_uses_page_nav_and_list_based_selector_without_item_subtitles
     view_path = File.expand_path("../app/views/recording_studio_root_switchable/root_switches/show.html.erb", __dir__)
     view_source = File.read(view_path)
 
-    assert_includes view_source, "FlatPack::Breadcrumb::Component"
+    assert_includes view_source, "FlatPack::PageNav::Component"
+    assert_includes view_source, "anchor_url: @return_anchor_url"
+    refute_includes view_source, "FlatPack::Breadcrumb::Component"
     assert_includes view_source, "FlatPack::PageTitle::Component"
     assert_includes view_source, 'title: "Change #{@root_type_label}"'
     assert_includes view_source, "FlatPack::Card::Component"
@@ -86,7 +88,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes view_source, "FlatPack::List::Item.new"
     assert_includes view_source, "hover: true"
     assert_includes view_source, "form_with url: root_switch_path(scope: @scope.key), method: :patch, local: true"
-    assert_includes view_source, 'hidden_field_tag "root_switch[return_to]", params[:return_to]'
+    assert_includes view_source, 'hidden_field_tag "root_switch[return_to]", @safe_return_to'
     assert_includes view_source, "FlatPack::Button::Component"
     assert_includes view_source, 'text: "Change"'
     assert_includes view_source, "style: :default"
@@ -99,18 +101,18 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     refute_includes view_source, "@supported_scopes.each"
   end
 
-  def test_root_switch_view_renders_flash_before_breadcrumbs_and_title
+  def test_root_switch_view_renders_flash_before_page_nav_and_title
     view_path = File.expand_path("../app/views/recording_studio_root_switchable/root_switches/show.html.erb", __dir__)
     view_source = File.read(view_path)
 
     notice_index = view_source.index("flash[:notice]")
-    breadcrumb_index = view_source.index("FlatPack::Breadcrumb::Component")
+    page_nav_index = view_source.index("FlatPack::PageNav::Component")
     title_index = view_source.index("FlatPack::PageTitle::Component")
 
     refute_nil notice_index
-    refute_nil breadcrumb_index
+    refute_nil page_nav_index
     refute_nil title_index
-    assert_operator notice_index, :<, breadcrumb_index
+    assert_operator notice_index, :<, page_nav_index
     assert_operator notice_index, :<, title_index
   end
 end

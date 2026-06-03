@@ -22,7 +22,7 @@ RecordingStudioRootSwitchable.configure do |config|
     scope.label = "All workspaces"
     scope.description = "Every accessible workspace root"
 
-    # available_roots receives the resolved actor and should return root recordings.
+    # available_roots receives the resolved actor and should return declared root recordings.
     scope.available_roots = lambda do |actor:, **|
       RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
     end

@@ -68,6 +68,7 @@ module RecordingStudioRootSwitchable
       )
       @page_copy = page_copy
       @root_type_label = root_type_label
+      @safe_return_to = safe_internal_path(params[:return_to])
       @return_anchor_url = return_anchor_url
     end
 

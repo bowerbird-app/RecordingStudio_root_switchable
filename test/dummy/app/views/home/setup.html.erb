@@ -9,8 +9,8 @@
     title: "Host app setup",
     language: "ruby",
     code: <<~CODE
-gem "recording_studio"
-gem "recording_studio_accessible"
+gem "recording_studio", "~> 2.0"
+gem "recording_studio_accessible", "~> 0.2"
 gem "recording_studio_root_switchable"
 
 bundle install
@@ -23,6 +23,14 @@ class ApplicationController &lt; ActionController::Base
   before_action { Current.actor = current_user }
 
   include RecordingStudio::RootSwitchable::ControllerSupport
+end
+
+class Workspace &lt; ApplicationRecord
+  recording_studio_recordable label: "Workspace", root: true
+end
+
+class Page &lt; ApplicationRecord
+  recording_studio_recordable label: "Page", root: false, allowed_parent_types: ["Workspace"]
 end
 CODE
   ) %>

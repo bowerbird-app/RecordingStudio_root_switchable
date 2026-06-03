@@ -27,7 +27,7 @@
             text: current_root_recordable&.name || "None selected",
             size: :md,
             type: :link,
-            href: recording_studio_root_switchable.root_switch_path(scope: current_root_scope_key)
+            href: recording_studio_root_switchable.root_switch_path(scope: current_root_scope_key, return_to: request.fullpath)
           ) %>
         <% end %>
 

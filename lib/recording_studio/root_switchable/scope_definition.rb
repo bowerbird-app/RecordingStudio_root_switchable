@@ -99,7 +99,9 @@ module RecordingStudio
         ::RecordingStudio::Recording.unscoped.where(recordable: candidate).detect do |recording|
           default_valid_root?(recording: recording)
         end
-      rescue ::RecordingStudio::MissingRecordableDeclaration, ::RecordingStudio::RootNotAllowed
+      rescue StandardError => e
+        raise unless root_api_error?(e)
+
         nil
       end
 
@@ -120,13 +122,15 @@ module RecordingStudio
         return false unless defined?(::RecordingStudio) && ::RecordingStudio.respond_to?(:root_recording?)
 
         ::RecordingStudio.root_recording?(recording)
-      rescue ::RecordingStudio::MissingRecordableDeclaration, ::RecordingStudio::RootNotAllowed
+      rescue StandardError => e
+        raise unless root_api_error?(e)
+
         false
       end
 
       def recording_candidate?(candidate)
         return false if candidate.blank?
-        return candidate.is_a?(::RecordingStudio::Recording) if defined?(::RecordingStudio::Recording)
+        return true if defined?(::RecordingStudio::Recording) && candidate.is_a?(::RecordingStudio::Recording)
 
         candidate.respond_to?(:id) && candidate.respond_to?(:recordable)
       end
@@ -135,6 +139,13 @@ module RecordingStudio
         return false unless defined?(::RecordingStudio) && ::RecordingStudio.respond_to?(:root_allowed?)
 
         ::RecordingStudio.root_allowed?(recordable)
+      end
+
+      def root_api_error?(error)
+        %w[
+          RecordingStudio::MissingRecordableDeclaration
+          RecordingStudio::RootNotAllowed
+        ].include?(error.class.name)
       end
 
       def default_root_label(recording:, **)

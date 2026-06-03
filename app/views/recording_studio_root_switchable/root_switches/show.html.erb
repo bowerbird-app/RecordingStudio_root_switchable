@@ -39,8 +39,8 @@
               <% else %>
                 <%= form_with url: root_switch_path(scope: @scope.key), method: :patch, local: true do %>
                   <%= hidden_field_tag "root_switch[root_recording_id]", root_recording.id %>
-                  <% if params[:return_to].present? %>
-                    <%= hidden_field_tag "root_switch[return_to]", params[:return_to] %>
+                  <% if @safe_return_to.present? %>
+                    <%= hidden_field_tag "root_switch[return_to]", @safe_return_to %>
                   <% end %>
                   <%= render FlatPack::Button::Component.new(
                     text: "Change",

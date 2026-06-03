@@ -41,7 +41,7 @@ class HomeNavigationTest < Minitest::Test
     assert_includes top_nav, "text: current_root_recordable&.name || \"None selected\""
     assert_includes top_nav, "size: :md"
     assert_includes top_nav, "type: :link"
-    assert_includes top_nav, "href: recording_studio_root_switchable.root_switch_path(scope: current_root_scope_key)"
+    assert_includes top_nav, "href: recording_studio_root_switchable.root_switch_path(scope: current_root_scope_key, return_to: request.fullpath)"
 
     chip_index = top_nav.index("FlatPack::Chip::Component.new")
     avatar_index = top_nav.index("FlatPack::Avatar::Component.new")
