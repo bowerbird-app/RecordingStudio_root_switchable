@@ -98,18 +98,26 @@ module RecordingStudio
 
       def root_recording_is_a_root
         return if root_recording.blank?
-        return if defined?(::RecordingStudio) &&
-                  ::RecordingStudio.respond_to?(:root_recording?) &&
-                  ::RecordingStudio.root_recording?(root_recording)
+        return if valid_root_recording_reference?
 
         errors.add(:root_recording, "must reference a root recording")
       rescue StandardError => e
-        raise unless %w[
-          RecordingStudio::MissingRecordableDeclaration
-          RecordingStudio::RootNotAllowed
-        ].include?(e.class.name)
+        raise unless root_api_error?(e)
 
         errors.add(:root_recording, "must reference a root recording")
+      end
+
+      def valid_root_recording_reference?
+        defined?(::RecordingStudio) &&
+          ::RecordingStudio.respond_to?(:root_recording?) &&
+          ::RecordingStudio.root_recording?(root_recording)
+      end
+
+      def root_api_error?(error)
+        %w[
+          RecordingStudio::MissingRecordableDeclaration
+          RecordingStudio::RootNotAllowed
+        ].include?(error.class.name)
       end
     end
   end

@@ -96,13 +96,17 @@ module RecordingStudio
         return if candidate.blank? || !defined?(::RecordingStudio::Recording)
         return unless root_allowed?(candidate)
 
-        ::RecordingStudio::Recording.unscoped.where(recordable: candidate).detect do |recording|
-          default_valid_root?(recording: recording)
-        end
+        find_existing_root_recording_for(candidate)
       rescue StandardError => e
         raise unless root_api_error?(e)
 
         nil
+      end
+
+      def find_existing_root_recording_for(recordable)
+        ::RecordingStudio::Recording.unscoped.where(recordable: recordable).detect do |recording|
+          default_valid_root?(recording: recording)
+        end
       end
 
       def default_available_roots(actor:, **)

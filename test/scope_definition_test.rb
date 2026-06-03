@@ -46,7 +46,7 @@ class ScopeDefinitionTest < Minitest::Test
 
     with_recording_studio_method(:root_allowed?, ->(candidate) { candidate == recordable }) do
       with_recording_studio_method(:root_recording?, ->(recording) { recording == root }) do
-        RecordingStudio::Recording.stub(:unscoped, relation) do
+        with_recording_unscoped(relation) do
           assert_equal [root], scope.available_roots_for(actor: Object.new)
         end
       end
@@ -75,8 +75,27 @@ class ScopeDefinitionTest < Minitest::Test
   ensure
     if existed
       singleton.define_method(name, original)
-    else
-      singleton.remove_method(name) if singleton.method_defined?(name)
+    elsif singleton.method_defined?(name)
+      singleton.remove_method(name)
     end
+  end
+
+  def with_recording_unscoped(relation)
+    existed = RecordingStudio.const_defined?(:Recording, false)
+    recording_class = existed ? RecordingStudio.const_get(:Recording) : Class.new
+    RecordingStudio.const_set(:Recording, recording_class) unless existed
+    singleton = recording_class.singleton_class
+    unscoped_existed = recording_class.respond_to?(:unscoped)
+    original_unscoped = recording_class.method(:unscoped) if unscoped_existed
+    singleton.define_method(:unscoped) { relation }
+
+    yield
+  ensure
+    if unscoped_existed
+      singleton.define_method(:unscoped, original_unscoped)
+    elsif singleton&.method_defined?(:unscoped)
+      singleton.remove_method(:unscoped)
+    end
+    RecordingStudio.send(:remove_const, :Recording) unless existed
   end
 end
