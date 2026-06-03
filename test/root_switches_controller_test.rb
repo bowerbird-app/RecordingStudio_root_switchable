@@ -91,6 +91,12 @@ class RootSwitchesControllerTest < Minitest::Test
     end
   end
 
+  def test_root_switch_params_treats_malformed_scalar_payload_as_empty_params
+    @controller.stub(:params, ActionController::Parameters.new(root_switch: "bad")) do
+      assert_empty @controller.send(:root_switch_params)
+    end
+  end
+
   def test_after_switch_redirect_location_supports_nominated_path_string
     RecordingStudioRootSwitchable.configuration.after_switch_redirect = "/workspace_home"
 

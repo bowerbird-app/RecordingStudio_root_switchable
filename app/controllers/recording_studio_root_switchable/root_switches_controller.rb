@@ -61,11 +61,6 @@ module RecordingStudioRootSwitchable
       @resolution = result
       @available_roots = result.available_roots
       @selected_root = result.root_recording
-      @supported_scopes = RecordingStudioRootSwitchable.configuration.supported_scopes(
-        controller: self,
-        actor: RecordingStudio::RootSwitchable::Current.actor,
-        device_key: RecordingStudio::RootSwitchable::Current.device_key
-      )
       @page_copy = page_copy
       @root_type_label = root_type_label
       @safe_return_to = safe_internal_path(params[:return_to])
@@ -123,7 +118,7 @@ module RecordingStudioRootSwitchable
         return_to: root_switch_params[:return_to]
       )
 
-      safe_internal_path(configured_target) || default_after_switch_redirect_location
+      sanitize_after_switch_redirect(configured_target) || default_after_switch_redirect_location
     rescue StandardError
       default_after_switch_redirect_location
     end
@@ -162,7 +157,10 @@ module RecordingStudioRootSwitchable
     end
 
     def root_switch_params
-      params.fetch(:root_switch, {}).permit(:root_recording_id, :return_to)
+      raw_params = params.fetch(:root_switch, ActionController::Parameters.new)
+      return ActionController::Parameters.new.permit unless raw_params.respond_to?(:permit)
+
+      raw_params.permit(:root_recording_id, :return_to)
     end
   end
   # rubocop:enable Metrics/ClassLength

@@ -52,8 +52,19 @@ class ConfigurationTest < Minitest::Test
 
     assert_equal "Activate root", @configuration.page_copy.fetch(:switch_action_label)
     assert_equal :strict, @configuration.device_key_cookie_options.fetch(:same_site)
+    assert @configuration.device_key_cookie_options.fetch(:httponly)
+    assert @configuration.device_key_cookie_options.fetch(:expires)
     assert_equal "application", @configuration.layout
     assert_equal "/dashboard", @configuration.after_switch_redirect
+  end
+
+  def test_merge_preserves_default_device_cookie_options_when_partial_options_are_supplied
+    @configuration.merge!(device_key_cookie_options: { secure: true })
+
+    assert @configuration.device_key_cookie_options.fetch(:secure)
+    assert @configuration.device_key_cookie_options.fetch(:httponly)
+    assert_equal :lax, @configuration.device_key_cookie_options.fetch(:same_site)
+    assert @configuration.device_key_cookie_options.fetch(:expires)
   end
 
   def test_merge_rejects_unknown_top_level_keys

@@ -23,6 +23,7 @@ class HomeController < ApplicationController
 
   def switch_log
     @saved_sessions = RecordingStudio::RootSwitchable::Selection
+      .where(actor: current_user)
       .includes(:actor, root_recording: :recordable)
       .order(last_used_at: :desc)
   end
