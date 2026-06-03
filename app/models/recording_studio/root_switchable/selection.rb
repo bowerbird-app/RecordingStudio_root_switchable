@@ -97,8 +97,13 @@ module RecordingStudio
       end
 
       def root_recording_is_a_root
-        return if root_recording.blank? || root_recording.parent_recording_id.nil?
+        return if root_recording.blank?
+        return if defined?(::RecordingStudio) &&
+                  ::RecordingStudio.respond_to?(:root_recording?) &&
+                  ::RecordingStudio.root_recording?(root_recording)
 
+        errors.add(:root_recording, "must reference a root recording")
+      rescue ::RecordingStudio::MissingRecordableDeclaration, ::RecordingStudio::RootNotAllowed
         errors.add(:root_recording, "must reference a root recording")
       end
     end

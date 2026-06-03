@@ -68,6 +68,7 @@ module RecordingStudioRootSwitchable
       )
       @page_copy = page_copy
       @root_type_label = root_type_label
+      @return_anchor_url = return_anchor_url
     end
 
     def root_type_label
@@ -121,7 +122,7 @@ module RecordingStudioRootSwitchable
         return_to: root_switch_params[:return_to]
       )
 
-      sanitize_after_switch_redirect(configured_target) || default_after_switch_redirect_location
+      safe_internal_path(configured_target) || default_after_switch_redirect_location
     rescue StandardError
       default_after_switch_redirect_location
     end
@@ -131,6 +132,20 @@ module RecordingStudioRootSwitchable
     end
 
     def sanitize_after_switch_redirect(target)
+      safe_internal_path(target)
+    end
+
+    def return_anchor_url
+      safe_internal_path(params[:return_to]) || default_return_anchor_url
+    end
+
+    def default_return_anchor_url
+      main_app.root_path
+    rescue StandardError
+      default_after_switch_redirect_location
+    end
+
+    def safe_internal_path(target)
       return if target.blank?
 
       candidate = target.to_s

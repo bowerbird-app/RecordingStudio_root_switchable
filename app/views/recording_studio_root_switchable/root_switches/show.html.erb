@@ -7,11 +7,9 @@
     <%= render FlatPack::Alert::Component.new(style: :error, title: flash[:alert]) %>
   <% end %>
 
-  <%= render FlatPack::Breadcrumb::Component.new(
-    show_back: true,
-    back_text: "Back",
-    back_icon: "chevron-left",
-    back_href: main_app.root_path
+  <%= render FlatPack::PageNav::Component.new(
+    anchor_url: @return_anchor_url,
+    anchor_label: "Close"
   ) %>
 
   <%= render FlatPack::PageTitle::Component.new(
