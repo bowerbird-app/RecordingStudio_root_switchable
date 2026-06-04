@@ -6,6 +6,12 @@ module RecordingStudioRootSwitchable
 
     isolate_namespace RecordingStudioRootSwitchable
 
+    initializer "recording_studio_root_switchable.helpers" do
+      ActiveSupport.on_load(:action_controller_base) do
+        helper RecordingStudioRootSwitchable::Engine.helpers
+      end
+    end
+
     initializer "recording_studio_root_switchable.load_config" do |app|
       yaml_config = RecordingStudioRootSwitchable::Engine.load_yaml_config(app)
       if yaml_config

@@ -256,6 +256,14 @@ From a mounted host app, you can link to it with the engine route helper:
 recording_studio_root_switchable.root_switch_path(scope: "all_workspaces", return_to: request.fullpath)
 ```
 
+If you want a compact top-nav switcher backed by the same controller action, the gem
+also exposes a helper that renders a FlatPack button dropdown using the current root
+as the trigger label and the other available roots as PATCH actions:
+
+```erb
+<%= recording_studio_root_switch_dropdown(style: :ghost, size: :md) %>
+```
+
 If you want to return the user to the page that launched the switcher, pass a `return_to`
 param when linking to the mounted page and set `config.after_switch_redirect` to prefer that
 path. The gem validates redirect targets and falls back to the root-switch page when the target

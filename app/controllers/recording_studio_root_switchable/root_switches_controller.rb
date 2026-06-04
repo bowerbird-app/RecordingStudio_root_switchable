@@ -59,19 +59,22 @@ module RecordingStudioRootSwitchable
 
     def prepare_page(result: current_root_resolution)
       @resolution = result
-      @available_roots = result.available_roots
       @selected_root = result.root_recording
+      @available_roots = prioritize_selected_root(result.available_roots, @selected_root)
       @page_copy = page_copy
-      @root_type_label = root_type_label
       @safe_return_to = safe_return_to_param
       @return_anchor_url = return_anchor_url
     end
 
-    def root_type_label
-      recordable = @selected_root&.recordable || @available_roots.first&.recordable
-      return "root" unless recordable
+    def prioritize_selected_root(available_roots, selected_root)
+      roots = Array(available_roots)
+      return roots unless selected_root
 
-      recordable.class.model_name.human.downcase
+      selected_roots, other_roots = roots.partition do |root_recording|
+        root_recording.id == selected_root.id
+      end
+
+      selected_roots + other_roots
     end
 
     def selected_root_label(root_recording)

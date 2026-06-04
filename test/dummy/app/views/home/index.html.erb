@@ -13,29 +13,7 @@
     ) %>
 
     <%= link_to recording_studio_root_switchable.root_switch_path(scope: current_root_scope_key), class: "inline-flex" do %>
-      <%= render FlatPack::Button::Component.new(text: "Change", style: :primary, size: :md) %>
+      <%= render FlatPack::Button::Component.new(text: "Switch", style: :primary, size: :md) %>
     <% end %>
   </div>
-
-  <section>
-    <div class="flex flex-col gap-2">
-      <h2 class="text-lg font-semibold">Pages in the current root</h2>
-      <p class="text-sm text-(--surface-muted-content-color)">
-        Each workspace root now has its own seeded pages so switching roots changes the content shown here.
-      </p>
-    </div>
-
-    <% if @pages.any? %>
-      <ul class="mt-4 space-y-3">
-        <% @pages.each do |page| %>
-          <li class="rounded-xl border border-(--surface-border-color) bg-(--surface-page-background-color) px-4 py-3">
-            <p class="font-medium"><%= page.title %></p>
-            <p class="mt-1 text-sm text-(--surface-muted-content-color)"><%= page.body %></p>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="mt-4 text-sm text-(--surface-muted-content-color)">No pages are available for the current root.</p>
-    <% end %>
-  </section>
 </div>

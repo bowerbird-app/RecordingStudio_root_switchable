@@ -4,7 +4,7 @@
   <% end %>
 
   <% if flash[:alert].present? %>
-    <%= render FlatPack::Alert::Component.new(style: :error, title: flash[:alert]) %>
+    <%= render FlatPack::Alert::Component.new(style: :danger, title: flash[:alert]) %>
   <% end %>
 
   <%= render FlatPack::PageNav::Component.new(
@@ -13,7 +13,7 @@
   ) %>
 
   <%= render FlatPack::PageTitle::Component.new(
-    title: "Change #{@root_type_label}",
+    title: "Switch",
     variant: :h1
   ) %>
 
@@ -43,7 +43,7 @@
                     <%= hidden_field_tag "root_switch[return_to]", @safe_return_to %>
                   <% end %>
                   <%= render FlatPack::Button::Component.new(
-                    text: "Change",
+                    text: "Switch",
                     style: :default,
                     size: :sm,
                     type: "submit"

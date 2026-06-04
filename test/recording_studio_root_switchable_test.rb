@@ -81,7 +81,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes view_source, "anchor_url: @return_anchor_url"
     refute_includes view_source, "FlatPack::Breadcrumb::Component"
     assert_includes view_source, "FlatPack::PageTitle::Component"
-    assert_includes view_source, 'title: "Change #{@root_type_label}"'
+    assert_includes view_source, 'title: "Switch"'
     assert_includes view_source, "FlatPack::Card::Component"
     assert_includes view_source, "card.body do"
     assert_includes view_source, "FlatPack::List::Component"
@@ -90,7 +90,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes view_source, "form_with url: root_switch_path(scope: @scope.key), method: :patch, local: true"
     assert_includes view_source, 'hidden_field_tag "root_switch[return_to]", @safe_return_to'
     assert_includes view_source, "FlatPack::Button::Component"
-    assert_includes view_source, 'text: "Change"'
+    assert_includes view_source, 'text: "Switch"'
     assert_includes view_source, "style: :default"
     assert_includes view_source, 'div class="font-semibold"'
     refute_includes view_source, "active: selected"

@@ -105,6 +105,24 @@ class RootSwitchesControllerTest < Minitest::Test
     end
   end
 
+  def test_prepare_page_places_selected_root_first_in_available_roots
+    root_class = Struct.new(:id)
+    first_root = root_class.new(1)
+    selected_root = root_class.new(2)
+    third_root = root_class.new(3)
+    result = Struct.new(:root_recording, :available_roots).new(selected_root, [first_root, third_root, selected_root])
+
+    @controller.stub(:page_copy, {}) do
+      @controller.stub(:safe_return_to_param, nil) do
+        @controller.stub(:return_anchor_url, "/") do
+          @controller.send(:prepare_page, result: result)
+        end
+      end
+    end
+
+    assert_equal [selected_root, first_root, third_root], @controller.instance_variable_get(:@available_roots)
+  end
+
   def test_after_switch_redirect_location_supports_nominated_path_string
     RecordingStudioRootSwitchable.configuration.after_switch_redirect = "/workspace_home"
 

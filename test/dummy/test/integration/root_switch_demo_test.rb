@@ -21,13 +21,29 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
         }
 
     assert_response :success
-    assert_includes response.body, "Change workspace"
+    assert_includes response.body, "Switch"
     assert_includes response.body, "Studio Workspace"
+    assert_includes response.body, "Client Alpha"
+    assert_operator response.body.index("Studio Workspace"), :<, response.body.index("Client Alpha")
+  end
+
+  test "dummy app sidebar layout defaults to the rounded FlatPack theme" do
+    sign_in(@admin)
+
+    get "/"
+
+    assert_response :success
+    assert_match(/<html[^>]*data-theme="rounded"/, response.body)
+    assert_includes response.body, "Switch"
+    refute_includes response.body, "Change"
+    refute_includes response.body, "Pages in the current root"
+    refute_includes response.body, "Each workspace root now has its own seeded pages so switching roots changes the content shown here."
   end
 
   test "root switch update persists the selected accessible root" do
     sign_in(@admin)
     selected_root = root_recording_for("Client Alpha")
+    existing_selection_ids = RecordingStudio::RootSwitchable::Selection.ids
 
     assert_difference -> { RecordingStudio::RootSwitchable::Selection.count }, 1 do
       patch "/recording_studio_root_switchable/v1/root_switch",
@@ -44,7 +60,10 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to "/"
-    selection = RecordingStudio::RootSwitchable::Selection.find_by!(actor: @admin, scope_key: "all_workspaces")
+    selection = RecordingStudio::RootSwitchable::Selection
+                .where(actor: @admin, scope_key: "all_workspaces")
+                .where.not(id: existing_selection_ids)
+                .first!
     assert_equal selected_root, selection.root_recording
     assert_predicate selection.device_key, :present?
     assert_includes selection.user_agent, "Safari"

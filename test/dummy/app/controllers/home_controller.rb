@@ -2,13 +2,6 @@ class HomeController < ApplicationController
   GEM_VIEWS_ROOT = RecordingStudioRootSwitchable::Engine.root.join("app/views").freeze
 
   def index
-    @pages = if current_root_recording.present?
-      current_root_recording.recordings_query(type: Page, recordable_order: "title asc")
-                            .includes(:recordable)
-                            .map(&:recordable)
-    else
-      []
-    end
   end
 
   def setup

@@ -34,21 +34,18 @@ class HomeNavigationTest < Minitest::Test
     assert_includes sidebar, "icon: :book_open"
   end
 
-  def test_top_nav_includes_current_root_chip_before_avatar
+  def test_top_nav_uses_root_switch_dropdown_before_avatar
     top_nav = read_dummy_file("app/views/layouts/flat_pack/_top_nav.html.erb")
 
-    assert_includes top_nav, "FlatPack::Chip::Component.new"
-    assert_includes top_nav, "text: current_root_recordable&.name || \"None selected\""
-    assert_includes top_nav, "size: :md"
-    assert_includes top_nav, "type: :link"
-    assert_includes top_nav, "href: recording_studio_root_switchable.root_switch_path(scope: current_root_scope_key, return_to: request.fullpath)"
+    assert_includes top_nav, "recording_studio_root_switch_dropdown(style: :ghost, size: :md)"
+    refute_includes top_nav, "FlatPack::Chip::Component.new"
 
-    chip_index = top_nav.index("FlatPack::Chip::Component.new")
+    dropdown_index = top_nav.index("recording_studio_root_switch_dropdown")
     avatar_index = top_nav.index("FlatPack::Avatar::Component.new")
 
-    refute_nil chip_index
+    refute_nil dropdown_index
     refute_nil avatar_index
-    assert_operator chip_index, :<, avatar_index
+    assert_operator dropdown_index, :<, avatar_index
   end
 
   def test_setup_page_no_longer_contains_configuration_example

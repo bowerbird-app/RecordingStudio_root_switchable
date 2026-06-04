@@ -5,6 +5,10 @@ RecordingStudioRootSwitchable.configure do |config|
     Current.actor || controller.current_user
   end
 
+  config.after_switch_redirect = lambda do |controller:, return_to:, **|
+    return_to.presence || controller.main_app.root_path
+  end
+
   config.scope :all_workspaces do |scope|
     scope.label = "All workspaces"
     scope.description = "Every accessible workspace root for the current actor."
