@@ -17,6 +17,12 @@ RecordingStudioRootSwitchable.configure do |config|
   #   return_to.presence || controller.main_app.root_path
   # end
 
+  # RecordingStudio 2.0 root checks require host apps to configure every
+  # delegated_type recordable used by switchable roots.
+  # RecordingStudio.configure do |recording_studio_config|
+  #   recording_studio_config.recordable_types = ["Workspace", "Page"]
+  # end
+
   config.scope :roots do |scope|
     scope.label = "Roots"
     scope.description = "All accessible root recordings"

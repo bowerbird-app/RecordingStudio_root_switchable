@@ -3,7 +3,7 @@
 require "test_helper"
 
 class ResolveCurrentRootTest < Minitest::Test
-  RootRecord = Struct.new(:id, :recordable, :parent_recording_id, keyword_init: true)
+  RootRecord = Struct.new(:id, :recordable, :recordable_type, keyword_init: true)
 
   def setup
     @original_configuration = RecordingStudioRootSwitchable.instance_variable_get(:@configuration)
@@ -17,8 +17,8 @@ class ResolveCurrentRootTest < Minitest::Test
   end
 
   def test_prefers_persisted_selection_when_it_is_still_available
-    alpha_root = RootRecord.new(id: "alpha", recordable: Struct.new(:name).new("Alpha"), parent_recording_id: nil)
-    beta_root = RootRecord.new(id: "beta", recordable: Struct.new(:name).new("Beta"), parent_recording_id: nil)
+    alpha_root = RootRecord.new(id: "alpha", recordable: Struct.new(:name).new("Alpha"), recordable_type: "Workspace")
+    beta_root = RootRecord.new(id: "beta", recordable: Struct.new(:name).new("Beta"), recordable_type: "Workspace")
     selection = Struct.new(:root_recording_id, :last_used_at) do
       def update_columns(attributes)
         self.last_used_at = attributes.fetch(:last_used_at)
@@ -43,7 +43,7 @@ class ResolveCurrentRootTest < Minitest::Test
   end
 
   def test_invalid_selection_is_destroyed_and_default_root_is_used
-    alpha_root = RootRecord.new(id: "alpha", recordable: Struct.new(:name).new("Alpha"), parent_recording_id: nil)
+    alpha_root = RootRecord.new(id: "alpha", recordable: Struct.new(:name).new("Alpha"), recordable_type: "Workspace")
     removed_selection = Struct.new(:root_recording_id, :destroyed) do
       def destroy
         self.destroyed = true
@@ -73,6 +73,7 @@ class ResolveCurrentRootTest < Minitest::Test
       config.scope(:roots) do |scope|
         scope.available_roots = ->(**) { roots }
         scope.access_check = ->(**) { true }
+        scope.validity_check = ->(**) { true }
       end
     end
   end

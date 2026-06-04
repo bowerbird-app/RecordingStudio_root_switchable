@@ -71,27 +71,35 @@ pages_by_workspace = {
 
 root_recordings = workspace_names.index_with do |name|
   workspace = Workspace.find_or_create_by!(name: name)
-  RecordingStudio::Recording.unscoped.find_or_create_by!(recordable: workspace, parent_recording_id: nil)
+  RecordingStudio.root_recording_for(workspace)
 end
 
 grant_access = lambda do |actor:, role:, workspace_name:|
-  access = RecordingStudio::Access.find_or_create_by!(actor: actor, role: role)
   root_recording = root_recordings.fetch(workspace_name)
 
-  RecordingStudio::Recording.unscoped.find_or_create_by!(
-    parent_recording_id: root_recording.id,
-    recordable: access,
-    root_recording_id: root_recording.id
+  result = RecordingStudioAccessible.grant_access(
+    recording: root_recording,
+    actor: actor,
+    role: role,
+    manager_actor: admin
   )
+  raise result.error if result.failure?
 end
 
 Current.actor = admin
-[ "Studio Workspace", "Client Alpha", "Client Beta" ].each do |workspace_name|
-  grant_access.call(actor: admin, role: :admin, workspace_name: workspace_name)
-end
+previous_bootstrap_admin = ENV["RECORDING_STUDIO_ACCESSIBLE_BOOTSTRAP_ADMIN"]
+ENV["RECORDING_STUDIO_ACCESSIBLE_BOOTSTRAP_ADMIN"] = "1"
 
-[ "Studio Workspace", "Client Alpha" ].each do |workspace_name|
-  grant_access.call(actor: viewer, role: :view, workspace_name: workspace_name)
+begin
+  [ "Studio Workspace", "Client Alpha", "Client Beta" ].each do |workspace_name|
+    grant_access.call(actor: admin, role: :admin, workspace_name: workspace_name)
+  end
+
+  [ "Studio Workspace", "Client Alpha" ].each do |workspace_name|
+    grant_access.call(actor: viewer, role: :view, workspace_name: workspace_name)
+  end
+ensure
+  ENV["RECORDING_STUDIO_ACCESSIBLE_BOOTSTRAP_ADMIN"] = previous_bootstrap_admin
 end
 
 pages_by_workspace.each do |workspace_name, page_definitions|

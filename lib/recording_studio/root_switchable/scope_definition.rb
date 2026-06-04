@@ -24,7 +24,7 @@ module RecordingStudio
         @available_roots = method(:default_available_roots)
         @default_root = ->(roots:, **) { roots.first }
         @access_check = method(:default_access_allowed?)
-        @validity_check = ->(recording:, **) { recording.present? && recording.parent_recording_id.nil? }
+        @validity_check = method(:default_valid_root?)
         @root_label = method(:default_root_label)
         @root_description = method(:default_root_description)
       end
@@ -92,10 +92,21 @@ module RecordingStudio
       end
 
       def normalize_root_recording(candidate)
-        return candidate if candidate.respond_to?(:id) && candidate.respond_to?(:recordable)
+        return candidate if recording_candidate?(candidate)
         return if candidate.blank? || !defined?(::RecordingStudio::Recording)
+        return unless root_allowed?(candidate)
 
-        ::RecordingStudio::Recording.unscoped.find_by(recordable: candidate, parent_recording_id: nil)
+        find_existing_root_recording_for(candidate)
+      rescue StandardError => e
+        raise unless RecordingStudio::RootSwitchable.root_api_error?(e)
+
+        nil
+      end
+
+      def find_existing_root_recording_for(recordable)
+        ::RecordingStudio::Recording.unscoped.where(recordable: recordable).detect do |recording|
+          default_valid_root?(recording: recording)
+        end
       end
 
       def default_available_roots(actor:, **)
@@ -109,6 +120,29 @@ module RecordingStudio
         return false unless recording_studio_accessible_supports_authorization?
 
         actor.present? && ::RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: :view)
+      end
+
+      def default_valid_root?(recording:, **)
+        return false unless defined?(::RecordingStudio) && ::RecordingStudio.respond_to?(:root_recording?)
+
+        ::RecordingStudio.root_recording?(recording)
+      rescue StandardError => e
+        raise unless RecordingStudio::RootSwitchable.root_api_error?(e)
+
+        false
+      end
+
+      def recording_candidate?(candidate)
+        return false if candidate.blank?
+        return true if defined?(::RecordingStudio::Recording) && candidate.is_a?(::RecordingStudio::Recording)
+
+        candidate.respond_to?(:id) && candidate.respond_to?(:recordable)
+      end
+
+      def root_allowed?(recordable)
+        return false unless defined?(::RecordingStudio) && ::RecordingStudio.respond_to?(:root_allowed?)
+
+        ::RecordingStudio.root_allowed?(recordable)
       end
 
       def default_root_label(recording:, **)

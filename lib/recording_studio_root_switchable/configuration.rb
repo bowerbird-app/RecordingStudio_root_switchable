@@ -147,11 +147,12 @@ module RecordingStudioRootSwitchable
           validate_device_key_cookie_name!(value, source: source)
           self.device_key_cookie_name = value
         when :device_key_cookie_options
-          self.device_key_cookie_options = normalize_hash_value!(
+          cookie_options = normalize_hash_value!(
             key: key,
             value: value,
             source: source
           )
+          self.device_key_cookie_options = device_key_cookie_options.merge(cookie_options)
         when :layout
           validate_layout!(value, source: source)
           self.layout = value

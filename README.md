@@ -11,7 +11,7 @@ It lets a host app resolve and persist a current root recording per actor, per d
 - per-device persistence through an encrypted cookie-backed `device_key`
 - configuration hooks for scopes, available roots, defaults, labels, descriptions, and page copy
 - helper APIs for `current_root`, `current_root_recording`, `current_root_recordable`, and `current_root_scope_key`
-- a dedicated FlatPack-powered v1 root-switch page
+- a dedicated FlatPack-powered root-switch page
 - default access integration through `RecordingStudioAccessible`
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
@@ -21,8 +21,8 @@ This addon was derived from the Recording Studio gem template and keeps the same
 Add the gems to your host app:
 
 ```ruby
-gem "recording_studio"
-gem "recording_studio_accessible"
+gem "recording_studio", "~> 2.0"
+gem "recording_studio_accessible", "~> 0.2"
 gem "recording_studio_root_switchable"
 ```
 
@@ -74,6 +74,24 @@ RecordingStudioRootSwitchable.configure do |config|
     end
     scope.default_root = ->(roots:, **) { roots.first }
   end
+end
+```
+
+RecordingStudio 2.0 requires every configured recordable to declare its hierarchy
+rules explicitly. Root Switchable only treats declared RecordingStudio roots as
+switchable roots; parentless recordings are not enough.
+
+```ruby
+RecordingStudio.configure do |config|
+  config.recordable_types = ["Workspace", "Page"]
+end
+
+class Workspace < ApplicationRecord
+  recording_studio_recordable label: "Workspace", root: true
+end
+
+class Page < ApplicationRecord
+  recording_studio_recordable label: "Page", root: false, allowed_parent_types: ["Workspace"]
 end
 ```
 
@@ -187,6 +205,12 @@ Scope keys are host-defined identifiers such as `workspace`, `team`, or `account
 - how labels and descriptions are rendered
 - whether a candidate root is valid and accessible
 
+Switchable roots must be valid RecordingStudio 2.0 root recordings. By default,
+the available root list comes from
+`RecordingStudioAccessible.root_recordings_for(actor:, minimum_role: :view)` and
+each candidate is revalidated through RecordingStudio's public root APIs before
+it can become current.
+
 ## Public API
 
 ```ruby
@@ -220,7 +244,7 @@ Mount the engine wherever you want:
 mount RecordingStudioRootSwitchable::Engine, at: "/recording_studio_root_switchable"
 ```
 
-The gem exposes a dedicated v1 page at:
+The gem exposes a dedicated root-switch page at:
 
 ```text
 /recording_studio_root_switchable/v1/root_switch?scope=all_workspaces
@@ -229,7 +253,15 @@ The gem exposes a dedicated v1 page at:
 From a mounted host app, you can link to it with the engine route helper:
 
 ```ruby
-recording_studio_root_switchable.root_switch_path(scope: "all_workspaces")
+recording_studio_root_switchable.root_switch_path(scope: "all_workspaces", return_to: request.fullpath)
+```
+
+If you want a compact top-nav switcher backed by the same controller action, the gem
+also exposes a helper that renders a FlatPack button dropdown using the current root
+as the trigger label and the other available roots as PATCH actions:
+
+```erb
+<%= recording_studio_root_switch_dropdown(style: :ghost, size: :md) %>
 ```
 
 If you want to return the user to the page that launched the switcher, pass a `return_to`

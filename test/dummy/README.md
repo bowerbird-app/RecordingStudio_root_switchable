@@ -6,10 +6,10 @@ This Rails app exists to validate RecordingStudioRootSwitchable in a real host a
 
 - Devise authentication with a seeded admin user
 - `Current.actor` wiring for Recording Studio events
-- Multiple accessible root recordings
+- Multiple declared RecordingStudio 2.0 root recordings
 - Two configured root-switch scopes (`all_workspaces` and `client_workspaces`)
 - Device-key-backed selection persistence through `RecordingStudio::RootSwitchable::ControllerSupport`
-- FlatPack layout integration and mounted engine routes for RecordingStudio, RecordingStudioAccessible, and RecordingStudioRootSwitchable
+- FlatPack layout integration, PageNav-backed gem views, and mounted engine routes for RecordingStudio, RecordingStudioAccessible, and RecordingStudioRootSwitchable
 
 ## Quick Start
 

@@ -59,22 +59,22 @@ module RecordingStudioRootSwitchable
 
     def prepare_page(result: current_root_resolution)
       @resolution = result
-      @available_roots = result.available_roots
       @selected_root = result.root_recording
-      @supported_scopes = RecordingStudioRootSwitchable.configuration.supported_scopes(
-        controller: self,
-        actor: RecordingStudio::RootSwitchable::Current.actor,
-        device_key: RecordingStudio::RootSwitchable::Current.device_key
-      )
+      @available_roots = prioritize_selected_root(result.available_roots, @selected_root)
       @page_copy = page_copy
-      @root_type_label = root_type_label
+      @safe_return_to = safe_return_to_param
+      @return_anchor_url = return_anchor_url
     end
 
-    def root_type_label
-      recordable = @selected_root&.recordable || @available_roots.first&.recordable
-      return "root" unless recordable
+    def prioritize_selected_root(available_roots, selected_root)
+      roots = Array(available_roots)
+      return roots unless selected_root
 
-      recordable.class.model_name.human.downcase
+      selected_roots, other_roots = roots.partition do |root_recording|
+        root_recording.id == selected_root.id
+      end
+
+      selected_roots + other_roots
     end
 
     def selected_root_label(root_recording)
@@ -131,6 +131,20 @@ module RecordingStudioRootSwitchable
     end
 
     def sanitize_after_switch_redirect(target)
+      safe_internal_path(target)
+    end
+
+    def return_anchor_url
+      safe_return_to_param || default_return_anchor_url
+    end
+
+    def default_return_anchor_url
+      main_app.root_path
+    rescue StandardError
+      default_after_switch_redirect_location
+    end
+
+    def safe_internal_path(target)
       return if target.blank?
 
       candidate = target.to_s
@@ -145,8 +159,15 @@ module RecordingStudioRootSwitchable
       nil
     end
 
+    def safe_return_to_param
+      safe_internal_path(root_switch_params[:return_to]) || safe_internal_path(params[:return_to])
+    end
+
     def root_switch_params
-      params.fetch(:root_switch, {}).permit(:root_recording_id, :return_to)
+      raw_params = params.fetch(:root_switch, ActionController::Parameters.new)
+      return ActionController::Parameters.new.permit unless raw_params.respond_to?(:permit)
+
+      raw_params.permit(:root_recording_id, :return_to)
     end
   end
   # rubocop:enable Metrics/ClassLength

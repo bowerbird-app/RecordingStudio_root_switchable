@@ -2,13 +2,6 @@ class HomeController < ApplicationController
   GEM_VIEWS_ROOT = RecordingStudioRootSwitchable::Engine.root.join("app/views").freeze
 
   def index
-    @pages = if current_root_recording.present?
-      current_root_recording.recordings_query(type: Page, recordable_order: "title asc")
-                            .includes(:recordable)
-                            .map(&:recordable)
-    else
-      []
-    end
   end
 
   def setup
@@ -23,6 +16,7 @@ class HomeController < ApplicationController
 
   def switch_log
     @saved_sessions = RecordingStudio::RootSwitchable::Selection
+      .where(actor: current_user)
       .includes(:actor, root_recording: :recordable)
       .order(last_used_at: :desc)
   end

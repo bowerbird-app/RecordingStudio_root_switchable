@@ -3,7 +3,7 @@
 require "test_helper"
 
 class SwitchRootTest < Minitest::Test
-  RootRecord = Struct.new(:id, :recordable, :parent_recording_id, keyword_init: true)
+  RootRecord = Struct.new(:id, :recordable, :recordable_type, keyword_init: true)
 
   def setup
     @original_configuration = RecordingStudioRootSwitchable.instance_variable_get(:@configuration)
@@ -17,8 +17,8 @@ class SwitchRootTest < Minitest::Test
   end
 
   def test_persists_selected_root_for_scope
-    alpha_root = RootRecord.new(id: "alpha", recordable: Struct.new(:name).new("Alpha"), parent_recording_id: nil)
-    beta_root = RootRecord.new(id: "beta", recordable: Struct.new(:name).new("Beta"), parent_recording_id: nil)
+    alpha_root = RootRecord.new(id: "alpha", recordable: Struct.new(:name).new("Alpha"), recordable_type: "Workspace")
+    beta_root = RootRecord.new(id: "beta", recordable: Struct.new(:name).new("Beta"), recordable_type: "Workspace")
     persisted_selection = Struct.new(:root_recording_id).new("beta")
     controller = Struct.new(:request).new(
       Struct.new(:user_agent).new(
@@ -50,7 +50,7 @@ class SwitchRootTest < Minitest::Test
   end
 
   def test_rejects_unknown_roots
-    alpha_root = RootRecord.new(id: "alpha", recordable: Struct.new(:name).new("Alpha"), parent_recording_id: nil)
+    alpha_root = RootRecord.new(id: "alpha", recordable: Struct.new(:name).new("Alpha"), recordable_type: "Workspace")
 
     configure_roots([alpha_root])
 
@@ -72,6 +72,7 @@ class SwitchRootTest < Minitest::Test
       config.scope(:roots) do |scope|
         scope.available_roots = ->(**) { roots }
         scope.access_check = ->(**) { true }
+        scope.validity_check = ->(**) { true }
       end
     end
   end
