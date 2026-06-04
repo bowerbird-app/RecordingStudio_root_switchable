@@ -82,6 +82,10 @@ rules explicitly. Root Switchable only treats declared RecordingStudio roots as
 switchable roots; parentless recordings are not enough.
 
 ```ruby
+RecordingStudio.configure do |config|
+  config.recordable_types = ["Workspace", "Page"]
+end
+
 class Workspace < ApplicationRecord
   recording_studio_recordable label: "Workspace", root: true
 end

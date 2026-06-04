@@ -35,6 +35,13 @@ module RecordingStudio
       def switch_root(...)
         Services::SwitchRoot.call(...)
       end
+
+      def root_api_error?(error)
+        %w[
+          RecordingStudio::MissingRecordableDeclaration
+          RecordingStudio::RootNotAllowed
+        ].include?(error.class.name)
+      end
     end
   end
 end

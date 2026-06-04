@@ -63,7 +63,7 @@ module RecordingStudioRootSwitchable
       @selected_root = result.root_recording
       @page_copy = page_copy
       @root_type_label = root_type_label
-      @safe_return_to = safe_internal_path(params[:return_to])
+      @safe_return_to = safe_return_to_param
       @return_anchor_url = return_anchor_url
     end
 
@@ -132,7 +132,7 @@ module RecordingStudioRootSwitchable
     end
 
     def return_anchor_url
-      safe_internal_path(params[:return_to]) || default_return_anchor_url
+      safe_return_to_param || default_return_anchor_url
     end
 
     def default_return_anchor_url
@@ -154,6 +154,10 @@ module RecordingStudioRootSwitchable
       candidate
     rescue URI::InvalidURIError
       nil
+    end
+
+    def safe_return_to_param
+      safe_internal_path(root_switch_params[:return_to]) || safe_internal_path(params[:return_to])
     end
 
     def root_switch_params

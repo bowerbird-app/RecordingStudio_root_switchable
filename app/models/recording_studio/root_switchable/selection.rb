@@ -102,7 +102,7 @@ module RecordingStudio
 
         errors.add(:root_recording, "must reference a root recording")
       rescue StandardError => e
-        raise unless root_api_error?(e)
+        raise unless RecordingStudio::RootSwitchable.root_api_error?(e)
 
         errors.add(:root_recording, "must reference a root recording")
       end
@@ -113,12 +113,6 @@ module RecordingStudio
           ::RecordingStudio.root_recording?(root_recording)
       end
 
-      def root_api_error?(error)
-        %w[
-          RecordingStudio::MissingRecordableDeclaration
-          RecordingStudio::RootNotAllowed
-        ].include?(error.class.name)
-      end
     end
   end
 end

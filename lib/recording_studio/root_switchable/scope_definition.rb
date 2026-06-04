@@ -98,7 +98,7 @@ module RecordingStudio
 
         find_existing_root_recording_for(candidate)
       rescue StandardError => e
-        raise unless root_api_error?(e)
+        raise unless RecordingStudio::RootSwitchable.root_api_error?(e)
 
         nil
       end
@@ -127,7 +127,7 @@ module RecordingStudio
 
         ::RecordingStudio.root_recording?(recording)
       rescue StandardError => e
-        raise unless root_api_error?(e)
+        raise unless RecordingStudio::RootSwitchable.root_api_error?(e)
 
         false
       end
@@ -143,13 +143,6 @@ module RecordingStudio
         return false unless defined?(::RecordingStudio) && ::RecordingStudio.respond_to?(:root_allowed?)
 
         ::RecordingStudio.root_allowed?(recordable)
-      end
-
-      def root_api_error?(error)
-        %w[
-          RecordingStudio::MissingRecordableDeclaration
-          RecordingStudio::RootNotAllowed
-        ].include?(error.class.name)
       end
 
       def default_root_label(recording:, **)

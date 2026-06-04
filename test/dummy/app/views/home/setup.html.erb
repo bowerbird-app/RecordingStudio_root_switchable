@@ -25,6 +25,10 @@ class ApplicationController &lt; ActionController::Base
   include RecordingStudio::RootSwitchable::ControllerSupport
 end
 
+RecordingStudio.configure do |config|
+  config.recordable_types = ["Workspace", "Page"]
+end
+
 class Workspace &lt; ApplicationRecord
   recording_studio_recordable label: "Workspace", root: true
 end

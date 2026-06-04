@@ -84,6 +84,14 @@ class RootSwitchesControllerTest < Minitest::Test
     end
   end
 
+  def test_return_anchor_url_prefers_safe_nested_return_to_param
+    params = ActionController::Parameters.new(root_switch: { return_to: "/projects/current" }, return_to: "/fallback")
+
+    @controller.stub(:params, params) do
+      assert_equal "/projects/current", @controller.send(:return_anchor_url)
+    end
+  end
+
   def test_return_anchor_url_rejects_unsafe_return_to_param
     @controller.stub(:params, ActionController::Parameters.new(return_to: "https://example.com/phish")) do
       assert_equal "/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces",
