@@ -87,12 +87,19 @@ grant_access = lambda do |actor:, role:, workspace_name:|
 end
 
 Current.actor = admin
-[ "Studio Workspace", "Client Alpha", "Client Beta" ].each do |workspace_name|
-  grant_access.call(actor: admin, role: :admin, workspace_name: workspace_name)
-end
+previous_bootstrap_admin = ENV["RECORDING_STUDIO_ACCESSIBLE_BOOTSTRAP_ADMIN"]
+ENV["RECORDING_STUDIO_ACCESSIBLE_BOOTSTRAP_ADMIN"] = "1"
 
-[ "Studio Workspace", "Client Alpha" ].each do |workspace_name|
-  grant_access.call(actor: viewer, role: :view, workspace_name: workspace_name)
+begin
+  [ "Studio Workspace", "Client Alpha", "Client Beta" ].each do |workspace_name|
+    grant_access.call(actor: admin, role: :admin, workspace_name: workspace_name)
+  end
+
+  [ "Studio Workspace", "Client Alpha" ].each do |workspace_name|
+    grant_access.call(actor: viewer, role: :view, workspace_name: workspace_name)
+  end
+ensure
+  ENV["RECORDING_STUDIO_ACCESSIBLE_BOOTSTRAP_ADMIN"] = previous_bootstrap_admin
 end
 
 pages_by_workspace.each do |workspace_name, page_definitions|
