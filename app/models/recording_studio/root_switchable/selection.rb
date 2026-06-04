@@ -112,7 +112,6 @@ module RecordingStudio
           ::RecordingStudio.respond_to?(:root_recording?) &&
           ::RecordingStudio.root_recording?(root_recording)
       end
-
     end
   end
 end
