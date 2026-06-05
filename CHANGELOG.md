@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-05
+
+### Changed
+- Require RecordingStudio `~> 3.0` and RecordingStudioAccessible `~> 0.3`.
+- Clarify RecordingStudio 3.0 hierarchy requirements in docs and setup examples.
+- Register the dummy app's RecordingStudioAccessible child-recordable capability metadata when core v3 capability APIs are available.
+
+### Breaking
+- Host apps must upgrade to RecordingStudio 3-compatible RecordingStudio and RecordingStudioAccessible releases before upgrading this gem.
+
 ## [0.2.0] - 2026-06-04
 
 ### Changed
@@ -29,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/releases/tag/v0.1.0

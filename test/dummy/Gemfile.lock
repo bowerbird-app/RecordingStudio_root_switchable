@@ -1,19 +1,19 @@
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio.git
-  revision: 8a62762c6ed8e89e9785438fa6c595704e274ccf
-  tag: recording_studio/v2.0.0
+  revision: a2201ac47a6938472a64d17679256dbd7e0247ba
+  tag: recording_studio/v3.0.0
   specs:
-    recording_studio (2.0.0)
+    recording_studio (3.0.0)
       rails (>= 8.1.0)
 
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_accessible.git
-  revision: 14e88c3cb891c7e93372a81c8ab0d8b957b201cd
-  tag: v0.2.1
+  revision: eab32a0bee876b6050d6c60b4b09ab1046e4705e
+  branch: copilot/upgrade-recordingstudio-3-0-0
   specs:
-    recording_studio_accessible (0.2.1)
+    recording_studio_accessible (0.3.0)
       rails (~> 8.1.0)
-      recording_studio (~> 2.0)
+      recording_studio (~> 3.0)
 
 GIT
   remote: https://github.com/bowerbird-app/flatpack.git
@@ -29,11 +29,11 @@ GIT
 PATH
   remote: ../..
   specs:
-    recording_studio_root_switchable (0.2.0)
+    recording_studio_root_switchable (0.3.0)
       flat_pack
       rails (~> 8.1.0)
-      recording_studio (~> 2.0)
-      recording_studio_accessible (~> 0.2)
+      recording_studio (~> 3.0)
+      recording_studio_accessible (~> 0.3)
 
 GEM
   remote: https://rubygems.org/
@@ -581,9 +581,9 @@ CHECKSUMS
   rainbow (3.1.1) sha256=039491aa3a89f42efa1d6dec2fc4e62ede96eb6acd95e52f1ad581182b79bc6a
   rake (13.3.1) sha256=8c9e89d09f66a26a01264e7e3480ec0607f0c497a861ef16063604b1b08eb19c
   rdoc (7.2.0) sha256=8650f76cd4009c3b54955eb5d7e3a075c60a57276766ebf36f9085e8c9f23192
-  recording_studio (2.0.0)
-  recording_studio_accessible (0.2.1)
-  recording_studio_root_switchable (0.2.0)
+  recording_studio (3.0.0)
+  recording_studio_accessible (0.3.0)
+  recording_studio_root_switchable (0.3.0)
   regexp_parser (2.11.3) sha256=ca13f381a173b7a93450e53459075c9b76a10433caadcb2f1180f2c741fc55a4
   reline (0.6.3) sha256=1198b04973565b36ec0f11542ab3f5cfeeec34823f4e54cebde90968092b1835
   responders (3.2.0) sha256=89c2d6ac0ae16f6458a11524cae4a8efdceba1a3baea164d28ee9046bd3df55a

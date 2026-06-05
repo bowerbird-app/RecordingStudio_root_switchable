@@ -5,8 +5,10 @@ source "https://rubygems.org"
 gemspec
 
 gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.71"
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "recording_studio/v2.0.0"
-gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.2.1"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "recording_studio/v3.0.0"
+gem "recording_studio_accessible",
+    github: "bowerbird-app/RecordingStudio_accessible",
+    branch: "copilot/upgrade-recordingstudio-3-0-0"
 
 gem "puma"
 gem "sprockets-rails"
