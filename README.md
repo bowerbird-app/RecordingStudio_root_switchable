@@ -22,7 +22,7 @@ Add the gems to your host app:
 
 ```ruby
 gem "recording_studio", "~> 3.0"
-gem "recording_studio_accessible" # use a RecordingStudio 3-compatible release
+gem "recording_studio_accessible", "~> 0.3"
 gem "recording_studio_root_switchable"
 ```
 
@@ -113,9 +113,8 @@ if RecordingStudio.respond_to?(:register_capability)
 end
 ```
 
-At the time of this change, the released `recording_studio_accessible ~> 0.2`
-line still targets RecordingStudio 2.x, so a full bundle-level upgrade also
-needs a RecordingStudio 3-compatible accessible release.
+This gem now expects a RecordingStudio 3-compatible
+`recording_studio_accessible ~> 0.3` release.
 
 ## How query scoping works
 

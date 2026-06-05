@@ -8,8 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Require RecordingStudio `~> 3.0` and RecordingStudioAccessible `~> 0.3`.
 - Clarify RecordingStudio 3.0 hierarchy requirements in docs and setup examples.
 - Register the dummy app's RecordingStudioAccessible child-recordable capability metadata when core v3 capability APIs are available.
+
+### Breaking
+- Host apps must upgrade to RecordingStudio 3-compatible RecordingStudio and RecordingStudioAccessible releases before upgrading this gem.
 
 ## [0.2.0] - 2026-06-04
 
