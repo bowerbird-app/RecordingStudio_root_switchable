@@ -21,8 +21,8 @@ This addon was derived from the Recording Studio gem template and keeps the same
 Add the gems to your host app:
 
 ```ruby
-gem "recording_studio", "~> 2.0"
-gem "recording_studio_accessible", "~> 0.2"
+gem "recording_studio", "~> 3.0"
+gem "recording_studio_accessible" # use a RecordingStudio 3-compatible release
 gem "recording_studio_root_switchable"
 ```
 
@@ -77,7 +77,7 @@ RecordingStudioRootSwitchable.configure do |config|
 end
 ```
 
-RecordingStudio 2.0 requires every configured recordable to declare its hierarchy
+RecordingStudio 3.0 requires every configured recordable to declare its hierarchy
 rules explicitly. Root Switchable only treats declared RecordingStudio roots as
 switchable roots; parentless recordings are not enough.
 
@@ -94,6 +94,28 @@ class Page < ApplicationRecord
   recording_studio_recordable label: "Page", root: false, allowed_parent_types: ["Workspace"]
 end
 ```
+
+Root Switchable does not own any RecordingStudio child recordables itself, so this
+gem does not need to register a capability with RecordingStudio core. The only
+repo-local v3 compatibility touchpoint is the optional
+`RecordingStudioAccessible` integration used by the default scope examples and
+dummy app. If your `recording_studio_accessible` version has not yet registered
+its addon-owned `RecordingStudio::Access` child recordable, add this temporary
+shim in your host `config/initializers/recording_studio_accessible.rb`:
+
+```ruby
+if RecordingStudio.respond_to?(:register_capability)
+  RecordingStudio.register_capability(
+    :accessible,
+    source: "recording_studio_accessible",
+    child_recordables: ["RecordingStudio::Access"]
+  )
+end
+```
+
+At the time of this change, the released `recording_studio_accessible ~> 0.2`
+line still targets RecordingStudio 2.x, so a full bundle-level upgrade also
+needs a RecordingStudio 3-compatible accessible release.
 
 ## How query scoping works
 
@@ -205,7 +227,7 @@ Scope keys are host-defined identifiers such as `workspace`, `team`, or `account
 - how labels and descriptions are rendered
 - whether a candidate root is valid and accessible
 
-Switchable roots must be valid RecordingStudio 2.0 root recordings. By default,
+Switchable roots must be valid RecordingStudio 3.0 root recordings. By default,
 the available root list comes from
 `RecordingStudioAccessible.root_recordings_for(actor:, minimum_role: :view)` and
 each candidate is revalidated through RecordingStudio's public root APIs before

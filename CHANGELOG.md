@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Clarify RecordingStudio 3.0 hierarchy requirements in docs and setup examples.
+- Register the dummy app's RecordingStudioAccessible child-recordable capability metadata when core v3 capability APIs are available.
+
 ## [0.2.0] - 2026-06-04
 
 ### Changed

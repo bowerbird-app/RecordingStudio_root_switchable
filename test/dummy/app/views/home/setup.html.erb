@@ -9,8 +9,8 @@
     title: "Host app setup",
     language: "ruby",
     code: <<~CODE
-gem "recording_studio", "~> 2.0"
-gem "recording_studio_accessible", "~> 0.2"
+gem "recording_studio", "~> 3.0"
+gem "recording_studio_accessible" # use a RecordingStudio 3-compatible release
 gem "recording_studio_root_switchable"
 
 bundle install
@@ -28,6 +28,12 @@ end
 RecordingStudio.configure do |config|
   config.recordable_types = ["Workspace", "Page"]
 end
+
+RecordingStudio.register_capability(
+  :accessible,
+  source: "recording_studio_accessible",
+  child_recordables: ["RecordingStudio::Access"]
+) if RecordingStudio.respond_to?(:register_capability)
 
 class Workspace &lt; ApplicationRecord
   recording_studio_recordable label: "Workspace", root: true

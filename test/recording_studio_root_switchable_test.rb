@@ -58,6 +58,14 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     refute_includes initializer_source, "config.layout ="
   end
 
+  def test_dummy_accessible_initializer_registers_access_capability_for_recording_studio_v3
+    initializer_path = File.expand_path("dummy/config/initializers/recording_studio_accessible.rb", __dir__)
+    initializer_source = File.read(initializer_path)
+
+    assert_includes initializer_source, "RecordingStudio.register_capability("
+    assert_includes initializer_source, 'child_recordables: [ "RecordingStudio::Access" ]'
+  end
+
   def test_gem_ships_blank_layout_template
     layout_path = File.expand_path("../app/views/layouts/recording_studio_root_switchable/blank.html.erb", __dir__)
     layout_source = File.read(layout_path)
