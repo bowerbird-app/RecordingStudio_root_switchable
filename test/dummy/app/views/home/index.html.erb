@@ -12,8 +12,38 @@
       size: :md
     ) %>
 
-    <%= link_to recording_studio_root_switchable.root_switch_path(scope: current_root_scope_key), class: "inline-flex" do %>
+    <%= link_to recording_studio_root_switchable.root_switch_path(scope: "all_roots"), class: "inline-flex" do %>
       <%= render FlatPack::Button::Component.new(text: "Switch", style: :primary, size: :md) %>
     <% end %>
   </div>
+
+  <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+    <% card.header do %>
+      <%= render FlatPack::PageTitle::Component.new(
+        title: "Accessible but not switchable",
+        subtitle: "Visible in RecordingStudioAccessible but excluded from this switch UI by switchable_root_types for #{@active_scope_key}.",
+        variant: :h3,
+        class: "mb-0 pb-0"
+      ) %>
+    <% end %>
+
+    <% card.body do %>
+      <% if @non_switchable_accessible_roots.any? %>
+        <%= render FlatPack::List::Component.new(class: "w-full") do %>
+          <% @non_switchable_accessible_roots.each do |recording| %>
+            <%= render FlatPack::List::Item.new do %>
+              <div class="font-semibold"><%= root_recording_display_name(recording) %></div>
+              <div class="text-sm text-(--surface-muted-content-color)">
+                Type <%= root_recording_display_type(recording) %> is not included in switchable_root_types.
+              </div>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% else %>
+        <p class="text-sm text-(--surface-muted-content-color)">
+          No accessible roots are currently excluded for this scope.
+        </p>
+      <% end %>
+    <% end %>
+  <% end %>
 </div>

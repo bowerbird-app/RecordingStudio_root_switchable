@@ -2,6 +2,8 @@ class HomeController < ApplicationController
   GEM_VIEWS_ROOT = RecordingStudioRootSwitchable::Engine.root.join("app/views").freeze
 
   def index
+    @active_scope_key = current_root_scope_key.to_s.presence || "all_workspaces"
+    @non_switchable_accessible_roots = non_switchable_accessible_roots(scope_key: @active_scope_key)
   end
 
   def setup
@@ -48,7 +50,18 @@ class HomeController < ApplicationController
                 :saved_session_device,
                 :saved_session_device_context,
                 :saved_session_device_key,
-                :saved_session_timestamp
+                :saved_session_timestamp,
+                :root_recording_display_name,
+                :root_recording_display_type
+
+  def root_recording_display_name(recording)
+    recordable = recording&.recordable
+    recordable&.try(:name).presence || recordable&.try(:title).presence || "Unknown root"
+  end
+
+  def root_recording_display_type(recording)
+    recording&.recordable_type.to_s.presence || recording&.recordable&.class&.name.to_s.presence || "Unknown"
+  end
 
   def saved_session_user(selection)
     actor = selection.actor
@@ -205,5 +218,24 @@ class HomeController < ApplicationController
         href: gem_view_path(relative_path)
       }
     end
+  end
+
+  def non_switchable_accessible_roots(scope_key:)
+    return [] if current_user.blank?
+
+    scope = RecordingStudioRootSwitchable.configuration.resolve_scope(
+      key: scope_key,
+      controller: self,
+      actor: current_user,
+      device_key: RecordingStudio::RootSwitchable.current_device_key
+    )
+    return [] if scope.blank?
+
+    accessible_roots = Array(RecordingStudioAccessible.root_recordings_for(actor: current_user, minimum_role: :view))
+    switchable_ids = scope.available_roots_for(actor: current_user, controller: self, scope_key: scope_key).map(&:id)
+
+    accessible_roots.reject { |recording| switchable_ids.include?(recording.id) }.uniq(&:id)
+  rescue RecordingStudioRootSwitchable::ConfigurationError
+    []
   end
 end

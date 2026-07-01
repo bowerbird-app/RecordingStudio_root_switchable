@@ -5,6 +5,10 @@ RecordingStudioRootSwitchable.configure do |config|
     Current.actor || controller.current_user
   end
 
+  config.default_scope_key_resolver = lambda do |**|
+    "all_roots"
+  end
+
   config.after_switch_redirect = lambda do |controller:, return_to:, **|
     return_to.presence || controller.main_app.root_path
   end
@@ -40,6 +44,22 @@ RecordingStudioRootSwitchable.configure do |config|
     end
     scope.page_copy = {
       subtitle: "Choose which client workspace should be current on this device."
+    }
+  end
+
+  config.scope :all_roots do |scope|
+    scope.label = "All roots"
+    scope.description = "Every accessible root type for the current actor, including non-workspace roots."
+    scope.available_roots = lambda do |actor:, **|
+      RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
+    end
+    scope.default_root = ->(roots:, **) { roots.first }
+    scope.root_description = lambda do |actor:, recording:, **|
+      role = RecordingStudioAccessible.role_for(actor: actor, recording: recording)
+      "#{recording.recordable.class.name} · #{recording.recordable.try(:name) || recording.recordable.try(:title)} · role #{role || "unknown"}"
+    end
+    scope.page_copy = {
+      subtitle: "Choose from every accessible root type, including Team roots."
     }
   end
 end

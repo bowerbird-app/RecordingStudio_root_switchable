@@ -8,6 +8,7 @@ This Rails app exists to validate RecordingStudioRootSwitchable in a real host a
 - `Current.actor` wiring for Recording Studio events
 - Multiple declared RecordingStudio 3.0 root recordings
 - Two configured root-switch scopes (`all_workspaces` and `client_workspaces`)
+- A seeded non-workspace root (`Team`) to demonstrate `switchable_root_types` filtering
 - Device-key-backed selection persistence through `RecordingStudio::RootSwitchable::ControllerSupport`
 - FlatPack layout integration, PageNav-backed gem views, and mounted engine routes for RecordingStudio, RecordingStudioAccessible, and RecordingStudioRootSwitchable
 
@@ -40,3 +41,9 @@ These seeded credentials are for local demo use only.
 ## Why This App Exists
 
 Use this app to verify the root-switching addon end to end. It demonstrates per-device persistence, actor-aware access filtering, multiple scopes, and fallback to the default accessible root when a saved selection no longer qualifies.
+
+## switchable_root_types Example
+
+The seed data creates an `Operations Team` root using the `Team` model (a non-`Workspace` root type) and grants access to demo users.
+
+In `config/initializers/recording_studio_root_switchable.rb`, both scopes set `switchable_root_types = "Workspace"`, so the Team root is intentionally excluded from the switch UI even though it is otherwise accessible.
