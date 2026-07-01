@@ -5,6 +5,7 @@ require "test_helper"
 class ScopeDefinitionTest < Minitest::Test
   RootRecord = Struct.new(:id, :recordable, :recordable_type, keyword_init: true)
   Recordable = Struct.new(:id, keyword_init: true)
+  Workspace = Class.new
 
   def test_defaults_fail_closed_without_explicit_access_callbacks
     scope = RecordingStudio::RootSwitchable::ScopeDefinition.new(:roots)
@@ -28,6 +29,46 @@ class ScopeDefinitionTest < Minitest::Test
     scope = RecordingStudio::RootSwitchable::ScopeDefinition.new(:roots)
     root = RootRecord.new(id: "root", recordable: Object.new, recordable_type: "Workspace")
     scope.available_roots = ->(**) { [root, root] }
+
+    assert_equal [root], scope.available_roots_for(actor: Object.new)
+  end
+
+  def test_available_roots_are_unfiltered_when_switchable_root_types_are_blank
+    scope = RecordingStudio::RootSwitchable::ScopeDefinition.new(:roots)
+    workspace_root = RootRecord.new(id: "workspace", recordable: Object.new, recordable_type: "Workspace")
+    page_root = RootRecord.new(id: "page", recordable: Object.new, recordable_type: "Page")
+    scope.available_roots = ->(**) { [workspace_root, page_root] }
+
+    scope.switchable_root_types = nil
+    assert_equal [workspace_root, page_root], scope.available_roots_for(actor: Object.new)
+
+    scope.switchable_root_types = ["", nil, " "]
+    assert_equal [workspace_root, page_root], scope.available_roots_for(actor: Object.new)
+  end
+
+  def test_switchable_root_types_normalize_strings_symbols_classes_and_arrays
+    scope = RecordingStudio::RootSwitchable::ScopeDefinition.new(:roots)
+    scope.switchable_root_types = ["Workspace", :Page, Workspace, ["", nil, :Project]]
+
+    assert_equal ["Workspace", "Page", Workspace.name, "Project"], scope.switchable_root_types
+  end
+
+  def test_available_roots_filter_prefers_recording_recordable_type
+    scope = RecordingStudio::RootSwitchable::ScopeDefinition.new(:roots)
+    recordable = Workspace.new
+    page_root = RootRecord.new(id: "page", recordable: recordable, recordable_type: "Page")
+    workspace_root = RootRecord.new(id: "workspace", recordable: recordable, recordable_type: Workspace.name)
+    scope.available_roots = ->(**) { [page_root, workspace_root] }
+    scope.switchable_root_types = Workspace
+
+    assert_equal [workspace_root], scope.available_roots_for(actor: Object.new)
+  end
+
+  def test_available_roots_filter_falls_back_to_recordable_class_name
+    scope = RecordingStudio::RootSwitchable::ScopeDefinition.new(:roots)
+    root = RootRecord.new(id: "workspace", recordable: Workspace.new, recordable_type: nil)
+    scope.available_roots = ->(**) { [root] }
+    scope.switchable_root_types = Workspace
 
     assert_equal [root], scope.available_roots_for(actor: Object.new)
   end

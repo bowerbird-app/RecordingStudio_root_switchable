@@ -12,9 +12,9 @@ RecordingStudioRootSwitchable.configure do |config|
   config.scope :all_workspaces do |scope|
     scope.label = "All workspaces"
     scope.description = "Every accessible workspace root for the current actor."
+    scope.switchable_root_types = "Workspace"
     scope.available_roots = lambda do |actor:, **|
       RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
-                              .select { |root| root.recordable.is_a?(Workspace) }
     end
     scope.default_root = lambda do |roots:, **|
       roots.find { |root| root.recordable.name == "Studio Workspace" } || roots.first
@@ -28,6 +28,7 @@ RecordingStudioRootSwitchable.configure do |config|
   config.scope :client_workspaces do |scope|
     scope.label = "Client workspaces"
     scope.description = "A narrower scope that only exposes client-facing roots."
+    scope.switchable_root_types = "Workspace"
     scope.available_roots = lambda do |actor:, **|
       RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
                               .select { |root| root.recordable.is_a?(Workspace) && root.recordable.name.start_with?("Client") }

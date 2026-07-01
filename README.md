@@ -69,6 +69,9 @@ RecordingStudioRootSwitchable.configure do |config|
   config.scope :all_workspaces do |scope|
     scope.label = "All workspaces"
     scope.description = "Every accessible workspace root"
+    # Optional: constrain this scope to root recordings whose recordable_type matches.
+    # Accepts nil/blank (no filter), strings, symbols, classes, or arrays.
+    scope.switchable_root_types = ["Workspace"]
     scope.available_roots = lambda do |actor:, **|
       RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
     end
@@ -76,6 +79,12 @@ RecordingStudioRootSwitchable.configure do |config|
   end
 end
 ```
+
+`switchable_root_types` is applied after root normalization and before the
+current/default/dropdown/switch result is chosen, so excluded recordable types
+cannot be selected for that scope. The filter compares against
+`recording.recordable_type` first and only falls back to
+`recording.recordable.class.name` when the recording has no stored type.
 
 RecordingStudio 3.0 requires every configured recordable to declare its hierarchy
 rules explicitly. Root Switchable only treats declared RecordingStudio roots as

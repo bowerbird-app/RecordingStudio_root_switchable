@@ -37,6 +37,9 @@ RecordingStudioRootSwitchable.configure do |config|
   config.scope :roots do |scope|
     scope.label = "Roots"
     scope.description = "All accessible root recordings"
+    # Optional: constrain this scope to one or more delegated_type recordable classes.
+    # Accepts strings, symbols, classes, arrays, nil, or blank values.
+    # scope.switchable_root_types = ["Workspace"]
     scope.available_roots = lambda do |actor:, **|
       RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
     end
