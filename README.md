@@ -70,7 +70,8 @@ RecordingStudioRootSwitchable.configure do |config|
     scope.label = "All workspaces"
     scope.description = "Every accessible workspace root"
     # Optional: constrain this scope to root recordings whose recordable_type matches.
-    # Accepts nil/blank (no filter), strings, symbols, classes, or arrays.
+    # Accepts nil/blank (no filter), strings, class-name symbols, classes, or arrays.
+    # Symbols are converted with to_s, so use :"Workspace"/:Workspace rather than :workspace.
     scope.switchable_root_types = ["Workspace"]
     scope.available_roots = lambda do |actor:, **|
       RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
@@ -80,11 +81,19 @@ RecordingStudioRootSwitchable.configure do |config|
 end
 ```
 
-`switchable_root_types` is applied after root normalization and before the
-current/default/dropdown/switch result is chosen, so excluded recordable types
-cannot be selected for that scope. The filter compares against
-`recording.recordable_type` first and only falls back to
+`switchable_root_types` defaults to no filtering, preserving existing host app
+behavior when it is unset or blank. When configured, it is applied after root
+normalization and before the current/default/dropdown/switch result is chosen,
+so excluded recordable types cannot be selected for that scope. The filter
+compares against `recording.recordable_type` first and only falls back to
 `recording.recordable.class.name` when the recording has no stored type.
+
+Use this when `RecordingStudioAccessible` returns structural roots because the
+actor has access to descendants inside that root tree, but those root types
+should not appear in the user-facing switcher. This is a Root Switchable display
+and switching policy only; it does not change RecordingStudio core root
+behavior. Roots must still be declared RecordingStudio roots, and access checks
+still apply before a root can be selected.
 
 RecordingStudio 3.0 requires every configured recordable to declare its hierarchy
 rules explicitly. Root Switchable only treats declared RecordingStudio roots as

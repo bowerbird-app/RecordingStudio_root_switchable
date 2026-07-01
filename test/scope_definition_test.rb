@@ -36,32 +36,53 @@ class ScopeDefinitionTest < Minitest::Test
   def test_available_roots_are_unfiltered_when_switchable_root_types_are_blank
     scope = RecordingStudio::RootSwitchable::ScopeDefinition.new(:roots)
     workspace_root = RootRecord.new(id: "workspace", recordable: Object.new, recordable_type: "Workspace")
-    page_root = RootRecord.new(id: "page", recordable: Object.new, recordable_type: "Page")
-    scope.available_roots = ->(**) { [workspace_root, page_root] }
+    message_root = RootRecord.new(id: "message", recordable: Object.new, recordable_type: "MessageRoot")
+    company_root = RootRecord.new(id: "company", recordable: Object.new, recordable_type: "Company")
+    scope.available_roots = ->(**) { [workspace_root, message_root, company_root] }
 
     scope.switchable_root_types = nil
-    assert_equal [workspace_root, page_root], scope.available_roots_for(actor: Object.new)
+    assert_equal [workspace_root, message_root, company_root], scope.available_roots_for(actor: Object.new)
 
     scope.switchable_root_types = ["", nil, " "]
-    assert_equal [workspace_root, page_root], scope.available_roots_for(actor: Object.new)
+    assert_equal [workspace_root, message_root, company_root], scope.available_roots_for(actor: Object.new)
   end
 
   def test_switchable_root_types_normalize_strings_symbols_classes_and_arrays
     scope = RecordingStudio::RootSwitchable::ScopeDefinition.new(:roots)
-    scope.switchable_root_types = ["Workspace", :Page, Workspace, ["", nil, :Project]]
+    scope.switchable_root_types = ["Workspace", :Page, :workspace, Workspace, ["", nil, :Project]]
 
-    assert_equal ["Workspace", "Page", Workspace.name, "Project"], scope.switchable_root_types
+    assert_equal ["Workspace", "Page", "workspace", Workspace.name, "Project"], scope.switchable_root_types
   end
 
   def test_available_roots_filter_prefers_recording_recordable_type
     scope = RecordingStudio::RootSwitchable::ScopeDefinition.new(:roots)
     recordable = Workspace.new
-    page_root = RootRecord.new(id: "page", recordable: recordable, recordable_type: "Page")
+    message_root = RootRecord.new(
+      id: "message",
+      recordable: recordable,
+      recordable_type: "RecordingStudioMessages::MessageRoot"
+    )
+    company_root = RootRecord.new(id: "company", recordable: recordable, recordable_type: "Company")
     workspace_root = RootRecord.new(id: "workspace", recordable: recordable, recordable_type: Workspace.name)
-    scope.available_roots = ->(**) { [page_root, workspace_root] }
+    scope.available_roots = ->(**) { [message_root, workspace_root, company_root] }
     scope.switchable_root_types = Workspace
 
     assert_equal [workspace_root], scope.available_roots_for(actor: Object.new)
+  end
+
+  def test_available_roots_filter_allows_multiple_recordable_types
+    scope = RecordingStudio::RootSwitchable::ScopeDefinition.new(:roots)
+    workspace_root = RootRecord.new(id: "workspace", recordable: Object.new, recordable_type: "Workspace")
+    message_root = RootRecord.new(
+      id: "message",
+      recordable: Object.new,
+      recordable_type: "RecordingStudioMessages::MessageRoot"
+    )
+    company_root = RootRecord.new(id: "company", recordable: Object.new, recordable_type: "Company")
+    scope.available_roots = ->(**) { [workspace_root, message_root, company_root] }
+    scope.switchable_root_types = ["Workspace", "Company"]
+
+    assert_equal [workspace_root, company_root], scope.available_roots_for(actor: Object.new)
   end
 
   def test_available_roots_filter_falls_back_to_recordable_class_name
