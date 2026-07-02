@@ -16,6 +16,24 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Update summary (0.3.0 to 0.3.1)
+
+This update from 0.3.0 to 0.3.1 adds scope-level root type filtering and
+related integration updates.
+
+- Adds `switchable_root_types` on scope definitions so each scope can include
+  only specific root recordable types (for example `Workspace` and `Page`).
+- Applies the filter during root normalization for default selection,
+  current-root resolution, dropdown rendering, and switch actions.
+- Preserves backward compatibility when `switchable_root_types` is unset or
+  blank by keeping previous "no filtering" behavior.
+- Updates generator initializer guidance and host-app configuration docs with
+  filter usage examples.
+- Expands the dummy app with a non-workspace `Team` root plus an `all_roots`
+  demo scope to show filtering in action.
+- Adds targeted test coverage for scope filtering behavior and service-level
+  root selection/switch outcomes.
+
 ## Installation
 
 Add the gems to your host app:
@@ -23,7 +41,7 @@ Add the gems to your host app:
 ```ruby
 gem "recording_studio", "~> 3.0"
 gem "recording_studio_accessible", "~> 0.3"
-gem "recording_studio_root_switchable"
+gem "recording_studio_root_switchable", "~> 0.3.1"
 ```
 
 Then run:
