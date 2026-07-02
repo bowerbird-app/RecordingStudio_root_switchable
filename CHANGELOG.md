@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-07-02
+
+### Changed
+- Bump RecordingStudioRootSwitchable to 0.3.1.
+- Add scope-level `switchable_root_types` filtering so host apps can limit switchable roots by recordable type per scope while preserving existing behavior when unset.
+- Apply filtering consistently in root resolution and switch actions, including fallback behavior when the current selection is filtered out.
+- Refresh generator initializer guidance and README configuration docs with `switchable_root_types` usage and semantics.
+- Extend the dummy app with a `Team` root type plus an `all_roots` scope example to demonstrate filtering non-Workspace roots from the switcher.
+- Update dummy app navigation and setup pages to surface the new filtering scenario and route examples.
+
+### Added
+- Regression coverage for `switchable_root_types` in scope definition behavior and both root resolution/switch services.
+- Dummy-app navigation coverage for the new filtering demo entry points.
+
+
 ## [0.3.0] - 2026-06-05
 
 ### Changed
@@ -39,7 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/releases/tag/v0.1.0

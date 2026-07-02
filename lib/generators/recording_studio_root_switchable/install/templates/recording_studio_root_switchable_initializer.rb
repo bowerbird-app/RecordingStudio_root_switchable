@@ -37,6 +37,11 @@ RecordingStudioRootSwitchable.configure do |config|
   config.scope :roots do |scope|
     scope.label = "Roots"
     scope.description = "All accessible root recordings"
+    # Optional: restrict which root recordable types can appear in the switcher.
+    # This is useful when some roots are structural-only, such as message roots.
+    # Accepts strings, class-name symbols, classes, arrays, nil, or blank values.
+    # Symbols are converted with to_s, so use :"Workspace"/:Workspace rather than :workspace.
+    # scope.switchable_root_types = ["Workspace"]
     scope.available_roots = lambda do |actor:, **|
       RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
     end

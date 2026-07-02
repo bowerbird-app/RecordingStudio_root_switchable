@@ -13,7 +13,7 @@ module RecordingStudio
                     :root_label,
                     :supported_if,
                     :validity_check
-      attr_reader :key
+      attr_reader :key, :switchable_root_types
 
       def initialize(key)
         @key = key.to_s
@@ -22,6 +22,7 @@ module RecordingStudio
         @page_copy = {}
         @supported_if = ->(**) { true }
         @available_roots = method(:default_available_roots)
+        @switchable_root_types = []
         @default_root = ->(roots:, **) { roots.first }
         @access_check = method(:default_access_allowed?)
         @validity_check = method(:default_valid_root?)
@@ -56,11 +57,17 @@ module RecordingStudio
       def available_roots_for(**)
         Array(resolve_callable(available_roots, **))
           .filter_map { |candidate| normalize_root_recording(candidate) }
+          .select { |recording| switchable_root_type?(recording) }
           .uniq(&:id)
       end
 
       def default_root_for(**)
-        normalize_root_recording(resolve_callable(default_root, **))
+        recording = normalize_root_recording(resolve_callable(default_root, **))
+        recording if recording.present? && switchable_root_type?(recording)
+      end
+
+      def switchable_root_types=(types)
+        @switchable_root_types = normalize_switchable_root_types(types)
       end
 
       def allowed?(**)
@@ -137,6 +144,29 @@ module RecordingStudio
         return true if defined?(::RecordingStudio::Recording) && candidate.is_a?(::RecordingStudio::Recording)
 
         candidate.respond_to?(:id) && candidate.respond_to?(:recordable)
+      end
+
+      def switchable_root_type?(recording)
+        return true if switchable_root_types.empty?
+
+        switchable_root_types.include?(recordable_type_for(recording))
+      end
+
+      def recordable_type_for(recording)
+        recordable_type = recording.recordable_type if recording.respond_to?(:recordable_type)
+
+        recordable_type.presence || recording.recordable&.class&.name
+      end
+
+      def normalize_switchable_root_types(types)
+        Array(types).flatten.filter_map do |type|
+          case type
+          when Class
+            type.name.presence
+          else
+            type.to_s.presence
+          end
+        end
       end
 
       def root_allowed?(recordable)

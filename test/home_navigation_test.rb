@@ -121,6 +121,31 @@ class HomeNavigationTest < Minitest::Test
     assert_includes view, "method.fetch(:code)"
   end
 
+  def test_home_index_shows_switchability_table_with_available_and_unavailable_states
+    view = read_dummy_file("app/views/home/index.html.erb")
+    controller = read_dummy_file("app/controllers/home_controller.rb")
+    initializer = read_dummy_file("config/initializers/recording_studio_root_switchable.rb")
+
+    assert_includes view, "title: \"Accessible root switchability\""
+    assert_includes view, "switchable_root_types for all_roots"
+    assert_includes view, "<table class=\"min-w-full divide-y divide-(--table-border-color)\">"
+    assert_includes view, "Root name"
+    assert_includes view, "Root type"
+    assert_includes view, "Switchable"
+    assert_includes view, "Details"
+    assert_includes view, "✅"
+    assert_includes view, "❌"
+    assert_includes view, "row.fetch(:reason)"
+
+    assert_includes controller, "@accessible_root_switchability_rows = accessible_root_switchability_rows"
+    assert_includes controller, "Included in switchable_root_types"
+    assert_includes controller, "is excluded by switchable_root_types"
+
+    assert_includes initializer, "config.scope :all_roots do |scope|"
+    assert_includes initializer, "scope.switchable_root_types = [ \"Workspace\", \"Page\" ]"
+    assert_includes initializer, "Team roots stay accessible but are intentionally excluded from switching"
+  end
+
   def test_gem_views_page_lists_engine_templates
     routes = read_dummy_file("config/routes.rb")
     controller = read_dummy_file("app/controllers/home_controller.rb")

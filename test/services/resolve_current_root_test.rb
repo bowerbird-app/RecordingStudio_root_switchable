@@ -66,14 +66,42 @@ class ResolveCurrentRootTest < Minitest::Test
     end
   end
 
+  def test_default_root_selection_uses_filtered_available_roots
+    page_root = RootRecord.new(id: "page", recordable: Struct.new(:name).new("Page"), recordable_type: "Page")
+    workspace_root = RootRecord.new(
+      id: "workspace",
+      recordable: Struct.new(:name).new("Workspace"),
+      recordable_type: "Workspace"
+    )
+
+    configure_roots([page_root, workspace_root], switchable_root_types: "Workspace") do |scope|
+      scope.default_root = ->(**) { page_root }
+    end
+
+    RecordingStudio::RootSwitchable::Selection.stub(:lookup, nil) do
+      result = RecordingStudio::RootSwitchable::Services::ResolveCurrentRoot.call(
+        actor: Object.new,
+        device_key: "device-1",
+        scope_key: "roots"
+      )
+
+      assert result.success?
+      assert_equal [workspace_root], result.available_roots
+      assert_equal workspace_root, result.root_recording
+      assert_equal :default, result.selected_via
+    end
+  end
+
   private
 
-  def configure_roots(roots)
+  def configure_roots(roots, switchable_root_types: nil)
     RecordingStudioRootSwitchable.configure do |config|
       config.scope(:roots) do |scope|
         scope.available_roots = ->(**) { roots }
+        scope.switchable_root_types = switchable_root_types
         scope.access_check = ->(**) { true }
         scope.validity_check = ->(**) { true }
+        yield(scope) if block_given?
       end
     end
   end

@@ -12,8 +12,50 @@
       size: :md
     ) %>
 
-    <%= link_to recording_studio_root_switchable.root_switch_path(scope: current_root_scope_key), class: "inline-flex" do %>
+    <%= link_to recording_studio_root_switchable.root_switch_path(scope: "all_roots"), class: "inline-flex" do %>
       <%= render FlatPack::Button::Component.new(text: "Switch", style: :primary, size: :md) %>
     <% end %>
+  </div>
+
+  <div class="flex flex-col gap-3">
+    <%= render FlatPack::PageTitle::Component.new(
+      title: "Accessible root switchability",
+      subtitle: "Visible in RecordingStudioAccessible and marked as available or unavailable for switching by switchable_root_types for all_roots.",
+      variant: :h3,
+      class: "mb-0 pb-0"
+    ) %>
+
+    <div class="overflow-hidden rounded-xl border border-(--surface-border-color) bg-(--surface-background-color) shadow-sm">
+      <table class="min-w-full divide-y divide-(--table-border-color)">
+        <thead class="bg-(--surface-muted-background-color)">
+          <tr>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-(--surface-content-color)">Root name</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-(--surface-content-color)">Root type</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-(--surface-content-color)">Switchable</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-(--surface-content-color)">Details</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-(--table-border-color) bg-(--surface-background-color)">
+          <% if @accessible_root_switchability_rows.any? %>
+            <% @accessible_root_switchability_rows.each do |row| %>
+              <tr>
+                <td class="px-4 py-3 text-sm font-semibold text-(--surface-content-color)"><%= root_recording_display_name(row.fetch(:recording)) %></td>
+                <td class="px-4 py-3 text-sm text-(--surface-content-color)"><%= root_recording_display_type(row.fetch(:recording)) %></td>
+                <td class="px-4 py-3 text-sm text-(--surface-content-color)" aria-label="<%= row.fetch(:switchable) ? "Switchable" : "Not switchable" %>"><%= row.fetch(:switchable) ? "✅" : "❌" %></td>
+                <td class="px-4 py-3 text-sm text-(--surface-muted-content-color)">
+                  <%= row.fetch(:reason) %>
+                </td>
+              </tr>
+            <% end %>
+          <% else %>
+            <tr>
+              <td colspan="4" class="px-4 py-6 text-sm text-(--surface-muted-content-color)">
+                No accessible roots are currently available for this scope.
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

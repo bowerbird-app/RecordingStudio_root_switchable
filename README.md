@@ -16,6 +16,24 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Update summary (0.3.0 to 0.3.1)
+
+This update from 0.3.0 to 0.3.1 adds scope-level root type filtering and
+related integration updates.
+
+- Adds `switchable_root_types` on scope definitions so each scope can include
+  only specific root recordable types (for example `Workspace` and `Page`).
+- Applies the filter during root normalization for default selection,
+  current-root resolution, dropdown rendering, and switch actions.
+- Preserves backward compatibility when `switchable_root_types` is unset or
+  blank by keeping previous "no filtering" behavior.
+- Updates generator initializer guidance and host-app configuration docs with
+  filter usage examples.
+- Expands the dummy app with a non-workspace `Team` root plus an `all_roots`
+  demo scope to show filtering in action.
+- Adds targeted test coverage for scope filtering behavior and service-level
+  root selection/switch outcomes.
+
 ## Installation
 
 Add the gems to your host app:
@@ -23,7 +41,7 @@ Add the gems to your host app:
 ```ruby
 gem "recording_studio", "~> 3.0"
 gem "recording_studio_accessible", "~> 0.3"
-gem "recording_studio_root_switchable"
+gem "recording_studio_root_switchable", "~> 0.3.1"
 ```
 
 Then run:
@@ -69,6 +87,10 @@ RecordingStudioRootSwitchable.configure do |config|
   config.scope :all_workspaces do |scope|
     scope.label = "All workspaces"
     scope.description = "Every accessible workspace root"
+    # Optional: constrain this scope to root recordings whose recordable_type matches.
+    # Accepts nil/blank (no filter), strings, class-name symbols, classes, or arrays.
+    # Symbols are converted with to_s, so use :"Workspace"/:Workspace rather than :workspace.
+    scope.switchable_root_types = ["Workspace"]
     scope.available_roots = lambda do |actor:, **|
       RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
     end
@@ -76,6 +98,20 @@ RecordingStudioRootSwitchable.configure do |config|
   end
 end
 ```
+
+`switchable_root_types` defaults to no filtering, preserving existing host app
+behavior when it is unset or blank. When configured, it is applied after root
+normalization and before the current/default/dropdown/switch result is chosen,
+so excluded recordable types cannot be selected for that scope. The filter
+compares against `recording.recordable_type` first and only falls back to
+`recording.recordable.class.name` when the recording has no stored type.
+
+Use this when `RecordingStudioAccessible` returns structural roots because the
+actor has access to descendants inside that root tree, but those root types
+should not appear in the user-facing switcher. This is a Root Switchable display
+and switching policy only; it does not change RecordingStudio core root
+behavior. Roots must still be declared RecordingStudio roots, and access checks
+still apply before a root can be selected.
 
 RecordingStudio 3.0 requires every configured recordable to declare its hierarchy
 rules explicitly. Root Switchable only treats declared RecordingStudio roots as

@@ -74,6 +74,9 @@ root_recordings = workspace_names.index_with do |name|
   RecordingStudio.root_recording_for(workspace)
 end
 
+team = Team.find_or_create_by!(name: "Operations Team")
+team_root_recording = RecordingStudio.root_recording_for(team)
+
 grant_access = lambda do |actor:, role:, workspace_name:|
   root_recording = root_recordings.fetch(workspace_name)
 
@@ -94,10 +97,22 @@ begin
   [ "Studio Workspace", "Client Alpha", "Client Beta" ].each do |workspace_name|
     grant_access.call(actor: admin, role: :admin, workspace_name: workspace_name)
   end
+  RecordingStudioAccessible.grant_access(
+    recording: team_root_recording,
+    actor: admin,
+    role: :admin,
+    manager_actor: admin
+  )
 
   [ "Studio Workspace", "Client Alpha" ].each do |workspace_name|
     grant_access.call(actor: viewer, role: :view, workspace_name: workspace_name)
   end
+  RecordingStudioAccessible.grant_access(
+    recording: team_root_recording,
+    actor: viewer,
+    role: :view,
+    manager_actor: admin
+  )
 ensure
   ENV["RECORDING_STUDIO_ACCESSIBLE_BOOTSTRAP_ADMIN"] = previous_bootstrap_admin
 end
@@ -112,7 +127,11 @@ pages_by_workspace.each do |workspace_name, page_definitions|
     end
 
     if page_recording
-      page_recording.recordable.update!(**page_definition)
+      Page.where(id: page_recording.recordable_id).update_all(
+        title: page_definition.fetch(:title),
+        body: page_definition.fetch(:body),
+        updated_at: Time.current
+      )
       next
     end
 
@@ -128,4 +147,6 @@ DemoUsers.all.each do |demo_user|
 end
 puts "Seeded scopes: all_workspaces, client_workspaces"
 puts "Seeded roots: #{root_recordings.keys.join(', ')}"
+puts "Seeded non-workspace root: #{team.name} (Team)"
+puts "Seeded note: Team is accessible but not switchable because switchable_root_types only allows Workspace"
 puts "Seeded pages: #{pages_by_workspace.transform_values { |pages| pages.map { |page| page.fetch(:title) } }}"

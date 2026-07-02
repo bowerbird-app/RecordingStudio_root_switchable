@@ -65,12 +65,31 @@ class SwitchRootTest < Minitest::Test
     assert_includes result.errors, "Selected root is not available for this scope."
   end
 
+  def test_rejects_roots_excluded_by_switchable_root_types
+    alpha_root = RootRecord.new(id: "alpha", recordable: Struct.new(:name).new("Alpha"), recordable_type: "Workspace")
+    beta_root = RootRecord.new(id: "beta", recordable: Struct.new(:name).new("Beta"), recordable_type: "Page")
+
+    configure_roots([alpha_root, beta_root], switchable_root_types: "Workspace")
+
+    result = RecordingStudio::RootSwitchable::Services::SwitchRoot.call(
+      actor: Object.new,
+      device_key: "device-1",
+      root_recording_id: "beta",
+      scope_key: "roots"
+    )
+
+    refute result.success?
+    assert_includes result.errors, "Selected root is not available for this scope."
+    assert_equal [alpha_root], result.available_roots
+  end
+
   private
 
-  def configure_roots(roots)
+  def configure_roots(roots, switchable_root_types: nil)
     RecordingStudioRootSwitchable.configure do |config|
       config.scope(:roots) do |scope|
         scope.available_roots = ->(**) { roots }
+        scope.switchable_root_types = switchable_root_types
         scope.access_check = ->(**) { true }
         scope.validity_check = ->(**) { true }
       end
