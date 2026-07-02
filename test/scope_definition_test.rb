@@ -80,7 +80,7 @@ class ScopeDefinitionTest < Minitest::Test
     )
     company_root = RootRecord.new(id: "company", recordable: Object.new, recordable_type: "Company")
     scope.available_roots = ->(**) { [workspace_root, message_root, company_root] }
-    scope.switchable_root_types = ["Workspace", "Company"]
+    scope.switchable_root_types = %w[Workspace Company]
 
     assert_equal [workspace_root, company_root], scope.available_roots_for(actor: Object.new)
   end
