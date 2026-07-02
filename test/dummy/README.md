@@ -46,4 +46,4 @@ Use this app to verify the root-switching addon end to end. It demonstrates per-
 
 The seed data creates an `Operations Team` root using the `Team` model (a non-`Workspace` root type) and grants access to demo users.
 
-In `config/initializers/recording_studio_root_switchable.rb`, both scopes set `switchable_root_types = "Workspace"`, so the Team root is intentionally excluded from the switch UI even though it is otherwise accessible.
+In `config/initializers/recording_studio_root_switchable.rb`, the `all_roots` scope sets `switchable_root_types = [ "Workspace", "Page" ]`, so the Team root is intentionally excluded from the switch UI even though it is otherwise accessible.

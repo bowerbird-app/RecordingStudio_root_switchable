@@ -49,7 +49,8 @@ RecordingStudioRootSwitchable.configure do |config|
 
   config.scope :all_roots do |scope|
     scope.label = "All roots"
-    scope.description = "Every accessible root type for the current actor, including non-workspace roots."
+    scope.description = "Every accessible root type except Team roots, which are excluded by switchable_root_types."
+    scope.switchable_root_types = [ "Workspace", "Page" ]
     scope.available_roots = lambda do |actor:, **|
       RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
     end
@@ -59,7 +60,7 @@ RecordingStudioRootSwitchable.configure do |config|
       "#{recording.recordable.class.name} · #{recording.recordable.try(:name) || recording.recordable.try(:title)} · role #{role || "unknown"}"
     end
     scope.page_copy = {
-      subtitle: "Choose from every accessible root type, including Team roots."
+      subtitle: "Choose from accessible Workspace and Page roots. Team roots stay accessible but are intentionally excluded from switching."
     }
   end
 end

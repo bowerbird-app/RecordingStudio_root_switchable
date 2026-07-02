@@ -3,7 +3,7 @@ class HomeController < ApplicationController
 
   def index
     @active_scope_key = current_root_scope_key.to_s.presence || "all_workspaces"
-    @non_switchable_accessible_roots = non_switchable_accessible_roots(scope_key: @active_scope_key)
+    @accessible_root_switchability_rows = accessible_root_switchability_rows(scope_key: @active_scope_key)
   end
 
   def setup
@@ -220,7 +220,7 @@ class HomeController < ApplicationController
     end
   end
 
-  def non_switchable_accessible_roots(scope_key:)
+  def accessible_root_switchability_rows(scope_key:)
     return [] if current_user.blank?
 
     scope = RecordingStudioRootSwitchable.configuration.resolve_scope(
@@ -231,10 +231,23 @@ class HomeController < ApplicationController
     )
     return [] if scope.blank?
 
-    accessible_roots = Array(RecordingStudioAccessible.root_recordings_for(actor: current_user, minimum_role: :view))
+    accessible_roots = Array(RecordingStudioAccessible.root_recordings_for(actor: current_user, minimum_role: :view)).uniq(&:id)
     switchable_ids = scope.available_roots_for(actor: current_user, controller: self, scope_key: scope_key).map(&:id)
 
-    accessible_roots.reject { |recording| switchable_ids.include?(recording.id) }.uniq(&:id)
+    accessible_roots.map do |recording|
+      switchable = switchable_ids.include?(recording.id)
+      reason = if switchable
+        "Included in switchable_root_types for #{scope_key}."
+      else
+        "Type #{root_recording_display_type(recording)} is excluded by switchable_root_types for #{scope_key}."
+      end
+
+      {
+        recording: recording,
+        switchable: switchable,
+        reason: reason
+      }
+    end
   rescue RecordingStudioRootSwitchable::ConfigurationError
     []
   end
