@@ -88,12 +88,12 @@ class InstallGeneratorTest < Minitest::Test
 
   def tailwind_source_lines
     [
-      '@source "../../vendor/recording_studio_root_switchable/app/views/**/*.erb";',
-      '@source "../../vendor/bundle/**/recording_studio_root_switchable*/app/views/**/*.erb";',
+      '@source "../../../vendor/recording_studio_root_switchable/app/views/**/*.erb";',
+      '@source "../../../vendor/bundle/**/recording_studio_root_switchable*/app/views/**/*.erb";',
       '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_root_switchable-*/app/views/**/*.erb";',
-      '@source "../../vendor/flat_pack/app/components/**/*.{rb,erb}";',
-      '@source "../../vendor/bundle/**/flat_pack*/app/components/**/*.{rb,erb}";',
-      '@source "../../vendor/bundle/**/flatpack*/app/components/**/*.{rb,erb}";',
+      '@source "../../../vendor/flat_pack/app/components/**/*.{rb,erb}";',
+      '@source "../../../vendor/bundle/**/flat_pack*/app/components/**/*.{rb,erb}";',
+      '@source "../../../vendor/bundle/**/flatpack*/app/components/**/*.{rb,erb}";',
       '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flat_pack-*/app/components/**/*.{rb,erb}";',
       '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
     ]

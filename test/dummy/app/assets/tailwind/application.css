@@ -3,18 +3,18 @@
 /* Include dummy app views for Tailwind CSS */
 @source "../../views/**/*.erb";
 
-/* Include gem sources via local vendor symlinks (created by bin/rails gem_sources:link) */
-@source "../../vendor/flat_pack/app/components/**/*.{rb,erb}";
-@source "../../vendor/recording_studio/app/views/**/*.erb";
-@source "../../vendor/recording_studio/app/components/**/*.{rb,erb}";
+/* Include gem sources via vendor/ symlinks (bin/rails gem_sources:link) */
+@source "../../../vendor/flat_pack/app/components/**/*.{rb,erb}";
+@source "../../../vendor/recording_studio/app/views/**/*.erb";
+@source "../../../vendor/recording_studio/app/components/**/*.{rb,erb}";
 
 /* Include the engine's views in the Tailwind build */
 @source "../../../../../app/views/**/*.erb";
 
 /* Fallback scan paths for common Bundler install locations */
-@source "../../vendor/bundle/**/flat_pack*/app/components/**/*.{rb,erb}";
-@source "../../vendor/bundle/**/flatpack*/app/components/**/*.{rb,erb}";
-@source "../../vendor/bundle/**/recording_studio*/app/views/**/*.erb";
+@source "../../../vendor/bundle/**/flat_pack*/app/components/**/*.{rb,erb}";
+@source "../../../vendor/bundle/**/flatpack*/app/components/**/*.{rb,erb}";
+@source "../../../vendor/bundle/**/recording_studio*/app/views/**/*.erb";
 @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flat_pack-*/app/components/**/*.{rb,erb}";
 @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";
 @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/RecordingStudio-*/app/views/**/*.erb";

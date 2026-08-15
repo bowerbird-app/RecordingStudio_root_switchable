@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 namespace :recording_studio_root_switchable do
-  desc "Symlink FlatPack and RecordingStudioRootSwitchable into vendor/ for Tailwind @source scanning"
+  desc "Symlink FlatPack and related gems into vendor/ for Tailwind @source scanning"
   task link_tailwind_sources: :environment do
     require "fileutils"
 
@@ -10,6 +10,14 @@ namespace :recording_studio_root_switchable do
         Bundler.load.specs.find { |spec| spec.name == gem_name }&.full_gem_path
     rescue StandardError
       nil
+    end
+
+    recursive_link = lambda do |source|
+      source_pathname = Pathname.new(source).expand_path
+      rails_root = Rails.root.expand_path
+      source_pathname == rails_root || rails_root.to_s.start_with?("#{source_pathname}/")
+    rescue StandardError
+      false
     end
 
     vendor_dir = Rails.root.join("vendor")
@@ -28,9 +36,26 @@ namespace :recording_studio_root_switchable do
         next
       end
 
+      if recursive_link.call(source)
+        warn "recording_studio_root_switchable:link_tailwind_sources skipped #{link_name}: " \
+             "gem path contains the app root"
+        next
+      end
+
       FileUtils.rm_f(destination) if File.symlink?(destination) || File.exist?(destination)
       File.symlink(source, destination)
       puts "Linked vendor/#{link_name} -> #{source}"
     end
   end
+end
+
+# Keep host Tailwind builds in sync with installed gem locations.
+%w[tailwindcss:build tailwindcss:watch].each do |task_name|
+  next unless Rake::Task.task_defined?(task_name)
+
+  task = Rake::Task[task_name]
+  prerequisite = "recording_studio_root_switchable:link_tailwind_sources"
+  next if task.prerequisites.include?(prerequisite)
+
+  task.enhance([prerequisite])
 end

@@ -12,10 +12,6 @@ module RecordingStudioRootSwitchable
       end
     end
 
-    rake_tasks do
-      load root.join("lib/tasks/recording_studio_root_switchable_tasks.rake")
-    end
-
     initializer "recording_studio_root_switchable.load_config" do |app|
       yaml_config = RecordingStudioRootSwitchable::Engine.load_yaml_config(app)
       if yaml_config
