@@ -62,8 +62,7 @@ module RecordingStudio
       def resolve_recording_studio_root_switchable_current
         RecordingStudio::RootSwitchable::Current.actor =
           RecordingStudioRootSwitchable.configuration.current_actor_for(controller: self)
-        RecordingStudio::RootSwitchable::Current.device_key =
-          RecordingStudio::RootSwitchable::DeviceKey.fetch(controller: self)
+        RecordingStudio::RootSwitchable::Current.device_key = fetch_recording_studio_device_key
 
         @current_root_resolution = RecordingStudio::RootSwitchable::Services::ResolveCurrentRoot.call(
           controller: self,
@@ -71,6 +70,12 @@ module RecordingStudio
           device_key: RecordingStudio::RootSwitchable::Current.device_key,
           scope_key: recording_studio_root_switchable_scope_key
         )
+      end
+
+      def fetch_recording_studio_device_key
+        RecordingStudio::RootSwitchable::DeviceKey.fetch(controller: self)
+      rescue RecordingStudio::RootSwitchable::DeviceKey::Unavailable
+        nil
       end
 
       def recording_studio_root_switchable_scope_key

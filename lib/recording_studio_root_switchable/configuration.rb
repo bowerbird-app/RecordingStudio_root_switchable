@@ -189,9 +189,17 @@ module RecordingStudioRootSwitchable
           validate_after_switch_redirect!(value, source: source)
           self.after_switch_redirect = value
         when :allow_anonymous_selections
-          self.allow_anonymous_selections = !value.nil?
+          self.allow_anonymous_selections = cast_boolean!(
+            key: :allow_anonymous_selections,
+            value: value,
+            source: source
+          )
         when :store_raw_user_agent
-          self.store_raw_user_agent = !value.nil?
+          self.store_raw_user_agent = cast_boolean!(
+            key: :store_raw_user_agent,
+            value: value,
+            source: source
+          )
         when :last_used_at_touch_interval
           self.last_used_at_touch_interval = value
         when :switch_rate_limit
@@ -280,6 +288,16 @@ module RecordingStudioRootSwitchable
         source: source,
         config_key: :device_key_cookie_name,
         detail: "expected a String or Symbol"
+      )
+    end
+
+    def cast_boolean!(key:, value:, source:)
+      return value if [true, false].include?(value)
+
+      raise ConfigurationError.new(
+        source: source,
+        config_key: key,
+        detail: "expected a boolean"
       )
     end
 

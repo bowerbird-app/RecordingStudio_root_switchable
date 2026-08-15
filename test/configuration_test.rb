@@ -86,6 +86,19 @@ class ConfigurationTest < Minitest::Test
     refute @configuration.store_raw_user_agent
   end
 
+  def test_merge_preserves_false_boolean_flags
+    @configuration.allow_anonymous_selections = true
+    @configuration.store_raw_user_agent = true
+
+    @configuration.merge!(
+      allow_anonymous_selections: false,
+      store_raw_user_agent: false
+    )
+
+    refute @configuration.allow_anonymous_selections
+    refute @configuration.store_raw_user_agent
+  end
+
   def test_merge_rejects_unknown_top_level_keys
     error = assert_raises(RecordingStudioRootSwitchable::ConfigurationError) do
       @configuration.merge!({ unknown_option: true }, source: "config.x.recording_studio_root_switchable")
