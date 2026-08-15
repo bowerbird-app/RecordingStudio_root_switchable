@@ -12,9 +12,10 @@
     anchor_label: "Close"
   ) %>
 
+  <% page_subtitle = @page_copy.fetch(:subtitle).presence %>
   <%= render FlatPack::PageTitle::Component.new(
     title: @page_copy.fetch(:title),
-    subtitle: @page_copy.fetch(:subtitle),
+    subtitle: page_subtitle,
     variant: :h1
   ) %>
 
@@ -25,7 +26,10 @@
       description: @page_copy.fetch(:empty_state_body)
     ) %>
   <% else %>
-    <p class="text-sm text-(--surface-muted-content-color)"><%= @page_copy.fetch(:persistence_hint) %></p>
+    <% persistence_hint = @page_copy.fetch(:persistence_hint).presence %>
+    <% if persistence_hint %>
+      <p class="text-sm text-(--surface-muted-content-color)"><%= persistence_hint %></p>
+    <% end %>
 
     <%= render FlatPack::Card::Component.new(style: :default, class: "w-full") do |card| %>
       <% card.body do %>

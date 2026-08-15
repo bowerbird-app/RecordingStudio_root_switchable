@@ -15,6 +15,15 @@ class ConfigurationTest < Minitest::Test
     assert_equal "Current", @configuration.page_copy.fetch(:selected_badge)
   end
 
+  def test_default_page_copy_keeps_switch_ui_minimal
+    copy = @configuration.page_copy
+
+    assert_equal "Switch root", copy.fetch(:title)
+    assert_equal "", copy.fetch(:subtitle)
+    assert_equal "", copy.fetch(:persistence_hint)
+    assert_equal "Use", copy.fetch(:switch_action_label)
+  end
+
   def test_layout_defaults_to_nil_for_gem_blank_layout
     assert_nil @configuration.layout
   end

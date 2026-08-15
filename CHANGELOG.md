@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-08-15
+
+### Changed
+- Simplify the mounted switch page defaults: no subtitle or persistence hint, and shorter `Use` action label.
+- Skip rendering blank `subtitle` / `persistence_hint` values so hosts can keep the chooser minimal.
+- Remove explanatory scope `page_copy` overrides from the dummy app; filtering docs stay in scope descriptions.
+
 ## [0.3.2] - 2026-08-15
 
 ### Security

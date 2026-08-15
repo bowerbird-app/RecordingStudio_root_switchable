@@ -16,6 +16,12 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Update summary (0.3.2 to 0.3.3)
+
+- Keep the mounted switch page as a simple chooser: title, root list, Current badge, and a short Use action.
+- Default `page_copy` no longer ships explanatory subtitle or persistence-hint text; blank values are not rendered.
+- Hosts can still set `subtitle` / `persistence_hint` when they want extra context.
+
 ## Update summary (0.3.1 to 0.3.2)
 
 Hardening pass focused on security, performance, and shared helpers:
@@ -34,7 +40,7 @@ Add the gems to your host app:
 ```ruby
 gem "recording_studio", "~> 3.0"
 gem "recording_studio_accessible", "~> 0.3"
-gem "recording_studio_root_switchable", "~> 0.3.2"
+gem "recording_studio_root_switchable", "~> 0.3.3"
 ```
 
 Then run:
@@ -241,6 +247,19 @@ Supported boot-time configuration keys are:
 - `after_switch_redirect`
 
 `page_copy` must be a hash whose keys match the documented copy fields exposed by the gem, and each value must be a string.
+
+Default copy is intentionally minimal (title + list actions only). Blank `subtitle` and `persistence_hint` values are omitted from the page. Hosts can override any field, for example:
+
+```ruby
+config.page_copy = {
+  title: "Choose workspace",
+  switch_action_label: "Select",
+  subtitle: "Optional context shown under the title.",
+  persistence_hint: "Optional note above the list."
+}
+```
+
+Filtering rules (such as which root types are switchable) belong in scope configuration and docs, not in default page copy.
 
 `layout` controls which Rails layout the mounted root-switch page renders inside. When `layout` is `nil`, the gem uses its own blank layout. Host apps can set `layout` to a String such as `"application"`, a Symbol such as `:application_layout`, or a callable that returns either value per request.
 

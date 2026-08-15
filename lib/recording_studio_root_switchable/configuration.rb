@@ -32,16 +32,16 @@ module RecordingStudioRootSwitchable
 
     DEFAULT_PAGE_COPY = {
       title: "Switch root",
-      subtitle: "Choose which accessible root Recording Studio should treat as current for this device and scope.",
+      subtitle: "",
       scope_heading: "Scopes",
       roots_heading: "Available roots",
       current_selection_label: "Current selection",
       device_label: "Device key",
-      persistence_hint: "Selections are stored per actor, device, and scope.",
+      persistence_hint: "",
       selected_badge: "Current",
-      switch_action_label: "Switch root",
+      switch_action_label: "Use",
       empty_state_title: "No roots are available",
-      empty_state_body: "This scope does not currently expose any accessible roots for the current actor."
+      empty_state_body: "No accessible roots are available to switch to."
     }.freeze
 
     DEFAULT_SWITCH_RATE_LIMIT = { limit: 30, period: 1.minute }.freeze

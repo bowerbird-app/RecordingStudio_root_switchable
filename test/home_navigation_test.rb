@@ -143,7 +143,8 @@ class HomeNavigationTest < Minitest::Test
 
     assert_includes initializer, "config.scope :all_roots do |scope|"
     assert_includes initializer, "scope.switchable_root_types = [ \"Workspace\", \"Page\" ]"
-    assert_includes initializer, "Team roots stay accessible but are intentionally excluded from switching"
+    assert_includes initializer, "excluded by switchable_root_types"
+    refute_includes initializer, "scope.page_copy"
   end
 
   def test_gem_views_page_lists_engine_templates
