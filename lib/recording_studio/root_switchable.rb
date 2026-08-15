@@ -36,6 +36,10 @@ module RecordingStudio
         Services::SwitchRoot.call(...)
       end
 
+      def prune_selections!(limit: 500)
+        SelectionCleanup.prune_orphaned!(limit: limit)
+      end
+
       def root_api_error?(error)
         %w[
           RecordingStudio::MissingRecordableDeclaration

@@ -83,6 +83,21 @@ class SwitchRootTest < Minitest::Test
     assert_equal [alpha_root], result.available_roots
   end
 
+  def test_rejects_anonymous_actor_by_default
+    alpha_root = RootRecord.new(id: "alpha", recordable: Struct.new(:name).new("Alpha"), recordable_type: "Workspace")
+    configure_roots([alpha_root])
+
+    result = RecordingStudio::RootSwitchable::Services::SwitchRoot.call(
+      actor: nil,
+      device_key: "device-1",
+      root_recording_id: "alpha",
+      scope_key: "roots"
+    )
+
+    refute result.success?
+    assert_includes result.errors, "An authenticated actor is required to switch roots."
+  end
+
   private
 
   def configure_roots(roots, switchable_root_types: nil)

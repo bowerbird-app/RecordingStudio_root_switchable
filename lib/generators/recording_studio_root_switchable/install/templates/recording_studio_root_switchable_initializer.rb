@@ -8,11 +8,18 @@ RecordingStudioRootSwitchable.configure do |config|
   # Optional: render the mounted page inside a host layout instead of the gem blank layout.
   # config.layout = :application_layout
 
-  # For production hosts, enable secure cookies and force SSL in the host app.
-  # config.device_key_cookie_options = config.device_key_cookie_options.merge(secure: Rails.env.production?)
+  # Secure cookies are enabled automatically in production. Prefer HTTPS in production hosts.
+  config.device_key_cookie_options = config.device_key_cookie_options.merge(secure: Rails.env.production?)
+
+  # Anonymous (actor-less) selections are disabled by default. Enable only if you need them.
+  # config.allow_anonymous_selections = true
+
+  # Raw user-agent persistence is off by default. Derived device metadata is still stored.
+  # config.store_raw_user_agent = true
 
   # Optionally control where the browser lands after a successful switch.
   # Available args: controller:, actor:, device_key:, scope:, root_recording:, return_to:
+  # return_to is already sanitized to a same-origin relative path (or nil).
   # config.after_switch_redirect = lambda do |controller:, return_to:, **|
   #   return_to.presence || controller.main_app.root_path
   # end

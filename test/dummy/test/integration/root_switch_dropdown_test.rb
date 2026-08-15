@@ -23,12 +23,12 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
 
     assert_select "[data-controller='flat-pack--button-dropdown']" do
       assert_select "button", text: /Studio Workspace/
-      assert_select "[role='menuitem'][form^='root-switch-dropdown-all_workspaces-']", text: /Client Alpha/
+      assert_select "[role='menuitem'][form^='root-switch-dropdown-all_roots-']", text: /Client Alpha/
     end
 
-    assert_select "form.hidden[id^='root-switch-dropdown-all_workspaces-'] input[name='root_switch[root_recording_id]']",
+    assert_select "form.hidden[id^='root-switch-dropdown-all_roots-'] input[name='root_switch[root_recording_id]']",
                   minimum: 1
-    assert_select "form.hidden[id^='root-switch-dropdown-all_workspaces-'] input[name='root_switch[return_to]'][value='/config']",
+    assert_select "form.hidden[id^='root-switch-dropdown-all_roots-'] input[name='root_switch[return_to]'][value='/config']",
                   minimum: 1
   end
 end

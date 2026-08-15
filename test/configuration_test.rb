@@ -67,6 +67,25 @@ class ConfigurationTest < Minitest::Test
     assert @configuration.device_key_cookie_options.fetch(:expires)
   end
 
+  def test_merge_rejects_disabling_httponly_on_device_key_cookie
+    error = assert_raises(RecordingStudioRootSwitchable::ConfigurationError) do
+      @configuration.merge!(device_key_cookie_options: { httponly: false })
+    end
+
+    assert_includes error.message, "httponly cannot be disabled"
+  end
+
+  def test_resolved_device_key_cookie_options_force_httponly
+    @configuration.device_key_cookie_options = @configuration.device_key_cookie_options.merge(httponly: false)
+
+    assert @configuration.resolved_device_key_cookie_options.fetch(:httponly)
+  end
+
+  def test_defaults_disable_anonymous_selections_and_raw_user_agent
+    refute @configuration.allow_anonymous_selections
+    refute @configuration.store_raw_user_agent
+  end
+
   def test_merge_rejects_unknown_top_level_keys
     error = assert_raises(RecordingStudioRootSwitchable::ConfigurationError) do
       @configuration.merge!({ unknown_option: true }, source: "config.x.recording_studio_root_switchable")

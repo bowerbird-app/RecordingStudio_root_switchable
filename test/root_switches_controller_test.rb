@@ -78,6 +78,31 @@ class RootSwitchesControllerTest < Minitest::Test
     end
   end
 
+  def test_after_switch_redirect_location_rejects_backslash_open_redirect_tricks
+    RecordingStudioRootSwitchable.configuration.after_switch_redirect = lambda do |return_to:, **|
+      return_to
+    end
+
+    @controller.stub(:root_switch_params, ActionController::Parameters.new(return_to: "/\\example.com")) do
+      assert_equal "/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces",
+                   @controller.send(:after_switch_redirect_location, @result)
+    end
+  end
+
+  def test_after_switch_redirect_sanitizes_return_to_before_host_callback
+    observed_return_to = :unset
+    RecordingStudioRootSwitchable.configuration.after_switch_redirect = lambda do |return_to:, **|
+      observed_return_to = return_to
+      return_to
+    end
+
+    @controller.stub(:root_switch_params, ActionController::Parameters.new(return_to: "https://example.com/phish")) do
+      @controller.send(:after_switch_redirect_location, @result)
+    end
+
+    assert_nil observed_return_to
+  end
+
   def test_return_anchor_url_prefers_safe_return_to_param
     @controller.stub(:params, ActionController::Parameters.new(return_to: "/projects/current")) do
       assert_equal "/projects/current", @controller.send(:return_anchor_url)

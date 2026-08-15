@@ -66,7 +66,8 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
                 .first!
     assert_equal selected_root, selection.root_recording
     assert_predicate selection.device_key, :present?
-    assert_includes selection.user_agent, "Safari"
+    assert_equal "Safari", selection.device_browser
+    assert_nil selection.user_agent
   end
 
   test "root switch update rejects non-root recordings" do

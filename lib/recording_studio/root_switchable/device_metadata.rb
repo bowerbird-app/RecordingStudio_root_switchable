@@ -36,13 +36,18 @@ module RecordingStudio
           browser = detect_browser(user_agent)
           device_type = detect_device_type(user_agent)
 
-          {
+          metadata = {
             device_label: build_label(browser: browser, platform: platform, device_type: device_type),
             device_platform: platform,
             device_browser: browser,
-            device_type: device_type,
-            user_agent: user_agent
-          }.compact
+            device_type: device_type
+          }
+
+          if RecordingStudioRootSwitchable.configuration.store_raw_user_agent
+            metadata[:user_agent] = truncate(user_agent, RecordingStudio::RootSwitchable::Selection::USER_AGENT_MAX_LENGTH)
+          end
+
+          metadata.compact
         end
 
         def extract_user_agent(controller)
@@ -85,6 +90,12 @@ module RecordingStudio
           end
 
           nil
+        end
+
+        def truncate(value, max_length)
+          return value if value.length <= max_length
+
+          value.byteslice(0, max_length)
         end
       end
     end

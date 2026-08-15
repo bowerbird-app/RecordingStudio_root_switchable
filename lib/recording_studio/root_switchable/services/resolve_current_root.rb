@@ -3,13 +3,7 @@
 module RecordingStudio
   module RootSwitchable
     module Services
-      class ResolveCurrentRoot
-        class << self
-          def call(...)
-            new(...).call
-          end
-        end
-
+      class ResolveCurrentRoot < Base
         def initialize(controller: nil, actor: nil, device_key: nil, scope_key: nil)
           @controller = controller
           @actor = actor
@@ -27,11 +21,12 @@ module RecordingStudio
           selected_via = :none
           root_recording = nil
 
-          if selection && roots.any? { |root| root.id == selection.root_recording_id }
-            root_recording = roots.find { |root| root.id == selection.root_recording_id }
-            selection.update_columns(last_used_at: Time.current) if selection.respond_to?(:update_columns)
+          if selection && RootId.find_in(roots, selection.root_recording_id)
+            root_recording = RootId.find_in(roots, selection.root_recording_id)
+            touch_last_used_at!(selection)
             selected_via = :persisted
           elsif selection
+            # Invalidate once when access/availability is lost; avoid touching on every request.
             selection.destroy
             selection = nil
           end
@@ -54,20 +49,6 @@ module RecordingStudio
 
         private
 
-        def configuration
-          RecordingStudioRootSwitchable.configuration
-        end
-
-        def scope_context
-          @scope_context ||= ScopeContext.new(
-            configuration: configuration,
-            controller: @controller,
-            actor: @actor,
-            device_key: @device_key,
-            scope_key: @scope_key
-          )
-        end
-
         def empty_result
           assign_current(scope: nil, root_recording: nil, selection: nil)
 
@@ -83,6 +64,7 @@ module RecordingStudio
 
         def find_selection(scope)
           return unless defined?(RecordingStudio::RootSwitchable::Selection)
+          return if @actor.blank? && !configuration.allow_anonymous_selections
 
           RecordingStudio::RootSwitchable::Selection.lookup(
             actor: @actor,
@@ -91,12 +73,15 @@ module RecordingStudio
           )
         end
 
-        def assign_current(scope:, root_recording:, selection:)
-          Current.scope = scope
-          Current.scope_key = scope&.key
-          Current.selection = selection
-          Current.root_recording = root_recording
-          Current.root_recordable = root_recording&.recordable
+        def touch_last_used_at!(selection)
+          return unless selection.respond_to?(:update_columns)
+          return unless selection.respond_to?(:last_used_at)
+
+          interval = configuration.last_used_at_touch_interval
+          last_used_at = selection.last_used_at
+          return if last_used_at.present? && interval.present? && last_used_at > interval.ago
+
+          selection.update_columns(last_used_at: Time.current)
         end
       end
     end

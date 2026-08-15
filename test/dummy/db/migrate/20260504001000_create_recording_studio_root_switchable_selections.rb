@@ -29,6 +29,7 @@ class CreateRecordingStudioRootSwitchableSelections < ActiveRecord::Migration[8.
 
     add_foreign_key :recording_studio_root_switchable_selections,
                     :recording_studio_recordings,
-                    column: :root_recording_id
+                    column: :root_recording_id,
+                    on_delete: :cascade
   end
 end

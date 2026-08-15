@@ -3,13 +3,7 @@
 module RecordingStudio
   module RootSwitchable
     module Services
-      class SwitchRoot
-        class << self
-          def call(...)
-            new(...).call
-          end
-        end
-
+      class SwitchRoot < Base
         def initialize(root_recording_id:, scope_key:, controller: nil, actor: nil, device_key: nil)
           @controller = controller
           @actor = actor
@@ -22,11 +16,15 @@ module RecordingStudio
           scope = nil
           roots = []
 
+          if @actor.blank? && !configuration.allow_anonymous_selections
+            return failure_result(errors: ["An authenticated actor is required to switch roots."], scope: scope)
+          end
+
           scope = scope_context.resolve_scope
           return failure_result(errors: ["Scope could not be resolved."], scope: scope) unless scope
 
           roots = scope_context.available_roots_for(scope)
-          root_recording = roots.find { |root| root.id.to_s == @root_recording_id.to_s }
+          root_recording = RootId.find_in(roots, @root_recording_id)
           unless root_recording
             return failure_result(
               errors: ["Selected root is not available for this scope."],
@@ -43,11 +41,7 @@ module RecordingStudio
             scope_key: scope.key
           )
 
-          Current.scope = scope
-          Current.scope_key = scope.key
-          Current.selection = selection
-          Current.root_recording = root_recording
-          Current.root_recordable = root_recording.recordable
+          assign_current(scope: scope, root_recording: root_recording, selection: selection)
 
           Result.new(
             available_roots: roots,
@@ -65,20 +59,6 @@ module RecordingStudio
         end
 
         private
-
-        def configuration
-          RecordingStudioRootSwitchable.configuration
-        end
-
-        def scope_context
-          @scope_context ||= ScopeContext.new(
-            configuration: configuration,
-            controller: @controller,
-            actor: @actor,
-            device_key: @device_key,
-            scope_key: @scope_key
-          )
-        end
 
         def failure_result(errors:, scope:, available_roots: [])
           Result.new(

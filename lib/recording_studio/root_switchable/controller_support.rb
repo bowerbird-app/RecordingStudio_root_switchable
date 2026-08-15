@@ -16,6 +16,14 @@ module RecordingStudio
                       :current_root_scope_key
       end
 
+      class_methods do
+        # Skip the automatic per-request root resolution for specific actions.
+        # Example: skip_recording_studio_root_resolution only: %i[health]
+        def skip_recording_studio_root_resolution(**options)
+          skip_before_action :resolve_recording_studio_root_switchable_current, **options
+        end
+      end
+
       def current_root
         RecordingStudio::RootSwitchable.current_root
       end
@@ -37,11 +45,7 @@ module RecordingStudio
       end
 
       def current_root_device_key_preview
-        device_key = current_root_device_key.to_s
-        return "Unavailable" if device_key.blank?
-        return "••••" if device_key.length <= 12
-
-        "#{device_key.first(8)}…#{device_key.last(4)}"
+        DeviceKeyPreview.format(current_root_device_key)
       end
 
       def current_root_resolution

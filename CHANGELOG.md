@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-08-15
+
+### Security
+- Force `httponly` on device-key cookies and default `secure` in production.
+- Sanitize `return_to` before host redirect callbacks and in the dropdown helper.
+- Disable anonymous selections and raw user-agent storage by default.
+- Add switch rate limiting and cascade-delete selections when a root recording is removed.
+
+### Changed
+- Throttle `last_used_at` updates and cache available roots per request.
+- Drive mounted page copy from `page_copy` configuration.
+- Share internal path sanitization, root id comparison, and device-key preview helpers.
+- Allow hosts to skip automatic root resolution with `skip_recording_studio_root_resolution`.
+
+### Added
+- `RecordingStudio::RootSwitchable.prune_selections!` for orphaned selection cleanup.
+- Root-level Dependabot config and gem-focused `SECURITY.md`.
+
 ## [0.3.1] - 2026-07-02
 
 ### Changed

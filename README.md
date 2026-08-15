@@ -16,23 +16,16 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
-## Update summary (0.3.0 to 0.3.1)
+## Update summary (0.3.1 to 0.3.2)
 
-This update from 0.3.0 to 0.3.1 adds scope-level root type filtering and
-related integration updates.
+Hardening pass focused on security, performance, and shared helpers:
 
-- Adds `switchable_root_types` on scope definitions so each scope can include
-  only specific root recordable types (for example `Workspace` and `Page`).
-- Applies the filter during root normalization for default selection,
-  current-root resolution, dropdown rendering, and switch actions.
-- Preserves backward compatibility when `switchable_root_types` is unset or
-  blank by keeping previous "no filtering" behavior.
-- Updates generator initializer guidance and host-app configuration docs with
-  filter usage examples.
-- Expands the dummy app with a non-workspace `Team` root plus an `all_roots`
-  demo scope to show filtering in action.
-- Adds targeted test coverage for scope filtering behavior and service-level
-  root selection/switch outcomes.
+- Secure device-key cookies by default in production; `httponly` cannot be disabled.
+- Sanitize `return_to` before host redirect callbacks and in the dropdown helper.
+- Disable anonymous selections and raw user-agent storage by default.
+- Throttle `last_used_at` writes, cache available roots per request, and skip duplicate root loads.
+- Add `skip_recording_studio_root_resolution`, selection pruning, switch rate limiting, and FK cascade on root delete.
+- Drive the mounted page UI from `page_copy` and share path/device-key helpers.
 
 ## Installation
 
@@ -41,7 +34,7 @@ Add the gems to your host app:
 ```ruby
 gem "recording_studio", "~> 3.0"
 gem "recording_studio_accessible", "~> 0.3"
-gem "recording_studio_root_switchable", "~> 0.3.1"
+gem "recording_studio_root_switchable", "~> 0.3.2"
 ```
 
 Then run:
@@ -65,6 +58,9 @@ class ApplicationController < ActionController::Base
   before_action { Current.actor = current_user }
 
   include RecordingStudio::RootSwitchable::ControllerSupport
+
+  # Optional: skip resolution on endpoints that do not need a current root.
+  # skip_recording_studio_root_resolution only: %i[health]
 end
 ```
 
@@ -80,9 +76,17 @@ RecordingStudioRootSwitchable.configure do |config|
 
   # Optional: choose where to redirect after a successful switch.
   # Available args: controller:, actor:, device_key:, scope:, root_recording:, return_to:
+  # return_to is pre-sanitized to a same-origin relative path (or nil).
   # config.after_switch_redirect = ->(controller:, return_to:, **) do
   #   return_to.presence || controller.main_app.root_path
   # end
+
+  # Optional hardening / privacy knobs (defaults shown):
+  # config.allow_anonymous_selections = false
+  # config.store_raw_user_agent = false
+  # config.last_used_at_touch_interval = 5.minutes
+  # config.switch_rate_limit = { limit: 30, period: 1.minute }
+  # config.device_key_cookie_options = config.device_key_cookie_options.merge(secure: Rails.env.production?)
 
   config.scope :all_workspaces do |scope|
     scope.label = "All workspaces"
@@ -251,7 +255,10 @@ Selections are remembered by `actor + device_key + scope_key`.
 - `device_key` is a generated random identifier stored in an encrypted cookie
 - clearing cookies creates a new device context
 - the cookie does not replace authentication; access is revalidated against the current actor on every restore
-- production hosts should set `config.device_key_cookie_options[:secure] = true` and serve the mounted page over HTTPS
+- production hosts enable `secure` cookies by default and should serve the mounted page over HTTPS
+- anonymous actor-less selections are disabled by default; set `allow_anonymous_selections = true` only when required
+- raw user-agent strings are not stored unless `store_raw_user_agent = true`
+- hosts can prune orphaned rows with `RecordingStudio::RootSwitchable.prune_selections!`
 
 ### Scope keys
 
@@ -358,8 +365,11 @@ If dummy app boot, migrations, or assets change, also validate the dummy app flo
 - no business-specific workspace/account semantics in gem internals
 - no mutation of the RecordingStudio graph when switching roots
 - no automatic global query scoping across the host app
-- no dropdown-style switcher; v1 intentionally uses a dedicated page flow
+
+The dedicated mounted page remains the primary switcher. A compact FlatPack
+dropdown helper is also available for host chrome that needs an inline switcher.
 
 ## Documentation
 
-Template reference material remains archived under `docs/gem_template/`.
+- Gem security notes: [`SECURITY.md`](SECURITY.md)
+- Template reference material remains archived under `docs/gem_template/`.

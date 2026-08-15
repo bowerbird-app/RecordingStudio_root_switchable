@@ -92,6 +92,31 @@ class ResolveCurrentRootTest < Minitest::Test
     end
   end
 
+  def test_does_not_touch_recent_last_used_at
+    alpha_root = RootRecord.new(id: "alpha", recordable: Struct.new(:name).new("Alpha"), recordable_type: "Workspace")
+    selection = Struct.new(:root_recording_id, :last_used_at) do
+      attr_accessor :touch_count
+
+      def update_columns(_attributes)
+        self.touch_count = (touch_count || 0) + 1
+      end
+    end.new("alpha", Time.current)
+    selection.touch_count = 0
+
+    configure_roots([alpha_root])
+    RecordingStudioRootSwitchable.configuration.last_used_at_touch_interval = 5.minutes
+
+    RecordingStudio::RootSwitchable::Selection.stub(:lookup, selection) do
+      RecordingStudio::RootSwitchable::Services::ResolveCurrentRoot.call(
+        actor: Object.new,
+        device_key: "device-1",
+        scope_key: "roots"
+      )
+    end
+
+    assert_equal 0, selection.touch_count
+  end
+
   private
 
   def configure_roots(roots, switchable_root_types: nil)

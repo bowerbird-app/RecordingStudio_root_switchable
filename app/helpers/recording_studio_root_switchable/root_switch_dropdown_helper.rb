@@ -43,7 +43,9 @@ module RecordingStudioRootSwitchable
     end
 
     def recording_studio_root_switch_dropdown_supported_resolution
-      resolution = recording_studio_root_switch_dropdown_resolution if respond_to?(:recording_studio_root_switchable)
+      return unless controller.respond_to?(:current_root_resolution, true)
+
+      resolution = recording_studio_root_switch_dropdown_resolution
       resolution if resolution.present? && resolution.scope.present?
     end
 
@@ -77,7 +79,7 @@ module RecordingStudioRootSwitchable
 
     def recording_studio_root_switch_dropdown_items_for(roots:, scope:, selected:)
       roots.filter_map do |root_recording|
-        next if selected&.id == root_recording.id
+        next if RecordingStudio::RootSwitchable::RootId.same?(selected&.id, root_recording.id)
 
         recording_studio_root_switch_dropdown_item(
           root_recording: root_recording,
@@ -102,7 +104,8 @@ module RecordingStudioRootSwitchable
     end
 
     def recording_studio_root_switch_dropdown_return_to(return_to)
-      return_to.presence || request&.fullpath
+      candidate = return_to.presence || request&.fullpath
+      RecordingStudio::RootSwitchable::InternalPath.sanitize(candidate)
     end
 
     def recording_studio_root_switch_dropdown_form_action(scope)
