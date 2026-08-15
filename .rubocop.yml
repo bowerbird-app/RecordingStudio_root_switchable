@@ -41,6 +41,7 @@ Metrics/MethodLength:
     - 'lib/recording_studio/root_switchable/selection_cleanup.rb'
     - 'lib/recording_studio/root_switchable/services/**/*'
     - 'lib/recording_studio_root_switchable/configuration.rb'
+    - 'lib/recording_studio_root_switchable/tailwind_source_linker.rb'
     - 'app/models/recording_studio/root_switchable/selection.rb'
 
 Metrics/AbcSize:
@@ -53,6 +54,7 @@ Metrics/AbcSize:
     - 'lib/recording_studio/root_switchable/selection_cleanup.rb'
     - 'lib/recording_studio/root_switchable/services/**/*'
     - 'lib/recording_studio_root_switchable/configuration.rb'
+    - 'lib/recording_studio_root_switchable/tailwind_source_linker.rb'
     - 'app/models/recording_studio/root_switchable/selection.rb'
 
 Metrics/CyclomaticComplexity:
@@ -62,6 +64,7 @@ Metrics/CyclomaticComplexity:
     - 'lib/recording_studio/root_switchable/selection_cleanup.rb'
     - 'lib/recording_studio/root_switchable/services/**/*'
     - 'lib/recording_studio_root_switchable/configuration.rb'
+    - 'lib/recording_studio_root_switchable/tailwind_source_linker.rb'
 
 Metrics/PerceivedComplexity:
   Exclude:
