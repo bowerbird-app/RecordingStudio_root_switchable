@@ -46,3 +46,8 @@ coverage/
 
 # Rename script state
 .rename_state.yml
+
+# Local manual demo artifacts
+ROOT_SWITCHER_DEMO_SUMMARY.md
+root-switcher-*.mp4
+root-switcher-*.webp
