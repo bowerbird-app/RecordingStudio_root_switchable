@@ -39,6 +39,15 @@ test/dummy/public/assets/
 test/dummy/config/master.key
 test/dummy/config/credentials/*.key
 
+# Machine-local gem symlinks used for Tailwind @source scanning
+test/dummy/vendor/flat_pack
+test/dummy/vendor/recording_studio
+
+# Local manual demo artifacts
+ROOT_SWITCHER_DEMO_SUMMARY.md
+root-switcher-*.mp4
+root-switcher-*.webp
+
 # Build artifacts
 *.gem
 pkg/

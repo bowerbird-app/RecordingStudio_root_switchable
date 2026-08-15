@@ -57,6 +57,14 @@ jobs:
         DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_root_switchable_test
         DB_NAME: recording_studio_root_switchable_test
 
+    - name: Link gem sources for Tailwind
+      run: bundle exec rails gem_sources:link
+      working-directory: test/dummy
+      env:
+        BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_root_switchable_test
+        DB_NAME: recording_studio_root_switchable_test
+
     - name: Build dummy app Tailwind assets
       run: bundle exec rails tailwindcss:build RAILS_ENV=test
       working-directory: test/dummy
