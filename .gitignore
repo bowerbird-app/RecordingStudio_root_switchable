@@ -42,11 +42,7 @@ test/dummy/config/credentials/*.key
 # Machine-local gem symlinks used for Tailwind @source scanning
 test/dummy/vendor/flat_pack
 test/dummy/vendor/recording_studio
-
-# Local manual demo artifacts
-ROOT_SWITCHER_DEMO_SUMMARY.md
-root-switcher-*.mp4
-root-switcher-*.webp
+test/dummy/vendor/recording_studio_root_switchable
 
 # Build artifacts
 *.gem
@@ -60,3 +56,4 @@ coverage/
 ROOT_SWITCHER_DEMO_SUMMARY.md
 root-switcher-*.mp4
 root-switcher-*.webp
+css-fixed-*.webp
