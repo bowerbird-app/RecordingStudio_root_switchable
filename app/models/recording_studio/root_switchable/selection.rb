@@ -63,9 +63,16 @@ module RecordingStudio
         end
 
         def assign_device_metadata(selection, device_metadata)
-          normalized_device_metadata(device_metadata).each do |attribute, value|
+          normalized = normalized_device_metadata(device_metadata)
+          DEVICE_METADATA_ATTRIBUTES.each do |attribute|
             writer = "#{attribute}="
-            selection.public_send(writer, value) if selection.respond_to?(writer)
+            next unless selection.respond_to?(writer)
+
+            if normalized.key?(attribute)
+              selection.public_send(writer, normalized[attribute])
+            elsif attribute == :user_agent && !RecordingStudioRootSwitchable.configuration.store_raw_user_agent
+              selection.public_send(writer, nil)
+            end
           end
         end
 
