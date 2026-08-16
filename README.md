@@ -16,32 +16,141 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
-## Update summary (0.3.4 to 0.3.5)
+## Upgrading from 0.3.1 to 0.3.5
 
-- Dropdown switcher: optimistic trigger-label update + pending state while switching.
-- Dropdown forms submit through Turbo Drive when the host loads Turbo (faster than a full document reload).
-- Host apps should pin/load the gem Stimulus controllers (see install notes).
+Use this checklist when moving an existing host app onto this release line. Patch notes for each intermediate version are in [`CHANGELOG.md`](CHANGELOG.md).
 
-## Update summary (0.3.3 to 0.3.4)
+### 1. Bump the gem and reinstall
 
-- Default switch-page title and action label are both `Switch` (no backend "root" wording in default UI copy).
+```ruby
+gem "recording_studio_root_switchable", "~> 0.3.5"
+```
 
-## Update summary (0.3.2 to 0.3.3)
+```bash
+bundle update recording_studio_root_switchable
+```
 
-- Keep the mounted switch page as a simple chooser: title, list, Current badge, and a short action.
-- Default `page_copy` no longer ships explanatory subtitle or persistence-hint text; blank values are not rendered.
-- Hosts can still set `subtitle` / `persistence_hint` when they want extra context.
+### 2. Copy and run new migrations
 
-## Update summary (0.3.1 to 0.3.2)
+Regenerate engine migrations so any missing follow-ups land in the host app, then migrate:
 
-Hardening pass focused on security, performance, and shared helpers:
+```bash
+bin/rails generate recording_studio_root_switchable:migrations
+bin/rails db:migrate
+```
 
-- Secure device-key cookies by default in production; `httponly` cannot be disabled.
-- Sanitize `return_to` before host redirect callbacks and in the dropdown helper.
-- Disable anonymous selections and raw user-agent storage by default.
-- Throttle `last_used_at` writes, cache available roots per request, and skip duplicate root loads.
-- Add `skip_recording_studio_root_resolution`, selection pruning, switch rate limiting, and FK cascade on root delete.
-- Drive the mounted page UI from `page_copy` and share path/device-key helpers.
+In particular, ensure the selection foreign-key update that cascade-deletes selections when a root recording is removed is present (see `update_recording_studio_root_switchable_selection_foreign_key` in the engine `db/migrate` folder). Re-running the generator is safe if migrations are already installed.
+
+### 3. Review security and privacy defaults
+
+These defaults changed in 0.3.2. Confirm they match your product requirements:
+
+| Setting | New default | Action if you need the old behavior |
+| --- | --- | --- |
+| Device-key cookie `httponly` | Always forced on | None — cannot be disabled |
+| Device-key cookie `secure` | `true` in production | Override `device_key_cookie_options` only when you must serve HTTP |
+| `allow_anonymous_selections` | `false` | Set `true` only if unsigned-in actors must persist selections |
+| `store_raw_user_agent` | `false` | Set `true` only if you need the raw UA column populated |
+
+`return_to` values are sanitized to same-origin relative paths before host redirect callbacks and in the dropdown helper. External or scheme-relative targets are dropped.
+
+Optional knobs introduced or documented in this line:
+
+```ruby
+config.switch_rate_limit = { limit: 30, period: 1.minute }
+config.last_used_at_touch_interval = 5.minutes
+```
+
+### 4. Expect simpler default switch-page copy
+
+Default mounted-page `page_copy` is minimal:
+
+- title / action label: `Switch`
+- blank `subtitle` and `persistence_hint` (blank values are not rendered)
+
+If your product needs explanatory copy, set it explicitly:
+
+```ruby
+config.page_copy = {
+  title: "Switch",
+  switch_action_label: "Switch",
+  subtitle: "Choose the workspace for this device.",
+  persistence_hint: "Saved per signed-in user and device."
+}
+```
+
+Scope-level `page_copy` overrides still merge on top of the global defaults.
+
+### 5. Fix Tailwind / FlatPack styling (if the switch UI looks unstyled)
+
+Host Tailwind builds must scan FlatPack and this gem. After upgrading:
+
+1. Ensure `app/assets/tailwind/application.css` includes `@source` lines for this gem and FlatPack (the install generator can inject them).
+2. Link gem sources into `vendor/` so those paths resolve outside Docker-only bundle locations:
+
+```bash
+bin/rails recording_studio_root_switchable:link_tailwind_sources
+bin/rails tailwindcss:build
+```
+
+Run the link task in CI before the Tailwind build if your pipeline builds CSS in a clean checkout.
+
+### 6. Wire dropdown JavaScript (if you use `recording_studio_root_switch_dropdown`)
+
+0.3.5 adds optimistic trigger feedback. Without the Stimulus controller, switching still works but feels slower.
+
+In `config/importmap.rb` (the engine also registers its importmap automatically):
+
+```ruby
+pin_all_from RecordingStudioRootSwitchable::Engine.root.join("app/javascript/recording_studio_root_switchable/controllers"),
+             under: "controllers/recording_studio_root_switchable",
+             to: "recording_studio_root_switchable/controllers"
+```
+
+In your Stimulus loader (for example `app/javascript/controllers/index.js`):
+
+```js
+eagerLoadControllersFrom("controllers/recording_studio_root_switchable", application)
+```
+
+Load `@hotwired/turbo-rails` so dropdown forms use Turbo Drive instead of a full document reload:
+
+```js
+import "@hotwired/turbo-rails"
+```
+
+### 7. Optional APIs you can adopt
+
+- `skip_recording_studio_root_resolution` on controllers/actions that do not need a current root
+- `RecordingStudio::RootSwitchable.prune_selections!` for cleaning orphaned selection rows
+- Shared helpers remain internal; host apps should keep using the public `ControllerSupport` and configuration APIs
+
+### 8. Smoke-test
+
+- Sign in, open the mounted switch page, and confirm title/action copy and styling
+- Switch via the page and via the top-nav dropdown (if used)
+- Confirm the active label updates promptly in the dropdown and the chosen root persists across refresh
+
+## What changed since 0.3.1 (release notes)
+
+Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
+
+### 0.3.5
+- Optimistic dropdown trigger update + pending state
+- Dropdown forms use Turbo Drive when Turbo is loaded
+- Gem Stimulus controller shipped via importmap
+
+### 0.3.4
+- Default UI title/action label: `Switch` (no backend “root” wording)
+
+### 0.3.3
+- Minimal default `page_copy`; blank subtitle/hint omitted from the page
+
+### 0.3.2
+- Security hardening (cookies, `return_to`, anonymous selections, UA storage, rate limit, FK cascade)
+- Performance helpers (`last_used_at` throttle, request-local roots cache, skip resolution)
+- `page_copy` configuration and shared path/device helpers
+- Selection pruning API and Tailwind gem-source linker for host CSS builds
 
 ## Installation
 
