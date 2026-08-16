@@ -16,9 +16,13 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Update summary (0.3.3 to 0.3.4)
+
+- Default switch-page title and action label are both `Switch` (no backend "root" wording in default UI copy).
+
 ## Update summary (0.3.2 to 0.3.3)
 
-- Keep the mounted switch page as a simple chooser: title, root list, Current badge, and a short Use action.
+- Keep the mounted switch page as a simple chooser: title, list, Current badge, and a short action.
 - Default `page_copy` no longer ships explanatory subtitle or persistence-hint text; blank values are not rendered.
 - Hosts can still set `subtitle` / `persistence_hint` when they want extra context.
 
@@ -40,7 +44,7 @@ Add the gems to your host app:
 ```ruby
 gem "recording_studio", "~> 3.0"
 gem "recording_studio_accessible", "~> 0.3"
-gem "recording_studio_root_switchable", "~> 0.3.3"
+gem "recording_studio_root_switchable", "~> 0.3.4"
 ```
 
 Then run:
@@ -248,12 +252,12 @@ Supported boot-time configuration keys are:
 
 `page_copy` must be a hash whose keys match the documented copy fields exposed by the gem, and each value must be a string.
 
-Default copy is intentionally minimal (title + list actions only). Blank `subtitle` and `persistence_hint` values are omitted from the page. Hosts can override any field, for example:
+Default copy is intentionally minimal (`Switch` title + list actions only) and avoids backend "root" wording. Blank `subtitle` and `persistence_hint` values are omitted from the page. Hosts can override any field, for example:
 
 ```ruby
 config.page_copy = {
-  title: "Choose workspace",
-  switch_action_label: "Select",
+  title: "Switch",
+  switch_action_label: "Switch",
   subtitle: "Optional context shown under the title.",
   persistence_hint: "Optional note above the list."
 }

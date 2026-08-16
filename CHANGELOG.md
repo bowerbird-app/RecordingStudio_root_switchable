@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.4] - 2026-08-16
+
+### Changed
+- Default mounted page title is `Switch` and the action label is `Switch` (avoid backend "root" wording in UI copy).
+
 ## [0.3.3] - 2026-08-15
 
 ### Changed
-- Simplify the mounted switch page defaults: no subtitle or persistence hint, and shorter `Use` action label.
+- Simplify the mounted switch page defaults: no subtitle or persistence hint, and a short action label.
 - Skip rendering blank `subtitle` / `persistence_hint` values so hosts can keep the chooser minimal.
 - Remove explanatory scope `page_copy` overrides from the dummy app; filtering docs stay in scope descriptions.
 

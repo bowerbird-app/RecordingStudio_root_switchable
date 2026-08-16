@@ -18,10 +18,15 @@ class ConfigurationTest < Minitest::Test
   def test_default_page_copy_keeps_switch_ui_minimal
     copy = @configuration.page_copy
 
-    assert_equal "Switch root", copy.fetch(:title)
+    assert_equal "Switch", copy.fetch(:title)
     assert_equal "", copy.fetch(:subtitle)
     assert_equal "", copy.fetch(:persistence_hint)
-    assert_equal "Use", copy.fetch(:switch_action_label)
+    assert_equal "Switch", copy.fetch(:switch_action_label)
+    assert_equal "Nothing to switch", copy.fetch(:empty_state_title)
+    refute_match(/\broot\b/i, copy.fetch(:title))
+    refute_match(/\broot\b/i, copy.fetch(:switch_action_label))
+    refute_match(/\broot\b/i, copy.fetch(:empty_state_title))
+    refute_match(/\broot\b/i, copy.fetch(:empty_state_body))
   end
 
   def test_layout_defaults_to_nil_for_gem_blank_layout

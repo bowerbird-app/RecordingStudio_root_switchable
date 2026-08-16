@@ -31,17 +31,17 @@ module RecordingStudioRootSwitchable
     ALLOWED_SAME_SITE = %i[lax strict none].freeze
 
     DEFAULT_PAGE_COPY = {
-      title: "Switch root",
+      title: "Switch",
       subtitle: "",
       scope_heading: "Scopes",
-      roots_heading: "Available roots",
+      roots_heading: "Available",
       current_selection_label: "Current selection",
       device_label: "Device key",
       persistence_hint: "",
       selected_badge: "Current",
-      switch_action_label: "Use",
-      empty_state_title: "No roots are available",
-      empty_state_body: "No accessible roots are available to switch to."
+      switch_action_label: "Switch",
+      empty_state_title: "Nothing to switch",
+      empty_state_body: "There are no options available right now."
     }.freeze
 
     DEFAULT_SWITCH_RATE_LIMIT = { limit: 30, period: 1.minute }.freeze
