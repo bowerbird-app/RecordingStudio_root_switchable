@@ -134,4 +134,23 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_operator notice_index, :<, page_nav_index
     assert_operator notice_index, :<, title_index
   end
+
+  def test_root_switch_dropdown_partial_uses_optimistic_stimulus_and_turbo_forms
+    partial_path = File.expand_path(
+      "../app/views/recording_studio_root_switchable/_root_switch_dropdown.html.erb",
+      __dir__
+    )
+    partial_source = File.read(partial_path)
+
+    assert_includes partial_source, 'data-controller="recording-studio-root-switchable--root-switch-dropdown"'
+    assert_includes partial_source, "click->recording-studio-root-switchable--root-switch-dropdown#select"
+    assert_includes partial_source, "form_with url: root_switch_dropdown.fetch(:form_action), method: :patch"
+    refute_includes partial_source, "local: true"
+
+    controller_path = File.expand_path(
+      "../app/javascript/recording_studio_root_switchable/controllers/root_switch_dropdown_controller.js",
+      __dir__
+    )
+    assert_path_exists controller_path
+  end
 end

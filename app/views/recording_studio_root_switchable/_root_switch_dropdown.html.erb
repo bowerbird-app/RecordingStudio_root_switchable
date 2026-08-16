@@ -1,27 +1,35 @@
-<% root_switch_dropdown.fetch(:items).each do |item| %>
-  <%= form_with url: root_switch_dropdown.fetch(:form_action), method: :patch, local: true, html: {id: item.fetch(:form_id), class: "hidden"} do %>
-    <%= hidden_field_tag "root_switch[root_recording_id]", item.fetch(:root_recording_id) %>
-    <% if root_switch_dropdown.fetch(:return_to).present? %>
-      <%= hidden_field_tag "root_switch[return_to]", root_switch_dropdown.fetch(:return_to) %>
+<div
+  class="inline-flex"
+  data-controller="recording-studio-root-switchable--root-switch-dropdown"
+>
+  <% root_switch_dropdown.fetch(:items).each do |item| %>
+    <%= form_with url: root_switch_dropdown.fetch(:form_action), method: :patch, html: {id: item.fetch(:form_id), class: "hidden"} do %>
+      <%= hidden_field_tag "root_switch[root_recording_id]", item.fetch(:root_recording_id) %>
+      <% if root_switch_dropdown.fetch(:return_to).present? %>
+        <%= hidden_field_tag "root_switch[return_to]", root_switch_dropdown.fetch(:return_to) %>
+      <% end %>
     <% end %>
   <% end %>
-<% end %>
 
-<%= render FlatPack::Button::Dropdown::Component.new(
-  text: root_switch_dropdown.fetch(:current_label),
-  style: style,
-  size: size,
-  position: position,
-  max_height: max_height,
-  trigger_attributes: trigger_attributes,
-  disabled: root_switch_dropdown.fetch(:items).empty?,
-  **system_arguments
-) do |dropdown| %>
-  <% root_switch_dropdown.fetch(:items).each do |item| %>
-    <% dropdown.menu_item(
-      text: item.fetch(:label),
-      form: item.fetch(:form_id),
-      type: "submit"
-    ) %>
+  <%= render FlatPack::Button::Dropdown::Component.new(
+    text: root_switch_dropdown.fetch(:current_label),
+    style: style,
+    size: size,
+    position: position,
+    max_height: max_height,
+    trigger_attributes: trigger_attributes,
+    disabled: root_switch_dropdown.fetch(:items).empty?,
+    **system_arguments
+  ) do |dropdown| %>
+    <% root_switch_dropdown.fetch(:items).each do |item| %>
+      <% dropdown.menu_item(
+        text: item.fetch(:label),
+        form: item.fetch(:form_id),
+        type: "submit",
+        data: {
+          action: "click->recording-studio-root-switchable--root-switch-dropdown#select"
+        }
+      ) %>
+    <% end %>
   <% end %>
-<% end %>
+</div>

@@ -9,4 +9,20 @@ Next steps:
    - Ensure app/assets/tailwind/application.css includes the injected @source lines (or add them manually).
    - Run bin/rails recording_studio_root_switchable:link_tailwind_sources so vendor/flat_pack and vendor/recording_studio_root_switchable point at the installed gems.
    - Run bin/rails tailwindcss:build.
-5. Mount routes are added at the configured mount path. Adjust auth and navigation to match your host app.
+5. If you use the root-switch dropdown helper with importmap + Stimulus:
+   - Pin gem controllers (the engine also registers config/importmap.rb):
+
+```ruby
+pin_all_from RecordingStudioRootSwitchable::Engine.root.join("app/javascript/recording_studio_root_switchable/controllers"),
+             under: "controllers/recording_studio_root_switchable",
+             to: "recording_studio_root_switchable/controllers"
+```
+
+   - Eager-load them next to your other Stimulus controllers:
+
+```js
+eagerLoadControllersFrom("controllers/recording_studio_root_switchable", application)
+```
+
+   - Prefer loading `@hotwired/turbo-rails` so dropdown switches use Turbo Drive instead of a full page reload.
+6. Mount routes are added at the configured mount path. Adjust auth and navigation to match your host app.

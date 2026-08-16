@@ -6,6 +6,16 @@ module RecordingStudioRootSwitchable
 
     isolate_namespace RecordingStudioRootSwitchable
 
+    initializer "recording_studio_root_switchable.assets" do |app|
+      app.config.assets.paths << root.join("app/javascript") if app.config.respond_to?(:assets)
+    end
+
+    initializer "recording_studio_root_switchable.importmap", before: "importmap" do |app|
+      next unless app.config.respond_to?(:importmap)
+
+      app.config.importmap.paths << root.join("config/importmap.rb")
+    end
+
     initializer "recording_studio_root_switchable.helpers" do
       ActiveSupport.on_load(:action_controller_base) do
         helper RecordingStudioRootSwitchable::Engine.helpers

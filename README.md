@@ -16,6 +16,12 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Update summary (0.3.4 to 0.3.5)
+
+- Dropdown switcher: optimistic trigger-label update + pending state while switching.
+- Dropdown forms submit through Turbo Drive when the host loads Turbo (faster than a full document reload).
+- Host apps should pin/load the gem Stimulus controllers (see install notes).
+
 ## Update summary (0.3.3 to 0.3.4)
 
 - Default switch-page title and action label are both `Switch` (no backend "root" wording in default UI copy).
@@ -44,7 +50,7 @@ Add the gems to your host app:
 ```ruby
 gem "recording_studio", "~> 3.0"
 gem "recording_studio_accessible", "~> 0.3"
-gem "recording_studio_root_switchable", "~> 0.3.4"
+gem "recording_studio_root_switchable", "~> 0.3.5"
 ```
 
 Then run:
@@ -350,6 +356,12 @@ as the trigger label and the other available roots as PATCH actions:
 ```erb
 <%= recording_studio_root_switch_dropdown(style: :ghost, size: :md) %>
 ```
+
+The dropdown is built for a fast feel:
+
+- clicking an option updates the trigger label immediately and disables the control while the request is in flight
+- forms submit with Turbo Drive when Turbo is loaded in the host app
+- load the gem Stimulus controller via importmap (see install notes) so optimistic feedback is registered
 
 If you want to return the user to the page that launched the switcher, pass a `return_to`
 param when linking to the mounted page and set `config.after_switch_redirect` to prefer that

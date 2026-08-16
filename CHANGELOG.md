@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.5] - 2026-08-16
+
+### Changed
+- Root-switch dropdown updates the trigger label immediately and shows a pending state while the switch request completes.
+- Dropdown forms use Turbo Drive when available (no `local: true` full-page submit).
+
+### Added
+- Stimulus controller `recording-studio-root-switchable--root-switch-dropdown` shipped via the gem importmap.
+
 ## [0.3.4] - 2026-08-16
 
 ### Changed
