@@ -22,16 +22,22 @@ module RecordingStudio
         end
 
         def available_roots_for(scope)
-          scope.available_roots_for(**scope_arguments)
-               .select do |root_recording|
+          cached = Current.cached_available_roots_for(scope.key)
+          return cached if cached
+
+          roots = scope.available_roots_for(**scope_arguments)
+                       .select do |root_recording|
             scope.valid?(**scope_arguments, recording: root_recording) &&
               scope.allowed?(**scope_arguments, recording: root_recording)
           end
+
+          Current.store_available_roots(scope.key, roots)
+          roots
         end
 
         def default_root_for(scope, roots)
           default_root = scope.default_root_for(**scope_arguments, roots: roots)
-          return default_root if default_root.present? && roots.any? { |root| root.id == default_root.id }
+          return default_root if default_root.present? && RootId.find_in(roots, default_root.id)
 
           roots.first
         end

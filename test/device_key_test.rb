@@ -57,4 +57,10 @@ class DeviceKeyTest < Minitest::Test
 
     assert_equal "device-2", device_key
   end
+
+  def test_fetch_raises_when_cookies_are_unavailable
+    assert_raises(RecordingStudio::RootSwitchable::DeviceKey::Unavailable) do
+      RecordingStudio::RootSwitchable::DeviceKey.fetch(controller: nil, cookies: nil)
+    end
+  end
 end

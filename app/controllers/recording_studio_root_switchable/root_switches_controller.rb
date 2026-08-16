@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "uri"
-
 module RecordingStudioRootSwitchable
   # rubocop:disable Metrics/ClassLength
   class RootSwitchesController < ApplicationController
@@ -11,6 +9,7 @@ module RecordingStudioRootSwitchable
 
     before_action :set_scope
     before_action :authorize_page!
+    before_action :enforce_switch_rate_limit!, only: :update
 
     def show
       prepare_page
@@ -57,6 +56,15 @@ module RecordingStudioRootSwitchable
       head :forbidden
     end
 
+    def enforce_switch_rate_limit!
+      return if SwitchRateLimiter.allowed?(
+        actor: RecordingStudio::RootSwitchable::Current.actor,
+        device_key: RecordingStudio::RootSwitchable::Current.device_key
+      )
+
+      head :too_many_requests
+    end
+
     def prepare_page(result: current_root_resolution)
       @resolution = result
       @selected_root = result.root_recording
@@ -71,7 +79,7 @@ module RecordingStudioRootSwitchable
       return roots unless selected_root
 
       selected_roots, other_roots = roots.partition do |root_recording|
-        root_recording.id == selected_root.id
+        RecordingStudio::RootSwitchable::RootId.same?(root_recording.id, selected_root.id)
       end
 
       selected_roots + other_roots
@@ -107,31 +115,30 @@ module RecordingStudioRootSwitchable
       else
         layout_value.presence || DEFAULT_LAYOUT
       end
-    rescue StandardError
+    rescue StandardError => e
+      log_controller_rescue("layout", e)
       DEFAULT_LAYOUT
     end
 
     def after_switch_redirect_location(result)
+      safe_return_to = RedirectSanitizer.sanitize(root_switch_params[:return_to])
       configured_target = RecordingStudioRootSwitchable.configuration.after_switch_redirect_for(
         controller: self,
         actor: RecordingStudio::RootSwitchable::Current.actor,
         device_key: RecordingStudio::RootSwitchable::Current.device_key,
         scope: @scope,
         root_recording: result.root_recording,
-        return_to: root_switch_params[:return_to]
+        return_to: safe_return_to
       )
 
-      sanitize_after_switch_redirect(configured_target) || default_after_switch_redirect_location
-    rescue StandardError
+      RedirectSanitizer.sanitize(configured_target) || default_after_switch_redirect_location
+    rescue StandardError => e
+      log_controller_rescue("after_switch_redirect", e)
       default_after_switch_redirect_location
     end
 
     def default_after_switch_redirect_location
       root_switch_path(scope: @scope.key)
-    end
-
-    def sanitize_after_switch_redirect(target)
-      safe_internal_path(target)
     end
 
     def return_anchor_url
@@ -144,23 +151,9 @@ module RecordingStudioRootSwitchable
       default_after_switch_redirect_location
     end
 
-    def safe_internal_path(target)
-      return if target.blank?
-
-      candidate = target.to_s
-      return unless candidate.start_with?("/")
-      return if candidate.start_with?("//")
-
-      parsed = URI.parse(candidate)
-      return if parsed.scheme.present? || parsed.host.present?
-
-      candidate
-    rescue URI::InvalidURIError
-      nil
-    end
-
     def safe_return_to_param
-      safe_internal_path(root_switch_params[:return_to]) || safe_internal_path(params[:return_to])
+      RedirectSanitizer.sanitize(root_switch_params[:return_to]) ||
+        RedirectSanitizer.sanitize(params[:return_to])
     end
 
     def root_switch_params
@@ -168,6 +161,15 @@ module RecordingStudioRootSwitchable
       return ActionController::Parameters.new.permit unless raw_params.respond_to?(:permit)
 
       raw_params.permit(:root_recording_id, :return_to)
+    end
+
+    def log_controller_rescue(hook_name, error)
+      return unless defined?(Rails) && Rails.respond_to?(:env) && !Rails.env.production?
+      return unless Rails.respond_to?(:logger) && Rails.logger
+
+      Rails.logger.warn(
+        "RecordingStudioRootSwitchable::RootSwitchesController #{hook_name} raised #{error.class}: #{error.message}"
+      )
     end
   end
   # rubocop:enable Metrics/ClassLength

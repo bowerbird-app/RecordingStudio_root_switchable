@@ -97,7 +97,11 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes view_source, "anchor_url: @return_anchor_url"
     refute_includes view_source, "FlatPack::Breadcrumb::Component"
     assert_includes view_source, "FlatPack::PageTitle::Component"
-    assert_includes view_source, 'title: "Switch"'
+    assert_includes view_source, "title: @page_copy.fetch(:title)"
+    assert_includes view_source, "subtitle: page_subtitle"
+    assert_includes view_source, "@page_copy.fetch(:subtitle).presence"
+    assert_includes view_source, "@page_copy.fetch(:persistence_hint).presence"
+    refute_includes view_source, "<p class=\"text-sm text-(--surface-muted-content-color)\"><%= @page_copy.fetch(:persistence_hint) %></p>"
     assert_includes view_source, "FlatPack::Card::Component"
     assert_includes view_source, "card.body do"
     assert_includes view_source, "FlatPack::List::Component"
@@ -106,13 +110,12 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes view_source, "form_with url: root_switch_path(scope: @scope.key), method: :patch, local: true"
     assert_includes view_source, 'hidden_field_tag "root_switch[return_to]", @safe_return_to'
     assert_includes view_source, "FlatPack::Button::Component"
-    assert_includes view_source, 'text: "Switch"'
+    assert_includes view_source, "text: @page_copy.fetch(:switch_action_label)"
     assert_includes view_source, "style: :default"
     assert_includes view_source, 'div class="font-semibold"'
     refute_includes view_source, "active: selected"
     refute_includes view_source, "divider: true"
     refute_includes view_source, "@scope.root_description_for"
-    refute_includes view_source, "text-(--surface-muted-content-color)"
     refute_includes view_source, "turbo_method: :patch"
     refute_includes view_source, "@supported_scopes.each"
   end
@@ -130,5 +133,24 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     refute_nil title_index
     assert_operator notice_index, :<, page_nav_index
     assert_operator notice_index, :<, title_index
+  end
+
+  def test_root_switch_dropdown_partial_uses_optimistic_stimulus_and_turbo_forms
+    partial_path = File.expand_path(
+      "../app/views/recording_studio_root_switchable/_root_switch_dropdown.html.erb",
+      __dir__
+    )
+    partial_source = File.read(partial_path)
+
+    assert_includes partial_source, 'data-controller="recording-studio-root-switchable--root-switch-dropdown"'
+    assert_includes partial_source, "click->recording-studio-root-switchable--root-switch-dropdown#select"
+    assert_includes partial_source, "form_with url: root_switch_dropdown.fetch(:form_action), method: :patch"
+    refute_includes partial_source, "local: true"
+
+    controller_path = File.expand_path(
+      "../app/javascript/recording_studio_root_switchable/controllers/root_switch_dropdown_controller.js",
+      __dir__
+    )
+    assert_path_exists controller_path
   end
 end

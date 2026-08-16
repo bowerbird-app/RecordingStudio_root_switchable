@@ -97,11 +97,9 @@ class HomeController < ApplicationController
   end
 
   def saved_session_device_key(selection)
-    device_key = selection.device_key.to_s
-    return "Unknown device key" if device_key.blank?
-    return device_key if device_key.length <= 12
-
-    "#{device_key.first(8)}…#{device_key.last(4)}"
+    RecordingStudio::RootSwitchable::DeviceKeyPreview.format(selection.device_key).tap do |preview|
+      return "Unknown device key" if preview == "Unavailable"
+    end
   end
 
   def saved_session_timestamp(selection)

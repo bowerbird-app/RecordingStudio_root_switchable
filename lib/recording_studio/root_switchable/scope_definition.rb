@@ -3,6 +3,20 @@
 module RecordingStudio
   module RootSwitchable
     class ScopeDefinition
+      ASSIGNABLE_ATTRIBUTES = %i[
+        access_check
+        available_roots
+        default_root
+        description
+        label
+        page_copy
+        root_description
+        root_label
+        supported_if
+        switchable_root_types
+        validity_check
+      ].freeze
+
       attr_accessor :access_check,
                     :available_roots,
                     :default_root,
@@ -32,17 +46,21 @@ module RecordingStudio
 
       def assign!(options)
         options.each do |name, value|
-          if name.to_sym == :page_copy
+          attribute = name.to_sym
+          raise ArgumentError, "unsupported scope option: #{attribute}" unless ASSIGNABLE_ATTRIBUTES.include?(attribute)
+
+          if attribute == :page_copy
             @page_copy = @page_copy.merge(normalize_hash(value))
           else
-            public_send("#{name}=", value)
+            public_send("#{attribute}=", value)
           end
         end
       end
 
       def supported?(**)
         !!resolve_callable(supported_if, **)
-      rescue StandardError
+      rescue StandardError => e
+        log_hook_failure("supported_if", e)
         false
       end
 
@@ -59,6 +77,7 @@ module RecordingStudio
           .filter_map { |candidate| normalize_root_recording(candidate) }
           .select { |recording| switchable_root_type?(recording) }
           .uniq(&:id)
+          .tap { |roots| preload_recordables!(roots) }
       end
 
       def default_root_for(**)
@@ -72,13 +91,15 @@ module RecordingStudio
 
       def allowed?(**)
         !!resolve_callable(access_check, **)
-      rescue StandardError
+      rescue StandardError => e
+        log_hook_failure("access_check", e)
         false
       end
 
       def valid?(**)
         !!resolve_callable(validity_check, **)
-      rescue StandardError
+      rescue StandardError => e
+        log_hook_failure("validity_check", e)
         false
       end
 
@@ -111,9 +132,36 @@ module RecordingStudio
       end
 
       def find_existing_root_recording_for(recordable)
-        ::RecordingStudio::Recording.unscoped.where(recordable: recordable).detect do |recording|
-          default_valid_root?(recording: recording)
+        relation = ::RecordingStudio::Recording.unscoped.where(recordable: recordable)
+
+        if relation.respond_to?(:klass) && relation.klass.column_names.include?("parent_recording_id")
+          relation = relation.where(parent_recording_id: nil)
         end
+
+        each_recording(relation) do |recording|
+          return recording if default_valid_root?(recording: recording)
+        end
+
+        nil
+      end
+
+      def each_recording(relation, &)
+        if relation.respond_to?(:find_each)
+          relation.find_each(&)
+        else
+          Array(relation).each(&)
+        end
+      end
+
+      def preload_recordables!(roots)
+        return if roots.empty?
+        return unless defined?(ActiveRecord::Associations::Preloader)
+        return unless roots.all? { |root| root.is_a?(ActiveRecord::Base) }
+        return unless roots.first.class.reflect_on_association(:recordable)
+
+        ActiveRecord::Associations::Preloader.new(records: roots, associations: [:recordable]).call
+      rescue StandardError
+        roots
       end
 
       def default_available_roots(actor:, **)
@@ -208,6 +256,15 @@ module RecordingStudio
 
       def recording_studio_accessible_supports_root_queries?
         defined?(::RecordingStudioAccessible) && ::RecordingStudioAccessible.respond_to?(:root_recordings_for)
+      end
+
+      def log_hook_failure(hook_name, error)
+        return unless defined?(Rails) && Rails.respond_to?(:env) && !Rails.env.production?
+        return unless Rails.respond_to?(:logger) && Rails.logger
+
+        Rails.logger.warn(
+          "RecordingStudio::RootSwitchable::ScopeDefinition##{hook_name} raised #{error.class}: #{error.message}"
+        )
       end
     end
   end

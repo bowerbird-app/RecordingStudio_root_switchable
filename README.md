@@ -16,23 +16,141 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
-## Update summary (0.3.0 to 0.3.1)
+## Upgrading from 0.3.1 to 0.3.5
 
-This update from 0.3.0 to 0.3.1 adds scope-level root type filtering and
-related integration updates.
+Use this checklist when moving an existing host app onto this release line. Patch notes for each intermediate version are in [`CHANGELOG.md`](CHANGELOG.md).
 
-- Adds `switchable_root_types` on scope definitions so each scope can include
-  only specific root recordable types (for example `Workspace` and `Page`).
-- Applies the filter during root normalization for default selection,
-  current-root resolution, dropdown rendering, and switch actions.
-- Preserves backward compatibility when `switchable_root_types` is unset or
-  blank by keeping previous "no filtering" behavior.
-- Updates generator initializer guidance and host-app configuration docs with
-  filter usage examples.
-- Expands the dummy app with a non-workspace `Team` root plus an `all_roots`
-  demo scope to show filtering in action.
-- Adds targeted test coverage for scope filtering behavior and service-level
-  root selection/switch outcomes.
+### 1. Bump the gem and reinstall
+
+```ruby
+gem "recording_studio_root_switchable", "~> 0.3.5"
+```
+
+```bash
+bundle update recording_studio_root_switchable
+```
+
+### 2. Copy and run new migrations
+
+Regenerate engine migrations so any missing follow-ups land in the host app, then migrate:
+
+```bash
+bin/rails generate recording_studio_root_switchable:migrations
+bin/rails db:migrate
+```
+
+In particular, ensure the selection foreign-key update that cascade-deletes selections when a root recording is removed is present (see `update_recording_studio_root_switchable_selection_foreign_key` in the engine `db/migrate` folder). Re-running the generator is safe if migrations are already installed.
+
+### 3. Review security and privacy defaults
+
+These defaults changed in 0.3.2. Confirm they match your product requirements:
+
+| Setting | New default | Action if you need the old behavior |
+| --- | --- | --- |
+| Device-key cookie `httponly` | Always forced on | None — cannot be disabled |
+| Device-key cookie `secure` | `true` in production | Override `device_key_cookie_options` only when you must serve HTTP |
+| `allow_anonymous_selections` | `false` | Set `true` only if unsigned-in actors must persist selections |
+| `store_raw_user_agent` | `false` | Set `true` only if you need the raw UA column populated |
+
+`return_to` values are sanitized to same-origin relative paths before host redirect callbacks and in the dropdown helper. External or scheme-relative targets are dropped.
+
+Optional knobs introduced or documented in this line:
+
+```ruby
+config.switch_rate_limit = { limit: 30, period: 1.minute }
+config.last_used_at_touch_interval = 5.minutes
+```
+
+### 4. Expect simpler default switch-page copy
+
+Default mounted-page `page_copy` is minimal:
+
+- title / action label: `Switch`
+- blank `subtitle` and `persistence_hint` (blank values are not rendered)
+
+If your product needs explanatory copy, set it explicitly:
+
+```ruby
+config.page_copy = {
+  title: "Switch",
+  switch_action_label: "Switch",
+  subtitle: "Choose the workspace for this device.",
+  persistence_hint: "Saved per signed-in user and device."
+}
+```
+
+Scope-level `page_copy` overrides still merge on top of the global defaults.
+
+### 5. Fix Tailwind / FlatPack styling (if the switch UI looks unstyled)
+
+Host Tailwind builds must scan FlatPack and this gem. After upgrading:
+
+1. Ensure `app/assets/tailwind/application.css` includes `@source` lines for this gem and FlatPack (the install generator can inject them).
+2. Link gem sources into `vendor/` so those paths resolve outside Docker-only bundle locations:
+
+```bash
+bin/rails recording_studio_root_switchable:link_tailwind_sources
+bin/rails tailwindcss:build
+```
+
+Run the link task in CI before the Tailwind build if your pipeline builds CSS in a clean checkout.
+
+### 6. Wire dropdown JavaScript (if you use `recording_studio_root_switch_dropdown`)
+
+0.3.5 adds optimistic trigger feedback. Without the Stimulus controller, switching still works but feels slower.
+
+In `config/importmap.rb` (the engine also registers its importmap automatically):
+
+```ruby
+pin_all_from RecordingStudioRootSwitchable::Engine.root.join("app/javascript/recording_studio_root_switchable/controllers"),
+             under: "controllers/recording_studio_root_switchable",
+             to: "recording_studio_root_switchable/controllers"
+```
+
+In your Stimulus loader (for example `app/javascript/controllers/index.js`):
+
+```js
+eagerLoadControllersFrom("controllers/recording_studio_root_switchable", application)
+```
+
+Load `@hotwired/turbo-rails` so dropdown forms use Turbo Drive instead of a full document reload:
+
+```js
+import "@hotwired/turbo-rails"
+```
+
+### 7. Optional APIs you can adopt
+
+- `skip_recording_studio_root_resolution` on controllers/actions that do not need a current root
+- `RecordingStudio::RootSwitchable.prune_selections!` for cleaning orphaned selection rows
+- Shared helpers remain internal; host apps should keep using the public `ControllerSupport` and configuration APIs
+
+### 8. Smoke-test
+
+- Sign in, open the mounted switch page, and confirm title/action copy and styling
+- Switch via the page and via the top-nav dropdown (if used)
+- Confirm the active label updates promptly in the dropdown and the chosen root persists across refresh
+
+## What changed since 0.3.1 (release notes)
+
+Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
+
+### 0.3.5
+- Optimistic dropdown trigger update + pending state
+- Dropdown forms use Turbo Drive when Turbo is loaded
+- Gem Stimulus controller shipped via importmap
+
+### 0.3.4
+- Default UI title/action label: `Switch` (no backend “root” wording)
+
+### 0.3.3
+- Minimal default `page_copy`; blank subtitle/hint omitted from the page
+
+### 0.3.2
+- Security hardening (cookies, `return_to`, anonymous selections, UA storage, rate limit, FK cascade)
+- Performance helpers (`last_used_at` throttle, request-local roots cache, skip resolution)
+- `page_copy` configuration and shared path/device helpers
+- Selection pruning API and Tailwind gem-source linker for host CSS builds
 
 ## Installation
 
@@ -41,7 +159,7 @@ Add the gems to your host app:
 ```ruby
 gem "recording_studio", "~> 3.0"
 gem "recording_studio_accessible", "~> 0.3"
-gem "recording_studio_root_switchable", "~> 0.3.1"
+gem "recording_studio_root_switchable", "~> 0.3.5"
 ```
 
 Then run:
@@ -65,6 +183,9 @@ class ApplicationController < ActionController::Base
   before_action { Current.actor = current_user }
 
   include RecordingStudio::RootSwitchable::ControllerSupport
+
+  # Optional: skip resolution on endpoints that do not need a current root.
+  # skip_recording_studio_root_resolution only: %i[health]
 end
 ```
 
@@ -80,9 +201,17 @@ RecordingStudioRootSwitchable.configure do |config|
 
   # Optional: choose where to redirect after a successful switch.
   # Available args: controller:, actor:, device_key:, scope:, root_recording:, return_to:
+  # return_to is pre-sanitized to a same-origin relative path (or nil).
   # config.after_switch_redirect = ->(controller:, return_to:, **) do
   #   return_to.presence || controller.main_app.root_path
   # end
+
+  # Optional hardening / privacy knobs (defaults shown):
+  # config.allow_anonymous_selections = false
+  # config.store_raw_user_agent = false
+  # config.last_used_at_touch_interval = 5.minutes
+  # config.switch_rate_limit = { limit: 30, period: 1.minute }
+  # config.device_key_cookie_options = config.device_key_cookie_options.merge(secure: Rails.env.production?)
 
   config.scope :all_workspaces do |scope|
     scope.label = "All workspaces"
@@ -238,6 +367,19 @@ Supported boot-time configuration keys are:
 
 `page_copy` must be a hash whose keys match the documented copy fields exposed by the gem, and each value must be a string.
 
+Default copy is intentionally minimal (`Switch` title + list actions only) and avoids backend "root" wording. Blank `subtitle` and `persistence_hint` values are omitted from the page. Hosts can override any field, for example:
+
+```ruby
+config.page_copy = {
+  title: "Switch",
+  switch_action_label: "Switch",
+  subtitle: "Optional context shown under the title.",
+  persistence_hint: "Optional note above the list."
+}
+```
+
+Filtering rules (such as which root types are switchable) belong in scope configuration and docs, not in default page copy.
+
 `layout` controls which Rails layout the mounted root-switch page renders inside. When `layout` is `nil`, the gem uses its own blank layout. Host apps can set `layout` to a String such as `"application"`, a Symbol such as `:application_layout`, or a callable that returns either value per request.
 
 ### Actor expectations
@@ -251,7 +393,10 @@ Selections are remembered by `actor + device_key + scope_key`.
 - `device_key` is a generated random identifier stored in an encrypted cookie
 - clearing cookies creates a new device context
 - the cookie does not replace authentication; access is revalidated against the current actor on every restore
-- production hosts should set `config.device_key_cookie_options[:secure] = true` and serve the mounted page over HTTPS
+- production hosts enable `secure` cookies by default and should serve the mounted page over HTTPS
+- anonymous actor-less selections are disabled by default; set `allow_anonymous_selections = true` only when required
+- raw user-agent strings are not stored unless `store_raw_user_agent = true`
+- hosts can prune orphaned rows with `RecordingStudio::RootSwitchable.prune_selections!`
 
 ### Scope keys
 
@@ -321,6 +466,12 @@ as the trigger label and the other available roots as PATCH actions:
 <%= recording_studio_root_switch_dropdown(style: :ghost, size: :md) %>
 ```
 
+The dropdown is built for a fast feel:
+
+- clicking an option updates the trigger label immediately and disables the control while the request is in flight
+- forms submit with Turbo Drive when Turbo is loaded in the host app
+- load the gem Stimulus controller via importmap (see install notes) so optimistic feedback is registered
+
 If you want to return the user to the page that launched the switcher, pass a `return_to`
 param when linking to the mounted page and set `config.after_switch_redirect` to prefer that
 path. The gem validates redirect targets and falls back to the root-switch page when the target
@@ -358,8 +509,11 @@ If dummy app boot, migrations, or assets change, also validate the dummy app flo
 - no business-specific workspace/account semantics in gem internals
 - no mutation of the RecordingStudio graph when switching roots
 - no automatic global query scoping across the host app
-- no dropdown-style switcher; v1 intentionally uses a dedicated page flow
+
+The dedicated mounted page remains the primary switcher. A compact FlatPack
+dropdown helper is also available for host chrome that needs an inline switcher.
 
 ## Documentation
 
-Template reference material remains archived under `docs/gem_template/`.
+- Gem security notes: [`SECURITY.md`](SECURITY.md)
+- Template reference material remains archived under `docs/gem_template/`.

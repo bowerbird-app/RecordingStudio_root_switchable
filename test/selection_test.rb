@@ -19,6 +19,16 @@ class SelectionTest < Minitest::Test
     end
   end
 
+  def setup
+    @original_configuration = RecordingStudioRootSwitchable.instance_variable_get(:@configuration)
+    RecordingStudioRootSwitchable.reset_configuration!
+    RecordingStudioRootSwitchable.configuration.allow_anonymous_selections = true
+  end
+
+  def teardown
+    RecordingStudioRootSwitchable.instance_variable_set(:@configuration, @original_configuration)
+  end
+
   def test_upsert_retries_once_after_unique_constraint_conflict
     root_recording = Struct.new(:id).new("root-1")
     conflicting_selection = FakeSelection.new(

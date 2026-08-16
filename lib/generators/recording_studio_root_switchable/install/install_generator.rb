@@ -68,15 +68,19 @@ module RecordingStudioRootSwitchable
           "#{formatted_tailwind_source_block(missing_lines)}\n"
         end
         say "Added RecordingStudioRootSwitchable and FlatPack sources to Tailwind CSS configuration.", :green
-        say "Run 'bin/rails tailwindcss:build' to rebuild your CSS.", :green
+        say "Run 'bin/rails recording_studio_root_switchable:link_tailwind_sources' " \
+            "then 'bin/rails tailwindcss:build' to rebuild your CSS.", :green
       end
 
       def formatted_tailwind_source_block(missing_lines)
+        engine_lines = missing_lines.select { |line| line.include?("recording_studio_root_switchable") }
+        flatpack_lines = missing_lines.select { |line| line.include?("flatpack") || line.include?("flat_pack") }
+
         [
           "\n/* Include RecordingStudioRootSwitchable engine views for Tailwind CSS */",
-          missing_lines.first(2),
+          engine_lines,
           "\n/* Include FlatPack component sources for Tailwind CSS */",
-          missing_lines.drop(2)
+          flatpack_lines
         ].flatten.reject(&:empty?).join("\n")
       end
 
@@ -90,9 +94,13 @@ module RecordingStudioRootSwitchable
 
       def tailwind_source_lines
         [
-          '@source "../../vendor/bundle/**/recording_studio_root_switchable/app/views/**/*.erb";',
+          '@source "../../../vendor/recording_studio_root_switchable/app/views/**/*.erb";',
+          '@source "../../../vendor/bundle/**/recording_studio_root_switchable*/app/views/**/*.erb";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_root_switchable-*/app/views/**/*.erb";',
-          '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
+          '@source "../../../vendor/flat_pack/app/components/**/*.{rb,erb}";',
+          '@source "../../../vendor/bundle/**/flat_pack*/app/components/**/*.{rb,erb}";',
+          '@source "../../../vendor/bundle/**/flatpack*/app/components/**/*.{rb,erb}";',
+          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flat_pack-*/app/components/**/*.{rb,erb}";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
         ]
       end

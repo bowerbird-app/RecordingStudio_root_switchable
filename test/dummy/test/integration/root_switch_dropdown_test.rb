@@ -21,14 +21,21 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
 
     assert_response :success
 
-    assert_select "[data-controller='flat-pack--button-dropdown']" do
-      assert_select "button", text: /Studio Workspace/
-      assert_select "[role='menuitem'][form^='root-switch-dropdown-all_workspaces-']", text: /Client Alpha/
+    assert_select "[data-controller='recording-studio-root-switchable--root-switch-dropdown']" do
+      assert_select "[data-controller='flat-pack--button-dropdown']" do
+        assert_select "button", text: /Studio Workspace/
+        assert_select "[role='menuitem'][form^='root-switch-dropdown-all_roots-']", text: /Client Alpha/
+        assert_select(
+          "[role='menuitem'][data-action='click->recording-studio-root-switchable--root-switch-dropdown#select']",
+          minimum: 1
+        )
+      end
     end
 
-    assert_select "form.hidden[id^='root-switch-dropdown-all_workspaces-'] input[name='root_switch[root_recording_id]']",
+    assert_select "form.hidden[id^='root-switch-dropdown-all_roots-'][data-turbo='false']", count: 0
+    assert_select "form.hidden[id^='root-switch-dropdown-all_roots-'] input[name='root_switch[root_recording_id]']",
                   minimum: 1
-    assert_select "form.hidden[id^='root-switch-dropdown-all_workspaces-'] input[name='root_switch[return_to]'][value='/config']",
+    assert_select "form.hidden[id^='root-switch-dropdown-all_roots-'] input[name='root_switch[return_to]'][value='/config']",
                   minimum: 1
   end
 end

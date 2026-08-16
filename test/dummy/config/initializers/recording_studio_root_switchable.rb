@@ -42,9 +42,6 @@ RecordingStudioRootSwitchable.configure do |config|
       role = RecordingStudioAccessible.role_for(actor: actor, recording: recording)
       "#{recording.recordable.name} · role #{role || "unknown"} · falls back to the first accessible client root when needed"
     end
-    scope.page_copy = {
-      subtitle: "Choose which client workspace should be current on this device."
-    }
   end
 
   config.scope :all_roots do |scope|
@@ -59,8 +56,5 @@ RecordingStudioRootSwitchable.configure do |config|
       role = RecordingStudioAccessible.role_for(actor: actor, recording: recording)
       "#{recording.recordable.class.name} · #{recording.recordable.try(:name) || recording.recordable.try(:title)} · role #{role || "unknown"}"
     end
-    scope.page_copy = {
-      subtitle: "Choose from accessible Workspace and Page roots. Team roots stay accessible but are intentionally excluded from switching."
-    }
   end
 end

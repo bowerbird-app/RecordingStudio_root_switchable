@@ -15,6 +15,20 @@ class ConfigurationTest < Minitest::Test
     assert_equal "Current", @configuration.page_copy.fetch(:selected_badge)
   end
 
+  def test_default_page_copy_keeps_switch_ui_minimal
+    copy = @configuration.page_copy
+
+    assert_equal "Switch", copy.fetch(:title)
+    assert_equal "", copy.fetch(:subtitle)
+    assert_equal "", copy.fetch(:persistence_hint)
+    assert_equal "Switch", copy.fetch(:switch_action_label)
+    assert_equal "Nothing to switch", copy.fetch(:empty_state_title)
+    refute_match(/\broot\b/i, copy.fetch(:title))
+    refute_match(/\broot\b/i, copy.fetch(:switch_action_label))
+    refute_match(/\broot\b/i, copy.fetch(:empty_state_title))
+    refute_match(/\broot\b/i, copy.fetch(:empty_state_body))
+  end
+
   def test_layout_defaults_to_nil_for_gem_blank_layout
     assert_nil @configuration.layout
   end
@@ -65,6 +79,38 @@ class ConfigurationTest < Minitest::Test
     assert @configuration.device_key_cookie_options.fetch(:httponly)
     assert_equal :lax, @configuration.device_key_cookie_options.fetch(:same_site)
     assert @configuration.device_key_cookie_options.fetch(:expires)
+  end
+
+  def test_merge_rejects_disabling_httponly_on_device_key_cookie
+    error = assert_raises(RecordingStudioRootSwitchable::ConfigurationError) do
+      @configuration.merge!(device_key_cookie_options: { httponly: false })
+    end
+
+    assert_includes error.message, "httponly cannot be disabled"
+  end
+
+  def test_resolved_device_key_cookie_options_force_httponly
+    @configuration.device_key_cookie_options = @configuration.device_key_cookie_options.merge(httponly: false)
+
+    assert @configuration.resolved_device_key_cookie_options.fetch(:httponly)
+  end
+
+  def test_defaults_disable_anonymous_selections_and_raw_user_agent
+    refute @configuration.allow_anonymous_selections
+    refute @configuration.store_raw_user_agent
+  end
+
+  def test_merge_preserves_false_boolean_flags
+    @configuration.allow_anonymous_selections = true
+    @configuration.store_raw_user_agent = true
+
+    @configuration.merge!(
+      allow_anonymous_selections: false,
+      store_raw_user_agent: false
+    )
+
+    refute @configuration.allow_anonymous_selections
+    refute @configuration.store_raw_user_agent
   end
 
   def test_merge_rejects_unknown_top_level_keys

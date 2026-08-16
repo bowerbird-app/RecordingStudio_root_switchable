@@ -55,10 +55,7 @@ class InstallGeneratorTest < Minitest::Test
       css_path = File.join(dir, "app/assets/tailwind/application.css")
       File.write(css_path, <<~CSS)
         @import "tailwindcss";
-        @source "../../vendor/bundle/**/recording_studio_root_switchable/app/views/**/*.erb";
-        @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_root_switchable-*/app/views/**/*.erb";
-        @source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";
-        @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";
+        #{tailwind_source_lines.join("\n")}
       CSS
 
       generator = build_generator(dir)
@@ -91,9 +88,13 @@ class InstallGeneratorTest < Minitest::Test
 
   def tailwind_source_lines
     [
-      '@source "../../vendor/bundle/**/recording_studio_root_switchable/app/views/**/*.erb";',
+      '@source "../../../vendor/recording_studio_root_switchable/app/views/**/*.erb";',
+      '@source "../../../vendor/bundle/**/recording_studio_root_switchable*/app/views/**/*.erb";',
       '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_root_switchable-*/app/views/**/*.erb";',
-      '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
+      '@source "../../../vendor/flat_pack/app/components/**/*.{rb,erb}";',
+      '@source "../../../vendor/bundle/**/flat_pack*/app/components/**/*.{rb,erb}";',
+      '@source "../../../vendor/bundle/**/flatpack*/app/components/**/*.{rb,erb}";',
+      '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flat_pack-*/app/components/**/*.{rb,erb}";',
       '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
     ]
   end
