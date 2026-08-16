@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Stimulus controller `recording-studio-root-switchable--root-switch-dropdown` shipped via the gem importmap.
+- Consolidated host upgrade guide for 0.3.1 → 0.3.5 in the README.
 
 ## [0.3.4] - 2026-08-16
 
