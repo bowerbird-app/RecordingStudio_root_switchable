@@ -11,9 +11,9 @@ gem "recording_studio_accessible",
     github: "bowerbird-app/RecordingStudio_accessible",
     branch: "cursor/support-recording-studio-4-8e1e"
 
+gem "minitest-mock"
 gem "puma"
 gem "sprockets-rails"
-gem "minitest-mock"
 
 group :development, :test do
   gem "debug"
