@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 RecordingStudioAccessible.configure do |config|
+  # Fail closed for new grants unless actor types are allowlisted (RSA 0.5+).
+  config.access_actor_types = [ "User" ]
+
   # Demo seeds bootstrap admin-managed access grants before an admin grant exists.
   config.access_management_authorizer = lambda do |actor:, **|
     ENV["RECORDING_STUDIO_ACCESSIBLE_BOOTSTRAP_ADMIN"] == "1" &&

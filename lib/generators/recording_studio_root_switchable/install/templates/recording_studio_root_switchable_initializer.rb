@@ -24,13 +24,13 @@ RecordingStudioRootSwitchable.configure do |config|
   #   return_to.presence || controller.main_app.root_path
   # end
 
-  # RecordingStudio 3.0 root checks require host apps to configure every
+  # RecordingStudio 4.0 root checks require host apps to configure every
   # delegated_type recordable used by switchable roots.
   # RecordingStudio.configure do |recording_studio_config|
   #   recording_studio_config.recordable_types = ["Workspace", "Page"]
   # end
   #
-  # If you also use RecordingStudioAccessible on RecordingStudio 3.0 and your
+  # If you also use RecordingStudioAccessible on RecordingStudio 4.0 and your
   # installed accessible version has not yet registered its addon-owned
   # RecordingStudio::Access child recordable, add this in
   # config/initializers/recording_studio_accessible.rb:
