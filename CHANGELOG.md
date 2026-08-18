@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-18
+
+### Breaking
+- Require RecordingStudio `~> 4.0` and RecordingStudioAccessible `~> 0.6`.
+- Hosts must complete the RecordingStudio 4.0 harden migration before upgrading.
+- Replace `RecordingStudioAccessible::AllowsAccessibleChildren` /
+  `recording_studio_accessible_children` with
+  `RecordingStudio.enable_capability(:accessible, on: ...)` on host recordables.
+
+### Changed
+- Development and dummy-app bundles pin RecordingStudio `v4.0.0`, FlatPack `v0.1.129`,
+  and RecordingStudioAccessible `0.6.0` (RS 4 support branch until tagged on main).
+- Dummy accessible initializer configures `access_actor_types = ["User"]` for RSA 0.5+ fail-closed grants.
+
+### Upgrade Notes
+- Stay on `0.3.x` if you are still on RecordingStudio 3 / Accessible `~> 0.3`–`0.5`.
+- See README **Upgrading to 0.4.0 (RecordingStudio 4.0)** for the full checklist.
+
 ## [0.3.5] - 2026-08-16
 
 ### Changed

@@ -4,8 +4,11 @@ source "https://rubygems.org"
 gem "recording_studio_root_switchable", path: "../.."
 
 # RecordingStudio engine
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "recording_studio/v3.0.0"
-gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", branch: "copilot/upgrade-recordingstudio-3-0-0"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.0.0"
+# Pin to the RecordingStudio 4.0 support branch until 0.6.0 is tagged on main.
+gem "recording_studio_accessible",
+    github: "bowerbird-app/RecordingStudio_accessible",
+    branch: "cursor/support-recording-studio-4-8e1e"
 
 # Devise authentication
 gem "devise"
@@ -31,10 +34,7 @@ gem "jbuilder"
 gem "tailwindcss-rails"
 
 # FlatPack UI component library [https://github.com/bowerbird-app/flatpack]
-gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.71"
-
-# Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
-# gem "bcrypt", "~> 3.1.7"
+gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.129"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
@@ -57,20 +57,14 @@ gem "thruster", require: false
 gem "image_processing", "~> 1.2"
 
 group :development, :test do
-  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
-
-  # Audits gems for known security defects (use config/bundler-audit.yml to ignore issues)
   gem "bundler-audit", require: false
-
-  # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
-
-  # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+  # Minitest 6 (via newer Rails 8.1) no longer ships Object#stub without this.
+  gem "minitest-mock"
 end
 
 group :development do
-  # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 end

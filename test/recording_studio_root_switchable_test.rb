@@ -70,8 +70,8 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     gemspec_path = File.expand_path("../recording_studio_root_switchable.gemspec", __dir__)
     gemspec_source = File.read(gemspec_path)
 
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", "~> 3.0"'
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.3"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", "~> 4.0"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.6"'
   end
 
   def test_gem_ships_blank_layout_template

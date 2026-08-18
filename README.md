@@ -16,6 +16,80 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.4.0 (RecordingStudio 4.0)
+
+Use this checklist when moving from `0.3.x` (RecordingStudio 3) to `0.4.0` (RecordingStudio 4).
+
+### 1. Upgrade sibling gems first
+
+```ruby
+gem "recording_studio", "~> 4.0"                 # e.g. tag v4.0.0
+gem "recording_studio_accessible", "~> 0.6"      # RS 4 support release
+gem "recording_studio_root_switchable", "~> 0.4"
+```
+
+Until Accessible `0.6.0` is tagged on `main`, pin the published support branch/ref your team uses for that release.
+
+```bash
+bundle update recording_studio recording_studio_accessible recording_studio_root_switchable
+```
+
+### 2. Install and run RecordingStudio 4.0 migrations
+
+```bash
+bin/rails generate recording_studio:migrations
+bin/rails db:migrate
+```
+
+Resolve any duplicate root recordings before the unique-root index is created. See RecordingStudio `docs/UPGRADING.md` (Upgrading To 4.0.0).
+
+### 3. Refresh this gem’s migrations if needed
+
+```bash
+bin/rails generate recording_studio_root_switchable:migrations
+bin/rails db:migrate
+```
+
+### 4. Update host recordables for Accessible 0.6
+
+Remove the old addon mixin/API and enable the RecordingStudio capability instead:
+
+```ruby
+# before
+class Workspace < ApplicationRecord
+  include RecordingStudioAccessible::AllowsAccessibleChildren
+  recording_studio_recordable label: "Workspace", root: true
+  recording_studio_accessible_children :access
+end
+
+# after
+class Workspace < ApplicationRecord
+  recording_studio_recordable label: "Workspace", root: true
+  RecordingStudio.enable_capability(:accessible, on: self)
+end
+```
+
+Configure `access_actor_types` (required for new grants since Accessible 0.5):
+
+```ruby
+RecordingStudioAccessible.configure do |config|
+  config.access_actor_types = ["User"]
+end
+```
+
+### 5. Adopt RecordingStudio 4.0 API changes in host code
+
+- Prefer `Recording.recent` or explicit `order:` (no default newest-first order).
+- Do not update/destroy `RecordingStudio::Event` via ActiveRecord; use SQL `delete_all` for retention.
+- Opt in to unsafe Relation/Arel/proc recordable query APIs only where required.
+- Follow RecordingStudio’s 4.0 upgrade guide for `revert`, `require_actor`, and write authorization.
+
+### 6. Smoke-test root switching
+
+- Mounted switch page and dropdown still resolve accessible roots
+- Switch persists per actor/device/scope
+- Non-switchable root types remain excluded by `switchable_root_types`
+
 ## Upgrading from 0.3.1 to 0.3.5
 
 Use this checklist when moving an existing host app onto this release line. Patch notes for each intermediate version are in [`CHANGELOG.md`](CHANGELOG.md).
@@ -157,9 +231,9 @@ Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 Add the gems to your host app:
 
 ```ruby
-gem "recording_studio", "~> 3.0"
-gem "recording_studio_accessible", "~> 0.3"
-gem "recording_studio_root_switchable", "~> 0.3.5"
+gem "recording_studio", "~> 4.0"
+gem "recording_studio_accessible", "~> 0.6"
+gem "recording_studio_root_switchable", "~> 0.4.0"
 ```
 
 Then run:
@@ -242,7 +316,7 @@ and switching policy only; it does not change RecordingStudio core root
 behavior. Roots must still be declared RecordingStudio roots, and access checks
 still apply before a root can be selected.
 
-RecordingStudio 3.0 requires every configured recordable to declare its hierarchy
+RecordingStudio 4.0 requires every configured recordable to declare its hierarchy
 rules explicitly. Root Switchable only treats declared RecordingStudio roots as
 switchable roots; parentless recordings are not enough.
 
@@ -262,7 +336,7 @@ end
 
 Root Switchable does not own any RecordingStudio child recordables itself, so this
 gem does not need to register a capability with RecordingStudio core. The only
-repo-local v3 compatibility touchpoint is the optional
+repo-local compatibility touchpoint is the optional
 `RecordingStudioAccessible` integration used by the default scope examples and
 dummy app. If your `recording_studio_accessible` version has not yet registered
 its addon-owned `RecordingStudio::Access` child recordable, add this temporary
@@ -278,7 +352,7 @@ if RecordingStudio.respond_to?(:register_capability)
 end
 ```
 
-This gem now expects a RecordingStudio 3-compatible
+This gem now expects a RecordingStudio 4-compatible
 `recording_studio_accessible ~> 0.3` release.
 
 ## How query scoping works
@@ -407,7 +481,7 @@ Scope keys are host-defined identifiers such as `workspace`, `team`, or `account
 - how labels and descriptions are rendered
 - whether a candidate root is valid and accessible
 
-Switchable roots must be valid RecordingStudio 3.0 root recordings. By default,
+Switchable roots must be valid RecordingStudio 4.0 root recordings. By default,
 the available root list comes from
 `RecordingStudioAccessible.root_recordings_for(actor:, minimum_role: :view)` and
 each candidate is revalidated through RecordingStudio's public root APIs before

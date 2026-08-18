@@ -27,4 +27,4 @@ eagerLoadControllersFrom("controllers/recording_studio_root_switchable", applica
    - Prefer loading `@hotwired/turbo-rails` so dropdown switches use Turbo Drive instead of a full page reload.
 6. Mount routes are added at the configured mount path. Adjust auth and navigation to match your host app.
 
-Upgrading from 0.3.1? See the "Upgrading from 0.3.1 to 0.3.5" section in the gem README for migrations, security defaults, page copy, Tailwind linking, and dropdown JS.
+Upgrading to RecordingStudio 4.0? See the README section "Upgrading to 0.4.0 (RecordingStudio 4.0)". For 0.3.x hardening-only upgrades, see "Upgrading from 0.3.1 to 0.3.5".
