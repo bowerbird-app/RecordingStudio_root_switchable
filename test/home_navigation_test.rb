@@ -127,7 +127,7 @@ class HomeNavigationTest < Minitest::Test
     initializer = read_dummy_file("config/initializers/recording_studio_root_switchable.rb")
 
     assert_includes view, "title: \"Accessible root switchability\""
-    assert_includes view, "switchable_root_types for all_roots"
+    assert_includes view, "Shared roots and types outside switchable_root_types"
     assert_includes view, "<table class=\"min-w-full divide-y divide-(--table-border-color)\">"
     assert_includes view, "Root name"
     assert_includes view, "Root type"
@@ -140,10 +140,11 @@ class HomeNavigationTest < Minitest::Test
     assert_includes controller, "@accessible_root_switchability_rows = accessible_root_switchability_rows"
     assert_includes controller, "Included in switchable_root_types"
     assert_includes controller, "is excluded by switchable_root_types"
+    assert_includes controller, "Shared roots are never switchable."
 
     assert_includes initializer, "config.scope :all_roots do |scope|"
-    assert_includes initializer, "scope.switchable_root_types = [ \"Workspace\", \"Page\" ]"
-    assert_includes initializer, "excluded by switchable_root_types"
+    assert_includes initializer, "scope.switchable_root_types = [ \"Workspace\", \"Page\", \"MessageRoot\" ]"
+    assert_includes initializer, "shared roots are never switchable"
     refute_includes initializer, "scope.page_copy"
   end
 

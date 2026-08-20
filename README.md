@@ -16,9 +16,51 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.5.0 (shared roots)
+
+Use this checklist when moving from `0.4.0` to `0.5.0` on RecordingStudio 4.1 shared roots.
+
+### 1. Upgrade sibling gems first
+
+```ruby
+gem "recording_studio", "~> 4.1"                 # e.g. tag v4.1.0
+gem "recording_studio_accessible", "~> 0.6"      # e.g. tag v0.6.0
+gem "recording_studio_root_switchable", "~> 0.5"
+```
+
+```bash
+bundle update recording_studio recording_studio_accessible recording_studio_root_switchable
+```
+
+### 2. Declare shared roots correctly (if you use them)
+
+```ruby
+class MessagesRoot < ApplicationRecord
+  recording_studio_recordable label: "Messages", root: true, shared: true
+end
+```
+
+Enable Accessible on domain children beneath the shared root, not on the shared root itself. Accessible `0.6.0` already excludes shared roots from `root_recordings_for`.
+
+### 3. Expect the switcher to ignore shared roots
+
+Root Switchable never resolves, shows, or switches into a shared root — even when:
+
+- a custom `available_roots` returns one
+- `switchable_root_types` lists the shared type
+- a legacy selection still points at a shared root (it is destroyed and an owned default is used)
+
+No migration is required for this gem.
+
+### 4. Smoke-test root switching
+
+- Mounted switch page and dropdown only list owned roots
+- Shared roots never appear as switch targets
+- Team / other type filters via `switchable_root_types` still work
+
 ## Upgrading to 0.4.0 (RecordingStudio 4.0)
 
-Use this checklist when moving from `0.3.x` (RecordingStudio 3) to `0.4.0` (RecordingStudio 4).
+Use this checklist when moving from `0.3.x` (RecordingStudio 3) to `0.4.0` (RecordingStudio 4). Prefer `0.5.0` if you are already on RecordingStudio 4.1.
 
 ### 1. Upgrade sibling gems first
 
@@ -231,9 +273,9 @@ Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 Add the gems to your host app:
 
 ```ruby
-gem "recording_studio", "~> 4.0"
+gem "recording_studio", "~> 4.1"
 gem "recording_studio_accessible", "~> 0.6"
-gem "recording_studio_root_switchable", "~> 0.4.0"
+gem "recording_studio_root_switchable", "~> 0.5.0"
 ```
 
 Then run:
@@ -309,16 +351,24 @@ so excluded recordable types cannot be selected for that scope. The filter
 compares against `recording.recordable_type` first and only falls back to
 `recording.recordable.class.name` when the recording has no stored type.
 
-Use this when `RecordingStudioAccessible` returns structural roots because the
-actor has access to descendants inside that root tree, but those root types
+**Shared roots are never switchable.** RecordingStudio 4.1 types declared with
+`shared: true` are domain forests (for example a messages catalog), not owned
+buckets. Root Switchable always excludes them via `RecordingStudio.shared_root?`,
+even if `switchable_root_types` lists the type or a custom `available_roots`
+returns the recording. Accessible `0.6+` also omits shared roots from
+`root_recordings_for`; the gem still enforces the rule for custom scopes.
+
+Use `switchable_root_types` when Accessible returns structural owned roots because
+the actor has access to descendants inside that root tree, but those root types
 should not appear in the user-facing switcher. This is a Root Switchable display
 and switching policy only; it does not change RecordingStudio core root
 behavior. Roots must still be declared RecordingStudio roots, and access checks
 still apply before a root can be selected.
 
-RecordingStudio 4.0 requires every configured recordable to declare its hierarchy
+RecordingStudio 4.1 requires every configured recordable to declare its hierarchy
 rules explicitly. Root Switchable only treats declared RecordingStudio roots as
-switchable roots; parentless recordings are not enough.
+switchable roots; parentless recordings are not enough. Shared roots remain
+non-switchable even though they are valid RecordingStudio roots.
 
 ```ruby
 RecordingStudio.configure do |config|

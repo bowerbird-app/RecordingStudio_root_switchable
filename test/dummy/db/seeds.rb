@@ -77,6 +77,9 @@ end
 team = Team.find_or_create_by!(name: "Operations Team")
 team_root_recording = RecordingStudio.root_recording_for(team)
 
+message_root = MessageRoot.find_or_create_by!(name: "Studio Messages")
+RecordingStudio.root_recording_for(message_root)
+
 grant_access = lambda do |actor:, role:, workspace_name:|
   root_recording = root_recordings.fetch(workspace_name)
 
@@ -148,5 +151,7 @@ end
 puts "Seeded scopes: all_workspaces, client_workspaces"
 puts "Seeded roots: #{root_recordings.keys.join(', ')}"
 puts "Seeded non-workspace root: #{team.name} (Team)"
-puts "Seeded note: Team is accessible but not switchable because switchable_root_types only allows Workspace"
+puts "Seeded shared root: #{message_root.name} (MessageRoot / shared: true)"
+puts "Seeded note: Team is accessible but not switchable because switchable_root_types only allows Workspace and Page"
+puts "Seeded note: MessageRoot is never switchable because shared roots are domain forests, not owned buckets"
 puts "Seeded pages: #{pages_by_workspace.transform_values { |pages| pages.map { |page| page.fetch(:title) } }}"

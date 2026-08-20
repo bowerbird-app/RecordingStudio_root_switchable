@@ -20,7 +20,7 @@
   <div class="flex flex-col gap-3">
     <%= render FlatPack::PageTitle::Component.new(
       title: "Accessible root switchability",
-      subtitle: "Visible in RecordingStudioAccessible and marked as available or unavailable for switching by switchable_root_types for all_roots.",
+      subtitle: "Owned buckets from RecordingStudioAccessible plus shared roots. Shared roots and types outside switchable_root_types stay out of the switcher for all_roots.",
       variant: :h3,
       class: "mb-0 pb-0"
     ) %>

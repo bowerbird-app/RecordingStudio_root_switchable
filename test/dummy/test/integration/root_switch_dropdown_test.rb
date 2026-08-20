@@ -13,6 +13,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
 
   test "top nav renders a root switch dropdown that posts back to the current page" do
     sign_in(@admin)
+    RecordingStudio::RootSwitchable::Selection.where(actor: @admin).delete_all
 
     get "/config",
         headers: {
@@ -23,7 +24,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
 
     assert_select "[data-controller='recording-studio-root-switchable--root-switch-dropdown']" do
       assert_select "[data-controller='flat-pack--button-dropdown']" do
-        assert_select "button", text: /Studio Workspace/
+        assert_select "[data-flat-pack--button-dropdown-target='trigger']", text: /Studio Workspace/
         assert_select "[role='menuitem'][form^='root-switch-dropdown-all_roots-']", text: /Client Alpha/
         assert_select(
           "[role='menuitem'][data-action='click->recording-studio-root-switchable--root-switch-dropdown#select']",

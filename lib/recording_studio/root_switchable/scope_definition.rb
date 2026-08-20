@@ -76,13 +76,18 @@ module RecordingStudio
         Array(resolve_callable(available_roots, **))
           .filter_map { |candidate| normalize_root_recording(candidate) }
           .select { |recording| switchable_root_type?(recording) }
+          .reject { |recording| shared_root_recording?(recording) }
           .uniq(&:id)
           .tap { |roots| preload_recordables!(roots) }
       end
 
       def default_root_for(**)
         recording = normalize_root_recording(resolve_callable(default_root, **))
-        recording if recording.present? && switchable_root_type?(recording)
+        return if recording.blank?
+        return unless switchable_root_type?(recording)
+        return if shared_root_recording?(recording)
+
+        recording
       end
 
       def switchable_root_types=(types)
@@ -179,6 +184,7 @@ module RecordingStudio
 
       def default_valid_root?(recording:, **)
         return false unless defined?(::RecordingStudio) && ::RecordingStudio.respond_to?(:root_recording?)
+        return false if shared_root_recording?(recording)
 
         ::RecordingStudio.root_recording?(recording)
       rescue StandardError => e
@@ -198,6 +204,20 @@ module RecordingStudio
         return true if switchable_root_types.empty?
 
         switchable_root_types.include?(recordable_type_for(recording))
+      end
+
+      # Shared roots are domain forests, not owned buckets. They must never appear
+      # in the switcher, even when listed in switchable_root_types or returned by
+      # a custom available_roots / default_root hook.
+      def shared_root_recording?(recording)
+        return false unless defined?(::RecordingStudio)
+        return false unless ::RecordingStudio.respond_to?(:shared_root?)
+
+        ::RecordingStudio.shared_root?(recording)
+      rescue StandardError => e
+        raise unless RecordingStudio::RootSwitchable.root_api_error?(e)
+
+        false
       end
 
       def recordable_type_for(recording)
