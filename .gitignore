@@ -57,3 +57,7 @@ ROOT_SWITCHER_DEMO_SUMMARY.md
 root-switcher-*.mp4
 root-switcher-*.webp
 css-fixed-*.webp
+
+# Local investigation clones (not part of the gem)
+_deps/
+.investigation_deps/

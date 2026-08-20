@@ -88,6 +88,39 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Selected root is not available for this scope."
   end
 
+  test "shared roots never appear in the switcher and cannot be selected" do
+    sign_in(@admin)
+    message_root = MessageRoot.find_by!(name: "Studio Messages")
+    shared_root_recording = RecordingStudio.root_recording_for(message_root)
+
+    assert RecordingStudio.shared_root?(shared_root_recording)
+
+    get "/recording_studio_root_switchable/v1/root_switch",
+        params: { scope: "all_roots" }
+
+    assert_response :success
+    assert_includes response.body, "Studio Workspace"
+    refute_includes response.body, "Studio Messages"
+
+    get "/"
+    assert_response :success
+    assert_includes response.body, "Studio Messages"
+    assert_includes response.body, "Shared roots are never switchable."
+
+    assert_no_difference -> { RecordingStudio::RootSwitchable::Selection.count } do
+      patch "/recording_studio_root_switchable/v1/root_switch",
+            params: {
+              scope: "all_roots",
+              root_switch: {
+                root_recording_id: shared_root_recording.id
+              }
+            }
+    end
+
+    assert_response :unprocessable_entity
+    assert_includes response.body, "Selected root is not available for this scope."
+  end
+
   test "matching the seeded admin email does not authorize access management without bootstrap flag" do
     authorizer = RecordingStudioAccessible.configuration.access_management_authorizer
 

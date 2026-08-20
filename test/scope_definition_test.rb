@@ -94,6 +94,40 @@ class ScopeDefinitionTest < Minitest::Test
     assert_equal [root], scope.available_roots_for(actor: Object.new)
   end
 
+  def test_available_roots_exclude_shared_roots_even_when_types_allow_them
+    scope = RecordingStudio::RootSwitchable::ScopeDefinition.new(:roots)
+    workspace_root = RootRecord.new(id: "workspace", recordable: Object.new, recordable_type: "Workspace")
+    shared_root = RootRecord.new(id: "shared", recordable: Object.new, recordable_type: "MessageRoot")
+    scope.available_roots = ->(**) { [workspace_root, shared_root] }
+    scope.switchable_root_types = %w[Workspace MessageRoot]
+
+    with_recording_studio_method(:shared_root?, ->(recording) { recording.id == "shared" }) do
+      assert_equal [workspace_root], scope.available_roots_for(actor: Object.new)
+    end
+  end
+
+  def test_default_root_rejects_shared_roots
+    scope = RecordingStudio::RootSwitchable::ScopeDefinition.new(:roots)
+    shared_root = RootRecord.new(id: "shared", recordable: Object.new, recordable_type: "MessageRoot")
+    scope.default_root = ->(**) { shared_root }
+    scope.switchable_root_types = "MessageRoot"
+
+    with_recording_studio_method(:shared_root?, ->(recording) { recording.id == "shared" }) do
+      assert_nil scope.default_root_for(actor: Object.new, roots: [shared_root])
+    end
+  end
+
+  def test_default_validity_rejects_shared_roots
+    scope = RecordingStudio::RootSwitchable::ScopeDefinition.new(:roots)
+    shared_root = RootRecord.new(id: "shared", recordable: Object.new, recordable_type: "MessageRoot")
+
+    with_recording_studio_method(:root_recording?, ->(_) { true }) do
+      with_recording_studio_method(:shared_root?, ->(recording) { recording.id == "shared" }) do
+        refute scope.valid?(recording: shared_root)
+      end
+    end
+  end
+
   def test_recordable_candidate_normalization_requires_root_allowed_existing_recording
     scope = RecordingStudio::RootSwitchable::ScopeDefinition.new(:roots)
     recordable = Recordable.new(id: "workspace-1")

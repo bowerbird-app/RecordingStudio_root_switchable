@@ -6,9 +6,10 @@ This Rails app exists to validate RecordingStudioRootSwitchable in a real host a
 
 - Devise authentication with a seeded admin user
 - `Current.actor` wiring for Recording Studio events
-- Multiple declared RecordingStudio 4.0 root recordings
-- Two configured root-switch scopes (`all_workspaces` and `client_workspaces`)
+- Multiple declared RecordingStudio 4.1 root recordings
+- Configured root-switch scopes (`all_workspaces`, `client_workspaces`, and `all_roots`)
 - A seeded non-workspace root (`Team`) to demonstrate `switchable_root_types` filtering
+- A seeded shared root (`MessageRoot`) that is never switchable
 - Device-key-backed selection persistence through `RecordingStudio::RootSwitchable::ControllerSupport`
 - FlatPack layout integration, PageNav-backed gem views, and mounted engine routes for RecordingStudio, RecordingStudioAccessible, and RecordingStudioRootSwitchable
 
@@ -46,4 +47,8 @@ Use this app to verify the root-switching addon end to end. It demonstrates per-
 
 The seed data creates an `Operations Team` root using the `Team` model (a non-`Workspace` root type) and grants access to demo users.
 
-In `config/initializers/recording_studio_root_switchable.rb`, the `all_roots` scope sets `switchable_root_types = [ "Workspace", "Page" ]`, so the Team root is intentionally excluded from the switch UI even though it is otherwise accessible.
+In `config/initializers/recording_studio_root_switchable.rb`, the `all_roots` scope sets `switchable_root_types` to include Workspace, Page, and MessageRoot. Team stays out of the switch UI because its type is not allowlisted.
+
+## Shared roots Example
+
+The seed data also creates a `Studio Messages` `MessageRoot` declared with `shared: true`. Shared roots are domain forests, not owned buckets. Accessible does not list them in `root_recordings_for`, and Root Switchable never switches into them — even when the host intentionally returns them from `available_roots` and lists `MessageRoot` in `switchable_root_types`.

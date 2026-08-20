@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-20
+
+### Added
+- Never switch into RecordingStudio shared roots (`shared: true`). Shared roots are
+  filtered from available roots, defaults, validity checks, resolve, and switch
+  even when a custom `available_roots` returns them or `switchable_root_types`
+  lists their type.
+- Dummy `MessageRoot` (`shared: true`) demo plus home-page switchability messaging
+  for shared vs owned roots.
+
+### Changed
+- Require RecordingStudio `~> 4.1` (shared-root helpers) and pin dummy/dev bundles
+  to RecordingStudio `v4.1.0` and RecordingStudioAccessible `v0.6.0`.
+
+### Upgrade Notes
+- Upgrade RecordingStudio to `4.1.0+` before installing `0.5.0`.
+- Shared root types are never switchable. Do not rely on `switchable_root_types`
+  alone to hide them; the gem enforces the policy.
+- See README **Upgrading to 0.5.0 (shared roots)**.
+
 ## [0.4.0] - 2026-08-18
 
 ### Breaking

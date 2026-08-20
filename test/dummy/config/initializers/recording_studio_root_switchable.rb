@@ -46,12 +46,22 @@ RecordingStudioRootSwitchable.configure do |config|
 
   config.scope :all_roots do |scope|
     scope.label = "All roots"
-    scope.description = "Every accessible root type except Team roots, which are excluded by switchable_root_types."
-    scope.switchable_root_types = [ "Workspace", "Page" ]
+    scope.description = "Owned roots only. Team is filtered by switchable_root_types; MessageRoot is excluded because shared roots are never switchable."
+    # Intentionally includes MessageRoot so the shared-root policy is exercised even when a host
+    # lists the shared type in switchable_root_types and returns it from available_roots.
+    scope.switchable_root_types = [ "Workspace", "Page", "MessageRoot" ]
     scope.available_roots = lambda do |actor:, **|
-      RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
+      owned_roots = RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
+      shared_roots = MessageRoot.find_each.filter_map do |message_root|
+        RecordingStudio.root_recording_for(message_root)
+      rescue RecordingStudio::RootNotAllowed, RecordingStudio::MissingRecordableDeclaration
+        nil
+      end
+      owned_roots + shared_roots
     end
-    scope.default_root = ->(roots:, **) { roots.first }
+    scope.default_root = lambda do |roots:, **|
+      roots.find { |root| root.recordable.try(:name) == "Studio Workspace" } || roots.first
+    end
     scope.root_description = lambda do |actor:, recording:, **|
       role = RecordingStudioAccessible.role_for(actor: actor, recording: recording)
       "#{recording.recordable.class.name} · #{recording.recordable.try(:name) || recording.recordable.try(:title)} · role #{role || "unknown"}"

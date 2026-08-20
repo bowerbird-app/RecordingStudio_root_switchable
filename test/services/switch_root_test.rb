@@ -83,6 +83,26 @@ class SwitchRootTest < Minitest::Test
     assert_equal [alpha_root], result.available_roots
   end
 
+  def test_rejects_shared_roots_even_when_listed_as_available
+    alpha_root = RootRecord.new(id: "alpha", recordable: Struct.new(:name).new("Alpha"), recordable_type: "Workspace")
+    shared_root = RootRecord.new(id: "shared", recordable: Struct.new(:name).new("Messages"), recordable_type: "MessageRoot")
+
+    configure_roots([alpha_root, shared_root], switchable_root_types: %w[Workspace MessageRoot])
+
+    with_recording_studio_method(:shared_root?, ->(recording) { recording.id == "shared" }) do
+      result = RecordingStudio::RootSwitchable::Services::SwitchRoot.call(
+        actor: Object.new,
+        device_key: "device-1",
+        root_recording_id: "shared",
+        scope_key: "roots"
+      )
+
+      refute result.success?
+      assert_includes result.errors, "Selected root is not available for this scope."
+      assert_equal [alpha_root], result.available_roots
+    end
+  end
+
   def test_rejects_anonymous_actor_by_default
     alpha_root = RootRecord.new(id: "alpha", recordable: Struct.new(:name).new("Alpha"), recordable_type: "Workspace")
     configure_roots([alpha_root])
@@ -108,6 +128,21 @@ class SwitchRootTest < Minitest::Test
         scope.access_check = ->(**) { true }
         scope.validity_check = ->(**) { true }
       end
+    end
+  end
+
+  def with_recording_studio_method(name, implementation)
+    singleton = RecordingStudio.singleton_class
+    existed = RecordingStudio.respond_to?(name)
+    original = RecordingStudio.method(name) if existed
+
+    singleton.define_method(name, implementation)
+    yield
+  ensure
+    if existed
+      singleton.define_method(name, original)
+    elsif singleton.method_defined?(name)
+      singleton.remove_method(name)
     end
   end
 end

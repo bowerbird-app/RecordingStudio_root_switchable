@@ -229,16 +229,18 @@ class HomeController < ApplicationController
     )
     return [] if scope.blank?
 
-    accessible_roots = Array(RecordingStudioAccessible.root_recordings_for(actor: current_user, minimum_role: :view)).uniq(&:id)
+    accessible_roots = Array(RecordingStudioAccessible.root_recordings_for(actor: current_user, minimum_role: :view))
+    shared_roots = MessageRoot.find_each.filter_map do |message_root|
+      RecordingStudio.root_recording_for(message_root)
+    rescue RecordingStudio::RootNotAllowed, RecordingStudio::MissingRecordableDeclaration
+      nil
+    end
+    candidate_roots = (accessible_roots + shared_roots).uniq(&:id)
     switchable_ids = scope.available_roots_for(actor: current_user, controller: self, scope_key: scope_key).map(&:id)
 
-    accessible_roots.map do |recording|
+    candidate_roots.map do |recording|
       switchable = switchable_ids.include?(recording.id)
-      reason = if switchable
-        "Included in switchable_root_types for #{scope_key}."
-      else
-        "Type #{root_recording_display_type(recording)} is excluded by switchable_root_types for #{scope_key}."
-      end
+      reason = switchability_reason(recording: recording, switchable: switchable, scope_key: scope_key)
 
       {
         recording: recording,
@@ -248,5 +250,15 @@ class HomeController < ApplicationController
     end
   rescue RecordingStudioRootSwitchable::ConfigurationError
     []
+  end
+
+  def switchability_reason(recording:, switchable:, scope_key:)
+    if RecordingStudio.shared_root?(recording)
+      "Shared roots are never switchable."
+    elsif switchable
+      "Included in switchable_root_types for #{scope_key}."
+    else
+      "Type #{root_recording_display_type(recording)} is excluded by switchable_root_types for #{scope_key}."
+    end
   end
 end
