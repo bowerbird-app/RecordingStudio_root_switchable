@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-09-02
+
+Cloud Agent Builds fetch Cursor skills at Build. Warm install skips apt, Ruby,
+the dummy database, and Tailwind when they are already usable.
+
+### Added
+- Track `.cursor/environment.json`, `.cursor/install.sh`, `.cursor/fetch-skills.sh`,
+  and `.cursor/start.sh`. Builds fetch the Recording Studio Cursor pack instead of
+  vendoring `SKILL.md` or plugin `*.mdc` files.
+- Ignore `.cursor/skills/` and `.cursor/rules/` so the fetched pack stays out of git
+  and out of the gem.
+
+### Fixed
+- `.cursor/install.sh` skips apt, ruby-build, `db:prepare`, and Tailwind when Ruby,
+  bundle, and Postgres are already usable. A skippable provision failure no longer
+  fails the Build. Fetch-skills always runs last.
+
+### Upgrade Notes
+- No host or schema changes. Rebuild the Cloud Agent environment with Draft off so
+  Build loads the pack.
+
 ## [0.5.0] - 2026-08-20
 
 ### Added

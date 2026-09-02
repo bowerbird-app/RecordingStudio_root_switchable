@@ -618,6 +618,15 @@ Login:
 
 These dummy credentials are for local demonstration only and should never be deployed as-is.
 
+## Cloud Agent boot
+
+Cloud Agent Builds run `.cursor/install.sh`, then `.cursor/fetch-skills.sh`.
+The install hook provisions a cold image. On a warm snapshot it skips apt,
+ruby-build, db:prepare, and tailwind when Ruby, bundle, and Postgres are
+already usable. Fetch-skills always runs last. `.cursor/start.sh` starts
+PostgreSQL on each boot. Rebuild with Draft off to load a new pack. See
+[Cursor skills in Cloud Agents](docs/cursor-skills.md).
+
 ## Validation
 
 Standard validation:
@@ -640,4 +649,5 @@ dropdown helper is also available for host chrome that needs an inline switcher.
 ## Documentation
 
 - Gem security notes: [`SECURITY.md`](SECURITY.md)
+- Cloud Agent boot and fetched Cursor skills: [`docs/cursor-skills.md`](docs/cursor-skills.md)
 - Template reference material remains archived under `docs/gem_template/`.
