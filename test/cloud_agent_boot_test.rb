@@ -20,9 +20,9 @@ class CloudAgentBootTest < Minitest::Test
     refute_nil fetch_line
     refute_includes fetch_line, "|| true"
 
-    commands = install.lines.map(&:strip).reject { |line|
+    commands = install.lines.map(&:strip).reject do |line|
       line.empty? || line.start_with?("#") || line.start_with?("log ")
-    }
+    end
     assert_equal '"${SCRIPT_DIR}/fetch-skills.sh"', commands.last
   end
 
@@ -47,6 +47,15 @@ class CloudAgentBootTest < Minitest::Test
 
     assert_includes gitignore, ".cursor/skills/"
     assert_includes gitignore, ".cursor/rules/"
+  end
+
+  def test_lockfiles_match_gem_version
+    version = RecordingStudioRootSwitchable::VERSION
+
+    %w[Gemfile.lock test/dummy/Gemfile.lock].each do |relative|
+      lock = File.read(File.join(ROOT, relative))
+      assert_includes lock, "recording_studio_root_switchable (#{version})", relative
+    end
   end
 
   def test_gemspec_excludes_cursor_boot_files
