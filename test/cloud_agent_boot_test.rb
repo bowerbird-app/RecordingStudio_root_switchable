@@ -15,7 +15,7 @@ class CloudAgentBootTest < Minitest::Test
 
   def test_install_sh_fetches_skills_last_without_or_true
     install = File.read(File.join(ROOT, ".cursor/install.sh"))
-    fetch_line = install.lines.grep(%r{fetch-skills\.sh}).last
+    fetch_line = install.lines.grep(/fetch-skills\.sh/).last
 
     refute_nil fetch_line
     refute_includes fetch_line, "|| true"
@@ -38,8 +38,8 @@ class CloudAgentBootTest < Minitest::Test
 
     assert_includes fetch, 'SKILLS_DIR="${ROOT}/.cursor/skills"'
     assert_includes fetch, 'RULES_DIR="${ROOT}/.cursor/rules"'
-    refute_match(/^[^#]*\$\{HOME\}\/\.cursor/, fetch)
-    refute_match(/^[^#]*~\/\.cursor/, fetch)
+    refute_match(%r{^[^#]*\$\{HOME\}/\.cursor}, fetch)
+    refute_match(%r{^[^#]*~/\.cursor}, fetch)
   end
 
   def test_gitignore_excludes_fetched_skills_and_rules
@@ -62,6 +62,7 @@ class CloudAgentBootTest < Minitest::Test
     spec = Gem::Specification.load(File.join(ROOT, "recording_studio_root_switchable.gemspec"))
 
     refute_nil spec
-    assert spec.files.none? { |path| path.start_with?(".cursor/") }
+    cursor_files = spec.files.select { |path| path.start_with?(".cursor/") }
+    assert_empty cursor_files
   end
 end
