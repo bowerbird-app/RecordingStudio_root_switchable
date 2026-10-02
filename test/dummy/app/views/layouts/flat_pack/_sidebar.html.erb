@@ -10,43 +10,43 @@
   <% sidebar.items do %>
     <nav class="py-4 space-y-1" aria-label="Main navigation">
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Home",
+        text: "Home",
         href: "/",
         icon: :home
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Setup",
+        text: "Setup",
         href: "/setup",
         icon: :folder
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Config",
+        text: "Config",
         href: "/config",
         icon: :cog_6_tooth
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Usage",
+        text: "Usage",
         href: "/usage",
         icon: :light_bulb
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Switch log",
+        text: "Switch log",
         href: "/switch_log",
         icon: :server_stack
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Method",
+        text: "Method",
         href: "/method",
         icon: :book_open
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Gem views",
+        text: "Gem views",
         href: "/gem_views",
         icon: :folder
       ) %>
@@ -57,7 +57,7 @@
   <% sidebar.footer do %>
     <%= render FlatPack::Sidebar::Footer::Component.new(class: "text-sm text-[var(--surface-muted-content-color)]") do %>
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Sign out",
+        text: "Sign out",
         href: main_app.destroy_user_session_path,
         icon: :lock,
         class: "mx-0",
