@@ -6,7 +6,7 @@ class HomeNavigationTest < Minitest::Test
   def test_sidebar_includes_switch_log_link
     sidebar = read_dummy_file("app/views/layouts/flat_pack/_sidebar.html.erb")
 
-    assert_includes sidebar, "label: \"Switch log\""
+    assert_includes sidebar, "text: \"Switch log\""
     assert_includes sidebar, "href: \"/switch_log\""
     assert_includes sidebar, "icon: :server_stack"
   end
@@ -14,7 +14,7 @@ class HomeNavigationTest < Minitest::Test
   def test_sidebar_includes_config_link
     sidebar = read_dummy_file("app/views/layouts/flat_pack/_sidebar.html.erb")
 
-    assert_includes sidebar, "label: \"Config\""
+    assert_includes sidebar, "text: \"Config\""
     assert_includes sidebar, "href: \"/config\""
     assert_includes sidebar, "icon: :cog_6_tooth"
   end
@@ -22,14 +22,14 @@ class HomeNavigationTest < Minitest::Test
   def test_sidebar_includes_gem_views_link
     sidebar = read_dummy_file("app/views/layouts/flat_pack/_sidebar.html.erb")
 
-    assert_includes sidebar, "label: \"Gem views\""
+    assert_includes sidebar, "text: \"Gem views\""
     assert_includes sidebar, "href: \"/gem_views\""
   end
 
   def test_sidebar_includes_methods_link
     sidebar = read_dummy_file("app/views/layouts/flat_pack/_sidebar.html.erb")
 
-    assert_includes sidebar, "label: \"Method\""
+    assert_includes sidebar, "text: \"Method\""
     assert_includes sidebar, "href: \"/method\""
     assert_includes sidebar, "icon: :book_open"
   end
