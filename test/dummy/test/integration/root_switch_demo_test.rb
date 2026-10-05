@@ -11,6 +11,18 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     @admin = User.find_by!(email: "admin@admin.com")
   end
 
+  test "seeded grants use Accessible string roles through public services" do
+    studio = root_recording_for("Studio Workspace")
+
+    assert_equal "admin", RecordingStudioAccessible.role_for(actor: @admin, recording: studio).to_s
+    assert RecordingStudioAccessible.authorized?(actor: @admin, recording: studio, role: :admin)
+    assert_includes RecordingStudioAccessible.root_recordings_for(actor: @admin, minimum_role: :view), studio
+
+    access = RecordingStudio::Access.find_by!(actor: @admin, role: "admin")
+    assert_kind_of String, access.role
+    assert_raises(ActiveRecord::ReadOnlyRecord) { access.update!(role: "view") }
+  end
+
   test "root switch page renders for seeded admin" do
     sign_in(@admin)
 
@@ -121,10 +133,14 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Selected root is not available for this scope."
   end
 
-  test "matching the seeded admin email does not authorize access management without bootstrap flag" do
+  test "access management follows Accessible admin role, not the seeded admin email" do
+    studio = root_recording_for("Studio Workspace")
+    viewer = User.find_by!(email: "viewer@admin.com")
     authorizer = RecordingStudioAccessible.configuration.access_management_authorizer
 
-    refute authorizer.call(actor: @admin)
+    assert authorizer.call(actor: @admin, recording: studio)
+    refute authorizer.call(actor: viewer, recording: studio)
+    refute authorizer.call(actor: @admin, recording: nil)
   end
 
   private

@@ -10,10 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Pin development and dummy bundles to RecordingStudioAccessible `v0.11.1`.
 - Widen the gemspec Accessible dependency from `~> 0.6` to `~> 0.11`.
+- Dummy app copies Accessible 0.8–0.11 migrations (`depends_on_recording_id`,
+  access invitations, string `role`), and seeds owner/viewer grants through
+  `bootstrap_owner_access!` and `grant_access`.
 
 ### Upgrade Notes
 - Hosts that install from the gemspec should use RecordingStudioAccessible `0.11.x`
   (for example tag `v0.11.1`).
+- Hosts upgrading Accessible with this dummy should run
+  `bin/rails generate recording_studio_accessible:migrations` then
+  `bin/rails db:migrate` so `recording_studio_accesses.role` is a string.
+  Grant through Accessible public services; `RecordingStudio::Access` is readonly.
 
 ## [0.5.1] - 2026-09-02
 

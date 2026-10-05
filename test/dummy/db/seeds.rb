@@ -80,11 +80,17 @@ team_root_recording = RecordingStudio.root_recording_for(team)
 message_root = MessageRoot.find_or_create_by!(name: "Studio Messages")
 RecordingStudio.root_recording_for(message_root)
 
-grant_access = lambda do |actor:, role:, workspace_name:|
-  root_recording = root_recordings.fetch(workspace_name)
+ensure_owner_access = lambda do |recording:|
+  result = RecordingStudioAccessible.bootstrap_owner_access!(
+    recording: recording,
+    actor: admin
+  )
+  raise result.error if result.failure?
+end
 
+ensure_granted_access = lambda do |actor:, role:, recording:|
   result = RecordingStudioAccessible.grant_access(
-    recording: root_recording,
+    recording: recording,
     actor: actor,
     role: role,
     manager_actor: admin
@@ -93,31 +99,21 @@ grant_access = lambda do |actor:, role:, workspace_name:|
 end
 
 Current.actor = admin
-previous_bootstrap_admin = ENV["RECORDING_STUDIO_ACCESSIBLE_BOOTSTRAP_ADMIN"]
-ENV["RECORDING_STUDIO_ACCESSIBLE_BOOTSTRAP_ADMIN"] = "1"
 
-begin
-  [ "Studio Workspace", "Client Alpha", "Client Beta" ].each do |workspace_name|
-    grant_access.call(actor: admin, role: :admin, workspace_name: workspace_name)
-  end
-  RecordingStudioAccessible.grant_access(
-    recording: team_root_recording,
-    actor: admin,
-    role: :admin,
-    manager_actor: admin
-  )
+owned_root_recordings = [
+  root_recordings.fetch("Studio Workspace"),
+  root_recordings.fetch("Client Alpha"),
+  root_recordings.fetch("Client Beta"),
+  team_root_recording
+]
+owned_root_recordings.each { |recording| ensure_owner_access.call(recording: recording) }
 
-  [ "Studio Workspace", "Client Alpha" ].each do |workspace_name|
-    grant_access.call(actor: viewer, role: :view, workspace_name: workspace_name)
-  end
-  RecordingStudioAccessible.grant_access(
-    recording: team_root_recording,
-    actor: viewer,
-    role: :view,
-    manager_actor: admin
-  )
-ensure
-  ENV["RECORDING_STUDIO_ACCESSIBLE_BOOTSTRAP_ADMIN"] = previous_bootstrap_admin
+[
+  root_recordings.fetch("Studio Workspace"),
+  root_recordings.fetch("Client Alpha"),
+  team_root_recording
+].each do |recording|
+  ensure_granted_access.call(actor: viewer, role: :view, recording: recording)
 end
 
 pages_by_workspace.each do |workspace_name, page_definitions|
