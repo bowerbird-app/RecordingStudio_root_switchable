@@ -274,7 +274,7 @@ Add the gems to your host app:
 
 ```ruby
 gem "recording_studio", "~> 4.1"
-gem "recording_studio_accessible", "~> 0.6"
+gem "recording_studio_accessible", "~> 0.11"
 gem "recording_studio_root_switchable", "~> 0.5.0"
 ```
 
@@ -610,6 +610,10 @@ The dummy app in `test/dummy/` demonstrates:
 - two scopes (`all_workspaces` and `client_workspaces`)
 - per-device persistence through the encrypted cookie-backed device key
 - fallback behavior when a persisted selection is no longer valid
+- Accessible `v0.11.1` wiring: 0.8–0.11 migrations (string `role`,
+  `depends_on_recording_id`, invitations) and seeds that grant through
+  `bootstrap_owner_access!` / `grant_access` instead of writing
+  `RecordingStudio::Access` rows directly
 
 Login:
 
