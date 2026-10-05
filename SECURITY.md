@@ -31,3 +31,7 @@ switch page plus a dropdown helper. The main risks are:
 - Serve the mounted page over HTTPS in production.
 - Skip root resolution on health/asset endpoints with `skip_recording_studio_root_resolution`.
 - Do not log or render full device keys; use `DeviceKeyPreview` if a preview is required.
+
+## Dummy app credentials
+
+The dummy host app uses `test/dummy/config/credentials.yml.enc` encrypted with the shared RecordingStudio_* development master key. Set `RAILS_MASTER_KEY` or write that key to gitignored `test/dummy/config/master.key`. Do not mint a per-repo dummy key, and never commit the key.
