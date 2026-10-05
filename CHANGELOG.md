@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Pin development and dummy bundles to RecordingStudioAccessible `v0.11.1`.
+- Widen the gemspec Accessible dependency from `~> 0.6` to `~> 0.11`.
+
+### Upgrade Notes
+- Hosts that install from the gemspec should use RecordingStudioAccessible `0.11.x`
+  (for example tag `v0.11.1`).
+
 ## [0.5.1] - 2026-09-02
 
 Cloud Agent Builds fetch Cursor skills at Build. Warm install skips apt, Ruby,

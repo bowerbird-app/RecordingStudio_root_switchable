@@ -274,7 +274,7 @@ Add the gems to your host app:
 
 ```ruby
 gem "recording_studio", "~> 4.1"
-gem "recording_studio_accessible", "~> 0.6"
+gem "recording_studio_accessible", "~> 0.11"
 gem "recording_studio_root_switchable", "~> 0.5.0"
 ```
 
