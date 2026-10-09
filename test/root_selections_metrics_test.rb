@@ -93,15 +93,15 @@ class RootSelectionsMetricsTest < Minitest::Test
 
   def seeded_rows
     [
-      { actor_id: "a1", device_key: "phone", last_used_at: @now - 2 * 86_400,
+      { actor_id: "a1", device_key: "phone", last_used_at: 2.days.ago,
         device_type: "mobile", device_platform: "iOS", device_browser: "Safari" },
-      { actor_id: "a1", device_key: "laptop", last_used_at: @now - 2 * 86_400,
+      { actor_id: "a1", device_key: "laptop", last_used_at: 2.days.ago,
         device_type: "desktop", device_platform: "macOS", device_browser: "Chrome" },
-      { actor_id: "a1", device_key: "laptop", last_used_at: @now - 2 * 86_400,
+      { actor_id: "a1", device_key: "laptop", last_used_at: 2.days.ago,
         device_type: "desktop", device_platform: "macOS", device_browser: "Chrome" },
-      { actor_id: "a2", device_key: "tablet", last_used_at: @now - 10 * 86_400,
+      { actor_id: "a2", device_key: "tablet", last_used_at: 10.days.ago,
         device_type: "tablet", device_platform: "Android", device_browser: "Chrome" },
-      { actor_id: "a2", device_key: "old", last_used_at: @now - 40 * 86_400,
+      { actor_id: "a2", device_key: "old", last_used_at: 40.days.ago,
         device_type: "desktop", device_platform: "Windows", device_browser: "Edge" }
     ]
   end
@@ -118,9 +118,8 @@ class RootSelectionsMetricsTest < Minitest::Test
 
   def breakdown(name, relation)
     field = { by_device_type: :device_type, by_platform: :device_platform, by_browser: :device_browser }.fetch(name)
-    RecordingStudioRootSwitchable::Metrics.breakdown_calculator(field, 30.days)
-                                         .call(relation, nil)
-                                         .to_h { |row| [row[:key].to_s, row[:value]] }
+    rows = RecordingStudioRootSwitchable::Metrics.breakdown_calculator(field, 30.days).call(relation, nil)
+    rows.to_h { |row| [row[:key].to_s, row[:value]] }
   end
 
   def execute(identifier)
@@ -183,7 +182,7 @@ class RootSelectionsMetricsTest < Minitest::Test
         @rows = rows
       end
 
-      def not(actor_id:)
+      def not(**)
         SeededSelections.new(@rows.reject { |row| row[:actor_id].nil? })
       end
     end
