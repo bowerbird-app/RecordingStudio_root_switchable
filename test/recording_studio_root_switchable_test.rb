@@ -66,12 +66,12 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes initializer_source, 'child_recordables: [ "RecordingStudio::Access" ]'
   end
 
-  def test_gemspec_targets_recording_studio_4_1_and_accessible_0_11
+  def test_gemspec_targets_recording_studio_4_1_and_accessible_0_13
     gemspec_path = File.expand_path("../recording_studio_root_switchable.gemspec", __dir__)
     gemspec_source = File.read(gemspec_path)
 
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio", "~> 4.1"'
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.11"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.13"'
   end
 
   def test_gem_ships_blank_layout_template
