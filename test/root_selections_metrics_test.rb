@@ -25,28 +25,30 @@ class RootSelectionsMetricsTest < Minitest::Test
       assert_equal 2, calculate(:active_actors_30d, relation)
       assert_equal 3, calculate(:active_devices_30d, relation)
 
-      types = breakdown(:by_device_type, relation)
-      platforms = breakdown(:by_platform, relation)
-      browsers = breakdown(:by_browser, relation)
+      with_seeded_relation(relation) do
+        types = execute("root_selections.by_device_type").data.to_h { |row| [row[:key].to_s, row[:value]] }
+        platforms = execute("root_selections.by_platform").data.to_h { |row| [row[:key].to_s, row[:value]] }
+        browsers = execute("root_selections.by_browser").data.to_h { |row| [row[:key].to_s, row[:value]] }
 
-      assert_equal 2, types["desktop"]
-      assert_equal 1, types["mobile"]
-      assert_equal 1, types["tablet"]
-      refute types.key?("Windows")
-      assert_equal 2, platforms["macOS"]
-      assert_equal 1, platforms["iOS"]
-      assert_equal 1, platforms["Android"]
-      refute platforms.key?("Windows")
-      assert_equal 3, browsers["Chrome"]
-      assert_equal 1, browsers["Safari"]
-      refute browsers.key?("Edge")
+        assert_equal 2, types["desktop"]
+        assert_equal 1, types["mobile"]
+        assert_equal 1, types["tablet"]
+        refute types.key?("Windows")
+        assert_equal 2, platforms["macOS"]
+        assert_equal 1, platforms["iOS"]
+        assert_equal 1, platforms["Android"]
+        refute platforms.key?("Windows")
+        assert_equal 3, browsers["Chrome"]
+        assert_equal 1, browsers["Safari"]
+        refute browsers.key?("Edge")
+      end
     end
   end
 
   def test_execute_uses_seeded_last_used_values
     travel_to_now do
       relation = SeededSelections.new(seeded_rows)
-      RecordingStudioMetrics::Authorization.stub(:base_relation, ->(*) { relation }) do
+      with_seeded_relation(relation) do
         assert_equal 1, execute("root_selections.active_actors_7d").value
         assert_equal 2, execute("root_selections.active_actors_30d").value
         assert_equal 3, execute("root_selections.active_devices_30d").value
@@ -64,7 +66,7 @@ class RootSelectionsMetricsTest < Minitest::Test
       assert_match(/not authorized/i, error.message)
 
       RecordingStudioRootSwitchable::Api::Access.stub(:can_view?, true) do
-        RecordingStudioMetrics::Authorization.stub(:base_relation, ->(*) { relation }) do
+        with_seeded_relation(relation) do
           payload = RecordingStudioMetrics::Api::ExecuteHandler.call(build_api_context(@actor))
           assert_equal "root_selections.active_actors_7d", payload[:metric]
           assert_equal 1, payload[:value]
@@ -116,10 +118,15 @@ class RootSelectionsMetricsTest < Minitest::Test
     calculator.call(relation, nil)
   end
 
-  def breakdown(name, relation)
-    field = { by_device_type: :device_type, by_platform: :device_platform, by_browser: :device_browser }.fetch(name)
-    rows = RecordingStudioRootSwitchable::Metrics.breakdown_calculator(field, 30.days).call(relation, nil)
-    rows.to_h { |row| [row[:key].to_s, row[:value]] }
+  def with_seeded_relation(relation, &)
+    RecordingStudioMetrics::Authorization.stub(
+      :base_relation,
+      lambda do |definition, _context|
+        scope = definition.scope
+        scope ? scope.call(relation) : relation
+      end,
+      &
+    )
   end
 
   def execute(identifier)
@@ -201,6 +208,10 @@ class RootSelectionsMetricsTest < Minitest::Test
       def initialize(rows, field)
         @rows = rows
         @field = field
+      end
+
+      def distinct
+        self
       end
 
       def count

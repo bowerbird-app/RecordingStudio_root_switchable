@@ -10,8 +10,8 @@ module RecordingStudioRootSwitchable
     EXPOSE = { api: [API] }.freeze
     LAST_USED = "Rows are last-used per actor+device+scope (upserted), not switch counts. " \
                 "user_agent and actor identities are never exposed."
-    WINDOW_NOTE = "The Metrics DSL cannot bake a last_used_at window into count/breakdown; " \
-                  "these use custom calculators so the window is applied in SQL."
+    WINDOW_NOTE = "Distinct actor/device counts use custom calculators; " \
+                  "breakdowns apply the 30-day last_used_at window via per-metric scope."
 
     module_function
 
@@ -64,13 +64,16 @@ module RecordingStudioRootSwitchable
     end
 
     def define_breakdown(dsl, name, field)
-      dsl.custom name,
-                 result_type: :breakdown,
-                 title: "#{name.to_s.humanize} (30d last-used)",
-                 description: "#{LAST_USED} Last-used selection rows in the last 30 days grouped by #{field}. " \
-                              "#{WINDOW_NOTE}",
-                 expose: EXPOSE,
-                 &breakdown_calculator(field, 30.days)
+      dsl.breakdown name,
+                    field: field,
+                    title: "#{name.to_s.humanize} (30d last-used)",
+                    description: "#{LAST_USED} Last-used selection rows in the last 30 days grouped by #{field}.",
+                    expose: EXPOSE,
+                    scope: last_used_scope(30.days)
+    end
+
+    def last_used_scope(window)
+      ->(relation) { used_since(relation, window) }
     end
 
     def distinct_actor_calculator(window)
@@ -82,14 +85,6 @@ module RecordingStudioRootSwitchable
     def distinct_device_calculator(window)
       lambda do |relation, _context|
         used_since(relation, window).distinct.count(:device_key)
-      end
-    end
-
-    def breakdown_calculator(field, window)
-      lambda do |relation, _context|
-        used_since(relation, window).group(field).count.map do |key, value|
-          { key: key, value: value }
-        end
       end
     end
 

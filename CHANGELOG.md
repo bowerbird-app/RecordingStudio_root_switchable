@@ -19,8 +19,9 @@ Site-wide last-used selection metrics register with Recording Studio Metrics for
   `root_selections.active_devices_30d` (distinct `device_key` with `last_used_at`
   in 30 days), and `root_selections.by_device_type` / `by_platform` / `by_browser`
   (last-used selection rows in the last 30 days). Each is exposed on
-  `:operations` only. The Metrics DSL cannot bake a `last_used_at` window into
-  `count`/`breakdown`, so these use custom calculators. Rows are upserted per
+  `:operations` only. Distinct actor/device counts use custom calculators;
+  `by_device_type` / `by_platform` / `by_browser` are DSL `breakdown`s with a
+  per-metric `scope:` for the 30-day `last_used_at` window. Rows are upserted per
   actor+device+scope: last-used, not switch-event counts. `user_agent` and actor
   identities are never exposed.
 - `api_authorize` uses `RecordingStudioRootSwitchable::Api::Access.can_view?`

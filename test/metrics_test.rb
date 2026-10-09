@@ -24,24 +24,11 @@ class MetricsTest < Minitest::Test
     end
   end
 
-  def test_access_can_view_is_true_when_admin_root_view_is_granted
-    actor = Object.new
-    recording = Object.new
-    grant = Struct.new(:actor).new(actor)
+  def test_access_can_view_uses_admin_root_view
     context = Object.new
-    context.define_singleton_method(:access_grant) { grant }
 
-    accessible = Module.new do
-      def self.authorized?(**)
-        true
-      end
-    end
-
-    RecordingStudioRootSwitchable::Api::Access.stub(:admin_root_recording, recording) do
-      Object.const_set(:RecordingStudioAccessible, accessible)
+    RecordingStudioRootSwitchable::Api::Access.stub(:authorized_on_admin_root?, true) do
       assert RecordingStudioRootSwitchable::Api::Access.can_view?(context)
-    ensure
-      Object.send(:remove_const, :RecordingStudioAccessible)
     end
   end
 
@@ -56,6 +43,10 @@ class MetricsTest < Minitest::Test
       assert_equal [:operations], definition.exposed_apis
       assert_equal :site, definition.blast_radius
       refute_equal :user_agent, definition.field
+    end
+
+    %w[root_selections.by_device_type root_selections.by_platform root_selections.by_browser].each do |id|
+      assert_equal :breakdown, RecordingStudioMetrics.find(id).metric_type
     end
   ensure
     RecordingStudioMetrics.registry.reset!
