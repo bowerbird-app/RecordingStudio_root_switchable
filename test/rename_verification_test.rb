@@ -26,6 +26,7 @@ class RenameVerificationTest < Minitest::Test
     files.reject! { |path| path.include?("/coverage/") }
     files.reject! { |path| path.include?("/test/dummy/coverage/") }
     files.reject! { |path| path.end_with?("/test/rename_verification_test.rb") }
+    files.reject! { |path| path.include?("/vendor/") }
 
     stale_files = files.select do |path|
       next false unless File.file?(path)

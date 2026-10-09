@@ -21,6 +21,8 @@ require "recording_studio/root_switchable/services/base"
 require "recording_studio/root_switchable/services/scope_context"
 require "recording_studio/root_switchable/services/resolve_current_root"
 require "recording_studio/root_switchable/services/switch_root"
+require "recording_studio_root_switchable/api/access"
+require "recording_studio_root_switchable/metrics"
 require "recording_studio_root_switchable/engine"
 
 module RecordingStudioRootSwitchable
