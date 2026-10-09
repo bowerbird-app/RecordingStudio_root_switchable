@@ -7,20 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-09
+
+### Added
+
+- English Rails I18n keys for static interface copy in the gem's own blank
+  layout, root switch page, and dropdown helper (`config/locales/en.yml` under
+  `recording_studio.root_switchable`)
+
 ### Changed
+
 - Pin development and dummy bundles to RecordingStudioAccessible `v0.11.1`.
 - Widen the gemspec Accessible dependency from `~> 0.6` to `~> 0.11`.
 - Dummy app copies Accessible 0.8–0.11 migrations (`depends_on_recording_id`,
   access invitations, string `role`), and seeds owner/viewer grants through
   `bootstrap_owner_access!` and `grant_access`.
+- Hard-coded layout title / application-name, PageNav close label, and dropdown
+  empty selection label resolve through `t("recording_studio.root_switchable.*")`
+  (English output unchanged)
 
 ### Upgrade Notes
+
 - Hosts that install from the gemspec should use RecordingStudioAccessible `0.11.x`
   (for example tag `v0.11.1`).
 - Hosts upgrading Accessible with this dummy should run
   `bin/rails generate recording_studio_accessible:migrations` then
   `bin/rails db:migrate` so `recording_studio_accesses.role` is a string.
   Grant through Accessible public services; `RecordingStudio::Access` is readonly.
+- No migration or host code change is required for English.
+- This gem had no older top-level `recording_studio_root_switchable.*` locale
+  file; new strings use only the nested `recording_studio.root_switchable`
+  namespace.
+- To translate or override the defaults, add keys under
+  `recording_studio.root_switchable` in the host's locale files.
+- Host `page_copy` configuration remains the override path for mounted-page
+  titles, badges, switch actions, and empty states.
+- There is no dependency on `recording_studio_internationalization`.
 
 ## [0.5.1] - 2026-09-02
 

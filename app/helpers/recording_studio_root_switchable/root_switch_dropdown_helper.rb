@@ -117,7 +117,7 @@ module RecordingStudioRootSwitchable
     end
 
     def recording_studio_root_switch_dropdown_label(scope:, root_recording:)
-      return "None selected" if root_recording.blank?
+      return t("recording_studio.root_switchable.dropdown.none_selected") if root_recording.blank?
 
       scope.root_label_for(
         controller: controller,

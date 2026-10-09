@@ -87,6 +87,9 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes layout_source, "javascript_importmap_tags"
     assert_includes layout_source, 'render "layouts/icon_sprite"'
     assert_includes layout_source, "yield"
+    assert_includes layout_source, 't("recording_studio.root_switchable.layout.title", default: "Recording Studio")'
+    assert_includes layout_source,
+                    't("recording_studio.root_switchable.layout.application_name", default: "Recording Studio")'
   end
 
   def test_root_switch_view_uses_page_nav_and_list_based_selector_without_item_subtitles
@@ -95,6 +98,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
 
     assert_includes view_source, "FlatPack::PageNav::Component"
     assert_includes view_source, "anchor_url: @return_anchor_url"
+    assert_includes view_source, 't("recording_studio.root_switchable.navigation.close")'
     refute_includes view_source, "FlatPack::Breadcrumb::Component"
     assert_includes view_source, "FlatPack::PageTitle::Component"
     assert_includes view_source, "title: @page_copy.fetch(:title)"
@@ -152,5 +156,16 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
       __dir__
     )
     assert_path_exists controller_path
+  end
+
+  def test_root_switch_dropdown_helper_uses_i18n_for_none_selected_label
+    helper_path = File.expand_path(
+      "../app/helpers/recording_studio_root_switchable/root_switch_dropdown_helper.rb",
+      __dir__
+    )
+    helper_source = File.read(helper_path)
+
+    assert_includes helper_source, 't("recording_studio.root_switchable.dropdown.none_selected")'
+    refute_includes helper_source, '"None selected"'
   end
 end

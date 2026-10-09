@@ -1,0 +1,10 @@
+en:
+  recording_studio:
+    root_switchable:
+      layout:
+        title: "Recording Studio"
+        application_name: "Recording Studio"
+      navigation:
+        close: "Close"
+      dropdown:
+        none_selected: "None selected"

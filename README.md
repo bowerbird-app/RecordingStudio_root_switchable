@@ -16,6 +16,40 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.6.0 (interface text / I18n)
+
+This is a non-breaking upgrade. Rendered English interface text is unchanged.
+
+### What changed
+
+- Static copy in the gem's own blank layout, root-switch page PageNav close label,
+  and dropdown empty-selection label uses Rails I18n keys under
+  `recording_studio.root_switchable`.
+- The gem ships English only in `config/locales/en.yml` (Rails engines load that
+  path by default). There is no dependency on
+  `recording_studio_internationalization`.
+- This gem never shipped a top-level `recording_studio_root_switchable.*` locale
+  file. New strings use only the nested namespace.
+
+Keys added:
+
+| Key | English |
+| --- | --- |
+| `recording_studio.root_switchable.layout.title` | Recording Studio |
+| `recording_studio.root_switchable.layout.application_name` | Recording Studio |
+| `recording_studio.root_switchable.navigation.close` | Close |
+| `recording_studio.root_switchable.dropdown.none_selected` | None selected |
+
+Left untranslated on purpose: host-configured `page_copy` (titles, badges, switch
+actions, empty states), root labels from callers/database, flash notices built
+from selected labels, icon/style tokens, and dummy-app chrome.
+
+### Upgrade steps
+
+No migration is required. English hosts need no change. To override or add
+another language, set the keys above in the host's `config/locales`. Continue to
+use `config.page_copy` for mounted-page titles and list actions.
+
 ## Upgrading to 0.5.0 (shared roots)
 
 Use this checklist when moving from `0.4.0` to `0.5.0` on RecordingStudio 4.1 shared roots.
@@ -505,6 +539,16 @@ config.page_copy = {
 Filtering rules (such as which root types are switchable) belong in scope configuration and docs, not in default page copy.
 
 `layout` controls which Rails layout the mounted root-switch page renders inside. When `layout` is `nil`, the gem uses its own blank layout. Host apps can set `layout` to a String such as `"application"`, a Symbol such as `:application_layout`, or a callable that returns either value per request.
+
+### Interface text
+
+Static chrome in the gem's own blank layout, root-switch PageNav close label, and
+dropdown empty-selection label ships as English Rails I18n under
+`recording_studio.root_switchable` in `config/locales/en.yml`. Hosts can override
+those keys. Mounted-page titles, badges, switch actions, and empty states stay on
+`page_copy`. Root labels and flash notices built from selected labels stay
+caller- or data-driven. This gem does not ship a legacy top-level
+`recording_studio_root_switchable.*` locale file.
 
 ### Actor expectations
 

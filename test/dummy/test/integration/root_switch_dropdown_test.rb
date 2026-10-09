@@ -39,4 +39,14 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     assert_select "form.hidden[id^='root-switch-dropdown-all_roots-'] input[name='root_switch[return_to]'][value='/config']",
                   minimum: 1
   end
+
+  test "dropdown helper resolves none selected to literal English" do
+    helper = Object.new.extend(RecordingStudioRootSwitchable::RootSwitchDropdownHelper)
+    helper.define_singleton_method(:t) { |key, **options| I18n.t(key, **options) }
+
+    I18n.with_locale(:en) do
+      label = helper.send(:recording_studio_root_switch_dropdown_label, scope: Object.new, root_recording: nil)
+      assert_equal "None selected", label
+    end
+  end
 end

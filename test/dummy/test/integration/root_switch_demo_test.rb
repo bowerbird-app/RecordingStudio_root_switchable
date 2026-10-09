@@ -33,10 +33,30 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
         }
 
     assert_response :success
+    assert_includes response.body, "<title>Recording Studio</title>"
+    assert_includes response.body, 'content="Recording Studio"'
     assert_includes response.body, "Switch"
+    assert_includes response.body, "Current"
     assert_includes response.body, "Studio Workspace"
     assert_includes response.body, "Client Alpha"
     assert_operator response.body.index("Studio Workspace"), :<, response.body.index("Client Alpha")
+  end
+
+  test "root switch empty state renders configured English copy" do
+    sign_in(@admin)
+    scope = RecordingStudioRootSwitchable.configuration.scopes.fetch("all_workspaces")
+    original_available_roots = scope.available_roots
+    scope.available_roots = ->(**) { [] }
+
+    get "/recording_studio_root_switchable/v1/root_switch",
+        params: { scope: "all_workspaces" }
+
+    assert_response :success
+    assert_includes response.body, "Switch"
+    assert_includes response.body, "Nothing to switch"
+    assert_includes response.body, "There are no options available right now."
+  ensure
+    scope.available_roots = original_available_roots if scope
   end
 
   test "dummy app sidebar layout defaults to the rounded FlatPack theme" do
