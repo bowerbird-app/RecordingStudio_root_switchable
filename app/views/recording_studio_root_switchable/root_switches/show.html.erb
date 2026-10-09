@@ -9,7 +9,7 @@
 
   <%= render FlatPack::PageNav::Component.new(
     anchor_url: @return_anchor_url,
-    anchor_label: "Close"
+    anchor_label: t("recording_studio.root_switchable.navigation.close")
   ) %>
 
   <% page_subtitle = @page_copy.fetch(:subtitle).presence %>
