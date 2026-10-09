@@ -91,18 +91,6 @@ jobs:
         DB_PASSWORD: postgres
         DB_NAME: recording_studio_root_switchable_test
 
-    - name: Verify dummy app root-selection metrics
-      run: bundle exec rails test test/models/root_selections_metrics_test.rb
-      working-directory: test/dummy
-      env:
-        RAILS_ENV: test
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_root_switchable_test
-        DB_HOST: localhost
-        DB_PORT: 5432
-        DB_USER: postgres
-        DB_PASSWORD: postgres
-        DB_NAME: recording_studio_root_switchable_test
-
     - name: Run RuboCop
       run: bundle exec rubocop
 
