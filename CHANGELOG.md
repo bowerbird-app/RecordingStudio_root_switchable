@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-09
+
+Site-wide last-used selection metrics register with Recording Studio Metrics for the operations API.
+
+### Added
+- `RecordingStudioRootSwitchable::Metrics.register!` registers a `:root_selections`
+  resource (`blast_radius: :site`) on the existing Selection table. Metrics:
+  `root_selections.active_actors_7d`, `root_selections.active_actors_30d`
+  (distinct `actor_id` with `last_used_at` in the window),
+  `root_selections.active_devices_30d` (distinct `device_key` with `last_used_at`
+  in 30 days), and `root_selections.by_device_type` / `by_platform` / `by_browser`
+  (last-used selection rows in the last 30 days). Each is exposed on
+  `:operations` only. The Metrics DSL cannot bake a `last_used_at` window into
+  `count`/`breakdown`, so these use custom calculators. Rows are upserted per
+  actor+device+scope: last-used, not switch-event counts. `user_agent` and actor
+  identities are never exposed.
+- `api_authorize` uses `RecordingStudioRootSwitchable::Api::Access.can_view?`
+  (AdminRoot `:view` via Accessible).
+- Runtime dependency `recording_studio_metrics` `~> 0.2` (GitHub tag `v0.2.0`).
+
+### Upgrade Notes
+- Bump to `0.7.0`. No migration.
+- Add `recording_studio_metrics` at tag `v0.2.0`.
+- This gem does not call `RecordingStudioMetrics::Api.register!`. The host
+  registers Metrics endpoints once:
+
+```ruby
+RecordingStudioMetrics::Api.register!(api: :operations)
+```
+
 ## [0.6.0] - 2026-10-09
 
 ### Added
@@ -195,3 +225,4 @@ the dummy database, and Tailwind when they are already usable.
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/releases/tag/v0.1.0
+[0.7.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.6.0...v0.7.0

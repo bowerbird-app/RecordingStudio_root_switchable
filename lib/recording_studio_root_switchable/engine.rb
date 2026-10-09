@@ -22,6 +22,10 @@ module RecordingStudioRootSwitchable
       end
     end
 
+    initializer "recording_studio_root_switchable.metrics" do
+      config.to_prepare { RecordingStudioRootSwitchable::Metrics.register! }
+    end
+
     initializer "recording_studio_root_switchable.load_config" do |app|
       yaml_config = RecordingStudioRootSwitchable::Engine.load_yaml_config(app)
       if yaml_config
