@@ -1,10 +1,28 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "i18n"
 
 class ConfigurationTest < Minitest::Test
   def setup
     @configuration = RecordingStudioRootSwitchable::Configuration.new
+    @original_locale = I18n.locale
+    @original_default_locale = I18n.default_locale
+    @original_load_path = I18n.load_path.dup
+    @original_backend = I18n.backend
+    I18n.backend = I18n::Backend::Simple.new
+    I18n.available_locales = %i[en fr es de]
+    I18n.default_locale = :en
+    I18n.locale = :en
+    load_engine_page_copy_locales!
+  end
+
+  def teardown
+    I18n.locale = @original_locale
+    I18n.default_locale = @original_default_locale
+    I18n.load_path = @original_load_path
+    I18n.backend = @original_backend
+    I18n.reload!
   end
 
   def test_starts_without_scopes_until_the_host_app_registers_them
@@ -142,15 +160,125 @@ class ConfigurationTest < Minitest::Test
     assert_includes error.message, "unsupported page_copy key(s): unsupported_label"
   end
 
-  def test_merge_rejects_non_string_page_copy_values
+  def test_merge_rejects_invalid_page_copy_value_types
     error = assert_raises(RecordingStudioRootSwitchable::ConfigurationError) do
       @configuration.merge!(
-        { page_copy: { switch_action_label: :activate } },
+        { page_copy: { switch_action_label: 123 } },
         source: "config/recording_studio_root_switchable.yml"
       )
     end
 
     assert_includes error.message, "expected page_copy.switch_action_label to be a String"
+  end
+
+  def test_merge_accepts_symbol_i18n_key_page_copy_values
+    @configuration.merge!(page_copy: { title: :"my_app.root_switch.title" })
+
+    assert_equal :"my_app.root_switch.title", @configuration.page_copy.fetch(:title)
+  end
+
+  def test_page_copy_for_resolves_plain_string_literally_in_every_locale
+    @configuration.page_copy = { title: "Fixed title" }
+
+    I18n.with_locale(:en) do
+      assert_equal "Fixed title", @configuration.page_copy_for.fetch(:title)
+    end
+    I18n.with_locale(:fr) do
+      assert_equal "Fixed title", @configuration.page_copy_for.fetch(:title)
+    end
+  end
+
+  def test_page_copy_for_resolves_symbol_i18n_key_at_render_time
+    I18n.backend.store_translations(:en, my_app: { root_switch: { title: "Host symbol title" } })
+    @configuration.page_copy = { title: :"my_app.root_switch.title" }
+
+    I18n.with_locale(:en) do
+      assert_equal "Host symbol title", @configuration.page_copy_for.fetch(:title)
+    end
+  end
+
+  def test_page_copy_for_resolves_i18n_prefixed_string_key_at_render_time
+    I18n.backend.store_translations(:en, my_app: { root_switch: { badge: "Host string-key badge" } })
+    @configuration.page_copy = { selected_badge: "i18n:my_app.root_switch.badge" }
+
+    I18n.with_locale(:en) do
+      assert_equal "Host string-key badge", @configuration.page_copy_for.fetch(:selected_badge)
+    end
+  end
+
+  def test_page_copy_for_evaluates_callable_per_request
+    calls = []
+    @configuration.page_copy = {
+      title: lambda { |key:, locale:, **|
+        calls << [key, locale]
+        "Callable #{locale}"
+      }
+    }
+
+    I18n.with_locale(:en) { assert_equal "Callable en", @configuration.page_copy_for.fetch(:title) }
+    I18n.with_locale(:fr) { assert_equal "Callable fr", @configuration.page_copy_for.fetch(:title) }
+
+    assert_equal [%i[title en], %i[title fr]], calls
+  end
+
+  def test_page_copy_for_uses_hash_entry_for_current_locale
+    @configuration.page_copy = { title: { en: "Switch EN", fr: "Changer" } }
+
+    I18n.with_locale(:fr) do
+      assert_equal "Changer", @configuration.page_copy_for.fetch(:title)
+    end
+  end
+
+  def test_page_copy_for_hash_falls_back_to_default_locale
+    original_default = I18n.default_locale
+    I18n.default_locale = :en
+    @configuration.page_copy = { title: { en: "Default locale title" } }
+
+    I18n.with_locale(:fr) do
+      assert_equal "Default locale title", @configuration.page_copy_for.fetch(:title)
+    end
+  ensure
+    I18n.default_locale = original_default
+  end
+
+  def test_page_copy_for_hash_falls_back_to_gem_key
+    I18n.backend.store_translations(
+      :es,
+      recording_studio: { root_switchable: { page_copy: { title: "Cambiar" } } }
+    )
+    @configuration.page_copy = { title: { de: "Wechseln" } }
+
+    I18n.with_locale(:es) do
+      assert_equal "Cambiar", @configuration.page_copy_for.fetch(:title)
+    end
+  end
+
+  def test_page_copy_for_without_config_uses_gem_english
+    I18n.with_locale(:en) do
+      copy = @configuration.page_copy_for
+
+      assert_equal "Switch", copy.fetch(:title)
+      assert_equal "Current", copy.fetch(:selected_badge)
+      assert_equal "Nothing to switch", copy.fetch(:empty_state_title)
+      assert_equal "There are no options available right now.", copy.fetch(:empty_state_body)
+    end
+  end
+
+  def test_page_copy_for_follows_locale_without_memoizing_boot_defaults
+    I18n.backend.store_translations(
+      :fr,
+      recording_studio: { root_switchable: { page_copy: { title: "Changer", selected_badge: "Actuel" } } }
+    )
+
+    en_copy = I18n.with_locale(:en) { @configuration.page_copy_for }
+    fr_copy = I18n.with_locale(:fr) { @configuration.page_copy_for }
+    en_again = I18n.with_locale(:en) { @configuration.page_copy_for }
+
+    assert_equal "Switch", en_copy.fetch(:title)
+    assert_equal "Changer", fr_copy.fetch(:title)
+    assert_equal "Actuel", fr_copy.fetch(:selected_badge)
+    assert_equal "Switch", en_again.fetch(:title)
+    assert_equal "Current", en_again.fetch(:selected_badge)
   end
 
   def test_merge_rejects_invalid_after_switch_redirect_type
@@ -211,5 +339,13 @@ class ConfigurationTest < Minitest::Test
     )
 
     assert_equal "application", layout
+  end
+
+  private
+
+  def load_engine_page_copy_locales!
+    path = File.expand_path("../config/locales/en.yml", __dir__)
+    I18n.load_path |= [path]
+    I18n.backend.load_translations
   end
 end

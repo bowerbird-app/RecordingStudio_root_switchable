@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-12
+
+Default mounted-page `page_copy` is translatable through Rails I18n at render time.
+
+### Added
+- English Rails I18n keys for every `DEFAULT_PAGE_COPY` field under
+  `recording_studio.root_switchable.page_copy.*` in `config/locales/en.yml`.
+- `config.page_copy` values may be a plain String, a Symbol I18n key, an
+  `i18n:`-prefixed String key, a per-request callable (`key:`, `locale:`), or a
+  locale Hash. Resolution happens in `page_copy_for` per request.
+
+### Changed
+- Unconfigured `page_copy` keys resolve through I18n at render time (honoring
+  `I18n.locale`) with `default:` set to the original English from
+  `DEFAULT_PAGE_COPY`. The `DEFAULT_PAGE_COPY` constant remains the public
+  English default table.
+- Precedence is `config.page_copy` > gem/host translation > English default.
+  Plain String configs stay fixed in every locale.
+
+### Upgrade Notes
+- Bump to `0.8.0`. No migration.
+- English hosts need no change. To translate defaults, define the same
+  `recording_studio.root_switchable.page_copy.*` keys in the host's
+  `config/locales`.
+- Existing plain-String `config.page_copy` values keep rendering verbatim in
+  every locale. Use a Symbol or `i18n:...` String when the value should be an
+  I18n key.
+- There is no dependency on `recording_studio_internationalization`.
+
 ## [0.7.0] - 2026-10-09
 
 Site-wide last-used selection metrics register with Recording Studio Metrics for the operations API.

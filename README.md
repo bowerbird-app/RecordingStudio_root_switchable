@@ -16,6 +16,49 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.8.0 (translatable page_copy)
+
+This is a non-breaking upgrade. Rendered English mounted-page copy is unchanged
+when you leave `config.page_copy` unset.
+
+### What changed
+
+- Default mounted-page `page_copy` strings ship as Rails I18n keys under
+  `recording_studio.root_switchable.page_copy.*` and resolve **at render time**
+  (per request / `I18n.locale`), never at boot.
+- `DEFAULT_PAGE_COPY` remains the public English default table and the
+  `default:` fallback for each key.
+- `config.page_copy` still wins over gem translations. Each value may be a plain
+  String, an I18n key (Symbol or `i18n:`-prefixed String), a callable, or a
+  locale Hash. See [Page copy](#page-copy) below.
+- No dependency on `recording_studio_internationalization`.
+
+Keys added:
+
+| Key | English |
+| --- | --- |
+| `recording_studio.root_switchable.page_copy.title` | Switch |
+| `recording_studio.root_switchable.page_copy.subtitle` | *(blank)* |
+| `recording_studio.root_switchable.page_copy.scope_heading` | Scopes |
+| `recording_studio.root_switchable.page_copy.roots_heading` | Available |
+| `recording_studio.root_switchable.page_copy.current_selection_label` | Current selection |
+| `recording_studio.root_switchable.page_copy.device_label` | Device key |
+| `recording_studio.root_switchable.page_copy.persistence_hint` | *(blank)* |
+| `recording_studio.root_switchable.page_copy.selected_badge` | Current |
+| `recording_studio.root_switchable.page_copy.switch_action_label` | Switch |
+| `recording_studio.root_switchable.page_copy.empty_state_title` | Nothing to switch |
+| `recording_studio.root_switchable.page_copy.empty_state_body` | There are no options available right now. |
+
+Left untranslated on purpose: root labels from callers/database, flash notices
+built from selected labels, icon/style tokens, and dummy-app chrome.
+
+### Upgrade steps
+
+No migration is required. English hosts need no change. To translate defaults,
+define the same `recording_studio.root_switchable.page_copy.*` keys in the host's
+`config/locales`. To force fixed copy in every locale, keep using plain Strings
+in `config.page_copy`.
+
 ## Upgrading to 0.6.0 (interface text / I18n)
 
 This is a non-breaking upgrade. Rendered English interface text is unchanged.
@@ -40,15 +83,10 @@ Keys added:
 | `recording_studio.root_switchable.navigation.close` | Close |
 | `recording_studio.root_switchable.dropdown.none_selected` | None selected |
 
-Left untranslated on purpose: host-configured `page_copy` (titles, badges, switch
-actions, empty states), root labels from callers/database, flash notices built
-from selected labels, icon/style tokens, and dummy-app chrome.
-
 ### Upgrade steps
 
 No migration is required. English hosts need no change. To override or add
-another language, set the keys above in the host's `config/locales`. Continue to
-use `config.page_copy` for mounted-page titles and list actions.
+another language, set the keys above in the host's `config/locales`.
 
 ## Upgrading to 0.5.0 (shared roots)
 
@@ -523,7 +561,8 @@ Supported boot-time configuration keys are:
 - `page_copy`
 - `after_switch_redirect`
 
-`page_copy` must be a hash whose keys match the documented copy fields exposed by the gem, and each value must be a string.
+`page_copy` must be a hash whose keys match the documented copy fields exposed by
+the gem. See [Page copy](#page-copy) for the four value forms and precedence.
 
 Default copy is intentionally minimal (`Switch` title + list actions only) and avoids backend "root" wording. Blank `subtitle` and `persistence_hint` values are omitted from the page. Hosts can override any field, for example:
 
@@ -542,13 +581,68 @@ Filtering rules (such as which root types are switchable) belong in scope config
 
 ### Interface text
 
-Static chrome in the gem's own blank layout, root-switch PageNav close label, and
-dropdown empty-selection label ships as English Rails I18n under
-`recording_studio.root_switchable` in `config/locales/en.yml`. Hosts can override
-those keys. Mounted-page titles, badges, switch actions, and empty states stay on
-`page_copy`. Root labels and flash notices built from selected labels stay
+Static chrome in the gem's own blank layout, root-switch PageNav close label,
+dropdown empty-selection label, and default mounted-page `page_copy` ship as
+English Rails I18n under `recording_studio.root_switchable` in
+`config/locales/en.yml`. Hosts can override those keys in their own
+`config/locales`. Root labels and flash notices built from selected labels stay
 caller- or data-driven. This gem does not ship a legacy top-level
 `recording_studio_root_switchable.*` locale file.
+
+### Page copy
+
+Mounted-page titles, badges, switch actions, and empty states resolve through
+`RecordingStudioRootSwitchable.configuration.page_copy_for` at render time.
+
+**Precedence** (highest first):
+
+1. `config.page_copy` / scope `page_copy` for that key
+2. Gem (or host) translation for `recording_studio.root_switchable.page_copy.<key>`
+3. English default from `DEFAULT_PAGE_COPY`
+
+Hosts translate defaults by defining the same keys in their own `config/locales`
+(for example `config/locales/fr.yml`). No boot-time memoization: changing
+`I18n.locale` between requests changes the rendered strings.
+
+Each `page_copy` value may be one of four forms:
+
+**1. Plain String** — fixed in every locale (today's behavior; backward compatible):
+
+```ruby
+config.page_copy = { title: "Switch workspace" }
+```
+
+**2. I18n key** — looked up with `I18n.t` at render time:
+
+- A `Symbol` is always an I18n key.
+- A `String` is an I18n key only when it starts with `i18n:` (the prefix is
+  stripped). Any other String is a literal so existing configs keep rendering
+  verbatim.
+
+```ruby
+config.page_copy = {
+  title: :"my_app.root_switch.title",
+  selected_badge: "i18n:my_app.root_switch.badge"
+}
+```
+
+**3. Callable** — evaluated per request with keyword args `key:` (the page_copy
+field) and `locale:` (current `I18n.locale`):
+
+```ruby
+config.page_copy = {
+  title: ->(key:, locale:, **) { locale == :fr ? "Changer" : "Switch" }
+}
+```
+
+**4. Hash keyed by locale** — current locale, then `I18n.default_locale`, then
+the gem's `recording_studio.root_switchable.page_copy.<key>`:
+
+```ruby
+config.page_copy = {
+  title: { en: "Switch", fr: "Changer" }
+}
+```
 
 ### Actor expectations
 

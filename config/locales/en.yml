@@ -8,3 +8,15 @@ en:
         close: "Close"
       dropdown:
         none_selected: "None selected"
+      page_copy:
+        title: "Switch"
+        subtitle: ""
+        scope_heading: "Scopes"
+        roots_heading: "Available"
+        current_selection_label: "Current selection"
+        device_label: "Device key"
+        persistence_hint: ""
+        selected_badge: "Current"
+        switch_action_label: "Switch"
+        empty_state_title: "Nothing to switch"
+        empty_state_body: "There are no options available right now."
