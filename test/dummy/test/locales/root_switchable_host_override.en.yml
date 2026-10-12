@@ -1,0 +1,9 @@
+en:
+  recording_studio:
+    root_switchable:
+      page_copy:
+        title: "HOST Switch"
+        selected_badge: "HOST Current"
+        switch_action_label: "HOST Switch"
+        empty_state_title: "HOST Nothing to switch"
+        empty_state_body: "HOST There are no options available right now."

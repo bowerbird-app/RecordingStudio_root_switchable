@@ -9,7 +9,18 @@ class LocalesTest < Minitest::Test
     "layout.title" => "Recording Studio",
     "layout.application_name" => "Recording Studio",
     "navigation.close" => "Close",
-    "dropdown.none_selected" => "None selected"
+    "dropdown.none_selected" => "None selected",
+    "page_copy.title" => "Switch",
+    "page_copy.subtitle" => "",
+    "page_copy.scope_heading" => "Scopes",
+    "page_copy.roots_heading" => "Available",
+    "page_copy.current_selection_label" => "Current selection",
+    "page_copy.device_label" => "Device key",
+    "page_copy.persistence_hint" => "",
+    "page_copy.selected_badge" => "Current",
+    "page_copy.switch_action_label" => "Switch",
+    "page_copy.empty_state_title" => "Nothing to switch",
+    "page_copy.empty_state_body" => "There are no options available right now."
   }.freeze
 
   def setup
@@ -61,6 +72,9 @@ class LocalesTest < Minitest::Test
     assert_equal "Recording Studio", tree.fetch("layout").fetch("application_name")
     assert_equal "Close", tree.fetch("navigation").fetch("close")
     assert_equal "None selected", tree.fetch("dropdown").fetch("none_selected")
+    assert_equal "Switch", tree.fetch("page_copy").fetch("title")
+    assert_equal "Current", tree.fetch("page_copy").fetch("selected_badge")
+    assert_equal "Nothing to switch", tree.fetch("page_copy").fetch("empty_state_title")
   end
 
   def test_no_legacy_top_level_locale_namespace_is_shipped
@@ -69,6 +83,25 @@ class LocalesTest < Minitest::Test
     refute_includes files, "recording_studio_root_switchable.en.yml"
     tree = locale_tree(File.join(engine_locales_dir, "en.yml"), "en")
     refute tree.key?("recording_studio_root_switchable")
+  end
+
+  def test_lib_does_not_set_i18n_load_path
+    Dir[File.expand_path("../lib/**/*.rb", __dir__)].each do |path|
+      source = File.read(path)
+
+      refute_includes source, "i18n.load_path", "#{path} must not set i18n.load_path"
+      refute_includes source, "I18n.load_path", "#{path} must not set I18n.load_path"
+    end
+  end
+
+  def test_gemspec_and_dummy_gemfile_do_not_depend_on_internationalization
+    gemspec = File.read(File.expand_path("../recording_studio_root_switchable.gemspec", __dir__))
+    dummy_gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
+
+    refute_includes gemspec, "recording_studio_internationalization"
+    refute_includes gemspec, "RecordingStudio_Internationalization"
+    refute_includes dummy_gemfile, "recording_studio_internationalization"
+    refute_includes dummy_gemfile, "RecordingStudio_Internationalization"
   end
 
   private

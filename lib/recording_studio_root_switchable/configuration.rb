@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "active_support/core_ext/integer/time"
+require "i18n"
 
 module RecordingStudioRootSwitchable
   class ConfigurationError < StandardError
@@ -30,6 +31,9 @@ module RecordingStudioRootSwitchable
 
     ALLOWED_SAME_SITE = %i[lax strict none].freeze
 
+    # English defaults for the public API and I18n `default:` fallbacks.
+    # Rendered copy is resolved per request via {#page_copy_for}; do not treat
+    # this constant as the live translation table.
     DEFAULT_PAGE_COPY = {
       title: "Switch",
       subtitle: "",
@@ -44,6 +48,13 @@ module RecordingStudioRootSwitchable
       empty_state_body: "There are no options available right now."
     }.freeze
 
+    PAGE_COPY_I18N_PREFIX = "recording_studio.root_switchable.page_copy"
+    PAGE_COPY_STRING_KEY_PREFIX = "i18n:"
+
+    # Keys the mounted page omits when blank (PageTitle subtitle / optional hint).
+    # Nil is allowed only for these; required keys still reject nil at configure time.
+    OPTIONAL_PAGE_COPY_KEYS = %i[subtitle persistence_hint].freeze
+
     DEFAULT_SWITCH_RATE_LIMIT = { limit: 30, period: 1.minute }.freeze
 
     attr_accessor :current_actor_resolver,
@@ -57,7 +68,7 @@ module RecordingStudioRootSwitchable
                   :store_raw_user_agent,
                   :last_used_at_touch_interval,
                   :switch_rate_limit
-    attr_reader :page_copy, :scopes
+    attr_reader :scopes
 
     def initialize
       @device_key_cookie_name = :recording_studio_root_switchable_device_key
@@ -67,7 +78,7 @@ module RecordingStudioRootSwitchable
         same_site: :lax,
         secure: default_secure_cookie?
       }
-      @page_copy = DEFAULT_PAGE_COPY.dup
+      @page_copy_overrides = {}
       @scopes = {}
       @current_actor_resolver = default_current_actor_resolver
       @default_scope_key_resolver = ->(scopes:, **) { scopes.first&.key }
@@ -78,6 +89,13 @@ module RecordingStudioRootSwitchable
       @store_raw_user_agent = false
       @last_used_at_touch_interval = 5.minutes
       @switch_rate_limit = DEFAULT_SWITCH_RATE_LIMIT.dup
+    end
+
+    # Configured page_copy entries merged over {DEFAULT_PAGE_COPY}. Values may be
+    # unresolved (Symbol / i18n:-String / Hash / callable). Prefer {#page_copy_for}
+    # at render time for locale-aware strings.
+    def page_copy
+      DEFAULT_PAGE_COPY.merge(@page_copy_overrides)
     end
 
     def resolved_device_key_cookie_options
@@ -92,6 +110,7 @@ module RecordingStudioRootSwitchable
       definition = scopes[key.to_s] ||= RecordingStudio::RootSwitchable::ScopeDefinition.new(key)
       definition.assign!(options)
       yield(definition) if block_given?
+      validate_page_copy!(normalize_hash(definition.page_copy), source: "scope #{definition.key}")
       definition
     end
 
@@ -156,11 +175,37 @@ module RecordingStudioRootSwitchable
       apply_page_copy(value, source: "runtime configuration")
     end
 
+    # Resolve mounted-page copy for the current request / I18n.locale.
+    #
+    # Precedence per key: config.page_copy (and scope overrides) > gem translation
+    # under +recording_studio.root_switchable.page_copy.*+ > English default from
+    # {DEFAULT_PAGE_COPY}.
+    #
+    # Configured values may be:
+    # - +nil+ — only for {OPTIONAL_PAGE_COPY_KEYS}; omitted / blank at render
+    # - String — fixed in every locale (backward compatible)
+    # - Symbol — I18n key looked up at render time
+    # - String starting with +"i18n:"+ — I18n key (prefix stripped); a bare
+    #   +"i18n:"+ (empty key) falls back to the gem page_copy key; any other
+    #   String is a literal so existing plain-String configs keep rendering
+    #   verbatim
+    # - callable — invoked per request; keyword args (+key:+ / +locale:+) are
+    #   passed only when the callable declares them; otherwise positional args
+    #   are passed when arity allows, else called with no arguments
+    # - Hash keyed by locale — current locale, then I18n.default_locale, then the
+    #   gem key
     def page_copy_for(scope: nil)
-      copy = @page_copy.dup
-      return copy unless scope
+      configured = @page_copy_overrides.dup
+      configured.merge!(normalize_hash(scope.page_copy)) if scope
 
-      copy.merge(scope.page_copy)
+      DEFAULT_PAGE_COPY.keys.each_with_object({}) do |key, memo|
+        memo[key] = if configured.key?(key)
+                      value = configured[key]
+                      value.nil? ? nil : resolve_page_copy_value(value, key: key)
+                    else
+                      translate_page_copy_key(key)
+                    end
+      end
     end
 
     def merge!(hash = nil, source: "runtime configuration", **kwargs)
@@ -326,7 +371,7 @@ module RecordingStudioRootSwitchable
       normalized_copy = normalize_hash_value!(key: :page_copy, value: value, source: source)
       validate_page_copy!(normalized_copy, source: source)
 
-      @page_copy = DEFAULT_PAGE_COPY.merge(normalized_copy)
+      @page_copy_overrides = normalized_copy
     end
 
     def validate_page_copy!(value, source:)
@@ -339,13 +384,126 @@ module RecordingStudioRootSwitchable
         )
       end
 
-      invalid_value_key = value.find { |_, entry| !entry.is_a?(String) }&.first
+      invalid_value_key = value.find { |key, entry| !valid_page_copy_value?(entry, key: key) }&.first
       return unless invalid_value_key
 
       raise ConfigurationError.new(
         source: source,
         config_key: :page_copy,
-        detail: "expected page_copy.#{invalid_value_key} to be a String"
+        detail: "expected page_copy.#{invalid_value_key} to be " \
+                "#{page_copy_value_type_phrase(invalid_value_key)}"
+      )
+    end
+
+    def page_copy_value_type_phrase(key)
+      allowed = "a String, Symbol i18n key, " \
+                "String starting with #{PAGE_COPY_STRING_KEY_PREFIX.inspect}, " \
+                "locale Hash, or callable"
+      return "nil, #{allowed}" if OPTIONAL_PAGE_COPY_KEYS.include?(key)
+
+      allowed
+    end
+
+    def valid_page_copy_value?(entry, key:)
+      return true if entry.nil? && OPTIONAL_PAGE_COPY_KEYS.include?(key)
+      return false if entry.nil?
+      return true if entry.is_a?(String)
+      return true if entry.is_a?(Symbol)
+      return true if entry.respond_to?(:call)
+      return false unless entry.respond_to?(:each_pair)
+
+      entry.each_pair.all? do |locale, text|
+        (locale.is_a?(String) || locale.is_a?(Symbol)) && text.is_a?(String)
+      end
+    end
+
+    def resolve_page_copy_value(value, key:)
+      return translate_configured_i18n_key(value, key: key) if value.is_a?(Symbol)
+
+      if value.is_a?(String)
+        if page_copy_string_i18n_key?(value)
+          stripped = value.delete_prefix(PAGE_COPY_STRING_KEY_PREFIX)
+          return translate_page_copy_key(key) if stripped.empty?
+
+          return translate_configured_i18n_key(stripped, key: key)
+        end
+
+        return value
+      end
+
+      return resolve_page_copy_callable(value, key: key) if value.respond_to?(:call)
+      return resolve_page_copy_locale_hash(value, key: key) if value.respond_to?(:each_pair)
+
+      raise ConfigurationError.new(
+        source: "page_copy resolution",
+        config_key: :page_copy,
+        detail: "unsupported page_copy.#{key} value: #{value.class}"
+      )
+    end
+
+    def page_copy_string_i18n_key?(value)
+      value.start_with?(PAGE_COPY_STRING_KEY_PREFIX)
+    end
+
+    def resolve_page_copy_locale_hash(value, key:)
+      normalized = value.each_pair.with_object({}) do |(locale, text), memo|
+        memo[locale.to_sym] = text
+      end
+
+      if normalized.key?(I18n.locale.to_sym)
+        normalized.fetch(I18n.locale.to_sym)
+      elsif normalized.key?(I18n.default_locale.to_sym)
+        normalized.fetch(I18n.default_locale.to_sym)
+      else
+        translate_page_copy_key(key)
+      end
+    end
+
+    def resolve_page_copy_callable(value, key:)
+      parameters = value.respond_to?(:parameters) ? value.parameters : value.method(:call).parameters
+      key_names = parameters.filter_map do |type, name|
+        name if %i[key keyreq].include?(type)
+      end
+      has_keyrest = parameters.any? { |type, _| type == :keyrest }
+      req_positional = parameters.count { |type, _| type == :req }
+      opt_positional = parameters.count { |type, _| type == :opt }
+      has_rest = parameters.any? { |type, _| type == :rest }
+
+      kwargs = {}
+      if has_keyrest
+        kwargs = { key: key, locale: I18n.locale }
+      else
+        kwargs[:key] = key if key_names.include?(:key)
+        kwargs[:locale] = I18n.locale if key_names.include?(:locale)
+      end
+
+      positional_slots = req_positional + opt_positional
+      if has_rest || positional_slots.positive?
+        args = []
+        args << key if has_rest || positional_slots >= 1
+        args << I18n.locale if has_rest || positional_slots >= 2
+        return kwargs.empty? ? value.call(*args) : value.call(*args, **kwargs)
+      end
+
+      return value.call(**kwargs) unless kwargs.empty?
+
+      value.call
+    end
+
+    def translate_configured_i18n_key(i18n_key, key:)
+      I18n.t(
+        i18n_key,
+        default: [
+          :"#{PAGE_COPY_I18N_PREFIX}.#{key}",
+          DEFAULT_PAGE_COPY.fetch(key)
+        ]
+      )
+    end
+
+    def translate_page_copy_key(key)
+      I18n.t(
+        "#{PAGE_COPY_I18N_PREFIX}.#{key}",
+        default: DEFAULT_PAGE_COPY.fetch(key)
       )
     end
 

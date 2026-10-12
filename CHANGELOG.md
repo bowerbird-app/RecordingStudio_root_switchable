@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-12
+
+Default mounted-page `page_copy` is translatable through Rails I18n at render time.
+
+### Added
+- English Rails I18n keys for every `DEFAULT_PAGE_COPY` field under
+  `recording_studio.root_switchable.page_copy.*` in `config/locales/en.yml`.
+- `config.page_copy` values may be a plain String, a Symbol I18n key, an
+  `i18n:`-prefixed String key, a per-request callable, or a locale Hash.
+  Resolution happens in `page_copy_for` per request. A bare `i18n:` (empty key)
+  falls back to the gem page_copy key. `nil` is allowed only for optional keys
+  (`subtitle`, `persistence_hint`) at global and scope level; required keys
+  still reject `nil` at configure time.
+
+### Changed
+- Unconfigured `page_copy` keys resolve through I18n at render time (honoring
+  `I18n.locale`) with `default:` set to the original English from
+  `DEFAULT_PAGE_COPY`. The `DEFAULT_PAGE_COPY` constant remains the public
+  English default table.
+- Precedence is `config.page_copy` > gem/host translation > English default.
+  Plain String configs stay fixed in every locale.
+- Scope-level Symbol `page_copy` values are I18n keys at render time (they used
+  to render via `to_s`).
+- `configuration.page_copy` returns a fresh merged hash. Mutating that hash in
+  place no longer updates stored config, and entries may be unresolved Symbol,
+  Hash, or callable values until `page_copy_for` resolves them.
+
+### Upgrade Notes
+- Bump to `0.8.0`. No migration.
+- This release changes two host-visible behaviors:
+  1. A Symbol in scope (or global) `page_copy` is an I18n key, not `to_s` text.
+     Use a plain String if you need a fixed label in every locale.
+  2. `configuration.page_copy` returns a fresh merge of defaults and overrides.
+     Do not mutate the returned hash in place; assign `config.page_copy = { ... }`
+     (or merge) instead. The reader may return unresolved Symbol / Hash /
+     callable values — call `page_copy_for` for rendered strings.
+- English hosts that only use plain-String `page_copy` (or leave it unset) keep
+  the same English output. To translate defaults, define the same
+  `recording_studio.root_switchable.page_copy.*` keys in the host's
+  `config/locales`.
+- Missing Symbol / `i18n:...` keys fall back to the gem page_copy key in the
+  current locale, then English. A bare `i18n:` falls back the same way.
+- There is no dependency on `recording_studio_internationalization`.
+
 ## [0.7.0] - 2026-10-09
 
 Site-wide last-used selection metrics register with Recording Studio Metrics for the operations API.
@@ -221,7 +265,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.7.0...v0.8.0
 [0.3.1]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.1.0...v0.2.0
