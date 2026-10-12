@@ -168,7 +168,7 @@ class ConfigurationTest < Minitest::Test
       )
     end
 
-    assert_includes error.message, "expected page_copy.switch_action_label to be a String"
+    assert_includes error.message, "expected page_copy.switch_action_label to be nil, a String"
   end
 
   def test_merge_accepts_symbol_i18n_key_page_copy_values
@@ -206,7 +206,39 @@ class ConfigurationTest < Minitest::Test
     end
   end
 
-  def test_page_copy_for_evaluates_callable_per_request
+  def test_page_copy_for_evaluates_zero_arity_callable_with_no_args
+    @configuration.page_copy = { title: -> { "Zero arity" } }
+
+    assert_equal "Zero arity", @configuration.page_copy_for.fetch(:title)
+  end
+
+  def test_page_copy_for_evaluates_positional_callable_with_key
+    seen = nil
+    @configuration.page_copy = {
+      title: lambda { |key|
+        seen = key
+        "Positional #{key}"
+      }
+    }
+
+    assert_equal "Positional title", @configuration.page_copy_for.fetch(:title)
+    assert_equal :title, seen
+  end
+
+  def test_page_copy_for_evaluates_keyword_callable_with_declared_args
+    seen = nil
+    @configuration.page_copy = {
+      title: lambda { |key:|
+        seen = key
+        "Keyword #{key}"
+      }
+    }
+
+    assert_equal "Keyword title", @configuration.page_copy_for.fetch(:title)
+    assert_equal :title, seen
+  end
+
+  def test_page_copy_for_evaluates_keyword_callable_with_key_and_locale
     calls = []
     @configuration.page_copy = {
       title: lambda { |key:, locale:, **|
@@ -219,6 +251,62 @@ class ConfigurationTest < Minitest::Test
     I18n.with_locale(:fr) { assert_equal "Callable fr", @configuration.page_copy_for.fetch(:title) }
 
     assert_equal [%i[title en], %i[title fr]], calls
+  end
+
+  def test_page_copy_for_propagates_argument_error_raised_by_callable
+    @configuration.page_copy = {
+      title: lambda { |key:, **|
+        raise ArgumentError, "callable failed for #{key}"
+      }
+    }
+
+    error = assert_raises(ArgumentError) { @configuration.page_copy_for.fetch(:title) }
+    assert_equal "callable failed for title", error.message
+  end
+
+  def test_page_copy_for_treats_nil_scope_override_as_blank_like_main
+    @configuration.scope(:clients) do |scope|
+      scope.page_copy = { subtitle: nil, title: "Clients" }
+    end
+    scope = @configuration.scopes.fetch("clients")
+
+    copy = @configuration.page_copy_for(scope: scope)
+
+    assert_nil copy.fetch(:subtitle)
+    assert_equal "Clients", copy.fetch(:title)
+    assert_nil copy.fetch(:subtitle).presence
+  end
+
+  def test_page_copy_for_missing_symbol_key_falls_back_to_gem_key_in_current_locale
+    I18n.backend.store_translations(
+      :fr,
+      recording_studio: { root_switchable: { page_copy: { title: "Changer" } } }
+    )
+    @configuration.page_copy = { title: :"missing.host.key" }
+
+    I18n.with_locale(:fr) do
+      assert_equal "Changer", @configuration.page_copy_for.fetch(:title)
+    end
+  end
+
+  def test_page_copy_for_missing_i18n_string_key_falls_back_to_gem_key_in_current_locale
+    I18n.backend.store_translations(
+      :fr,
+      recording_studio: { root_switchable: { page_copy: { selected_badge: "Actuel" } } }
+    )
+    @configuration.page_copy = { selected_badge: "i18n:missing.host.badge" }
+
+    I18n.with_locale(:fr) do
+      assert_equal "Actuel", @configuration.page_copy_for.fetch(:selected_badge)
+    end
+  end
+
+  def test_page_copy_for_bare_i18n_prefix_falls_back_to_gem_key
+    @configuration.page_copy = { title: "i18n:" }
+
+    I18n.with_locale(:en) do
+      assert_equal "Switch", @configuration.page_copy_for.fetch(:title)
+    end
   end
 
   def test_page_copy_for_uses_hash_entry_for_current_locale

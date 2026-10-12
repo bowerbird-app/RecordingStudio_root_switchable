@@ -18,8 +18,8 @@ This addon was derived from the Recording Studio gem template and keeps the same
 
 ## Upgrading to 0.8.0 (translatable page_copy)
 
-This is a non-breaking upgrade. Rendered English mounted-page copy is unchanged
-when you leave `config.page_copy` unset.
+Rendered English is unchanged when you leave `page_copy` unset or keep using
+plain Strings. Two host-visible behaviors do change — see Upgrade steps.
 
 ### What changed
 
@@ -32,6 +32,15 @@ when you leave `config.page_copy` unset.
   String, an I18n key (Symbol or `i18n:`-prefixed String), a callable, or a
   locale Hash. See [Page copy](#page-copy) below.
 - No dependency on `recording_studio_internationalization`.
+
+### Behavior changes
+
+1. **Symbol `page_copy` values are I18n keys.** Scope-level (and global) Symbols
+   used to render via `to_s`. They are now looked up with `I18n.t` at render
+   time. Use a plain String for fixed copy in every locale.
+2. **`configuration.page_copy` returns a fresh merged hash.** Mutating that hash
+   in place no longer updates stored config. The hash may also contain unresolved
+   Symbol, Hash, or callable values — use `page_copy_for` for rendered strings.
 
 Keys added:
 
@@ -54,10 +63,11 @@ built from selected labels, icon/style tokens, and dummy-app chrome.
 
 ### Upgrade steps
 
-No migration is required. English hosts need no change. To translate defaults,
-define the same `recording_studio.root_switchable.page_copy.*` keys in the host's
-`config/locales`. To force fixed copy in every locale, keep using plain Strings
-in `config.page_copy`.
+No migration is required. If you relied on Symbol `to_s` labels or mutated
+`configuration.page_copy` in place, update those call sites as above. To
+translate defaults, define the same `recording_studio.root_switchable.page_copy.*`
+keys in the host's `config/locales`. To force fixed copy in every locale, keep
+using plain Strings in `config.page_copy`.
 
 ## Upgrading to 0.6.0 (interface text / I18n)
 
@@ -604,7 +614,8 @@ Hosts translate defaults by defining the same keys in their own `config/locales`
 (for example `config/locales/fr.yml`). No boot-time memoization: changing
 `I18n.locale` between requests changes the rendered strings.
 
-Each `page_copy` value may be one of four forms:
+Each `page_copy` value may be one of four forms (`nil` is also allowed and stays
+blank/omitted at render, matching the previous merge behavior):
 
 **1. Plain String** — fixed in every locale (today's behavior; backward compatible):
 
@@ -616,8 +627,12 @@ config.page_copy = { title: "Switch workspace" }
 
 - A `Symbol` is always an I18n key.
 - A `String` is an I18n key only when it starts with `i18n:` (the prefix is
-  stripped). Any other String is a literal so existing configs keep rendering
+  stripped). A bare `i18n:` (empty key) falls back to the gem page_copy key for
+  that field. Any other String is a literal so existing configs keep rendering
   verbatim.
+- If the configured key is missing, lookup falls back to
+  `recording_studio.root_switchable.page_copy.<key>` in the **current** locale,
+  then to the English default.
 
 ```ruby
 config.page_copy = {
@@ -626,12 +641,15 @@ config.page_copy = {
 }
 ```
 
-**3. Callable** — evaluated per request with keyword args `key:` (the page_copy
-field) and `locale:` (current `I18n.locale`):
+**3. Callable** — evaluated per request. Keyword args (`key:`, `locale:`) are
+passed only when the callable declares them; otherwise a positional `key` is
+passed when arity allows, else it is called with no arguments:
 
 ```ruby
 config.page_copy = {
-  title: ->(key:, locale:, **) { locale == :fr ? "Changer" : "Switch" }
+  title: -> { "Switch" },
+  selected_badge: ->(key) { key.to_s.humanize },
+  switch_action_label: ->(key:, locale:, **) { locale == :fr ? "Changer" : "Switch" }
 }
 ```
 

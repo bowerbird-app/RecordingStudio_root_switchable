@@ -177,12 +177,16 @@ module RecordingStudioRootSwitchable
     # {DEFAULT_PAGE_COPY}.
     #
     # Configured values may be:
+    # - +nil+ — omitted / blank at render (same as main's merge behavior)
     # - String — fixed in every locale (backward compatible)
     # - Symbol — I18n key looked up at render time
-    # - String starting with +"i18n:"+ — I18n key (prefix stripped); any other
-    #   String is treated as a literal so existing plain-String configs keep
-    #   rendering verbatim
-    # - callable — called per request with +key:+ and +locale:+ keyword args
+    # - String starting with +"i18n:"+ — I18n key (prefix stripped); a bare
+    #   +"i18n:"+ (empty key) falls back to the gem page_copy key; any other
+    #   String is a literal so existing plain-String configs keep rendering
+    #   verbatim
+    # - callable — invoked per request; keyword args (+key:+ / +locale:+) are
+    #   passed only when the callable declares them; otherwise positional args
+    #   are passed when arity allows, else called with no arguments
     # - Hash keyed by locale — current locale, then I18n.default_locale, then the
     #   gem key
     def page_copy_for(scope: nil)
@@ -191,7 +195,8 @@ module RecordingStudioRootSwitchable
 
       DEFAULT_PAGE_COPY.keys.each_with_object({}) do |key, memo|
         memo[key] = if configured.key?(key)
-                      resolve_page_copy_value(configured[key], key: key)
+                      value = configured[key]
+                      value.nil? ? nil : resolve_page_copy_value(value, key: key)
                     else
                       translate_page_copy_key(key)
                     end
@@ -380,13 +385,14 @@ module RecordingStudioRootSwitchable
       raise ConfigurationError.new(
         source: source,
         config_key: :page_copy,
-        detail: "expected page_copy.#{invalid_value_key} to be a String, Symbol i18n key, " \
+        detail: "expected page_copy.#{invalid_value_key} to be nil, a String, Symbol i18n key, " \
                 "String starting with #{PAGE_COPY_STRING_KEY_PREFIX.inspect}, " \
                 "locale Hash, or callable"
       )
     end
 
     def valid_page_copy_value?(entry)
+      return true if entry.nil?
       return true if entry.is_a?(String)
       return true if entry.is_a?(Symbol)
       return true if entry.respond_to?(:call)
@@ -402,10 +408,10 @@ module RecordingStudioRootSwitchable
 
       if value.is_a?(String)
         if page_copy_string_i18n_key?(value)
-          return translate_configured_i18n_key(
-            value.delete_prefix(PAGE_COPY_STRING_KEY_PREFIX),
-            key: key
-          )
+          stripped = value.delete_prefix(PAGE_COPY_STRING_KEY_PREFIX)
+          return translate_page_copy_key(key) if stripped.empty?
+
+          return translate_configured_i18n_key(stripped, key: key)
         end
 
         return value
@@ -440,13 +446,44 @@ module RecordingStudioRootSwitchable
     end
 
     def resolve_page_copy_callable(value, key:)
-      value.call(key: key, locale: I18n.locale)
-    rescue ArgumentError
+      parameters = value.parameters
+      key_names = parameters.filter_map do |type, name|
+        name if %i[key keyreq].include?(type)
+      end
+      has_keyrest = parameters.any? { |type, _| type == :keyrest }
+      req_positional = parameters.count { |type, _| type == :req }
+      opt_positional = parameters.count { |type, _| type == :opt }
+      has_rest = parameters.any? { |type, _| type == :rest }
+
+      kwargs = {}
+      if has_keyrest
+        kwargs = { key: key, locale: I18n.locale }
+      else
+        kwargs[:key] = key if key_names.include?(:key)
+        kwargs[:locale] = I18n.locale if key_names.include?(:locale)
+      end
+
+      positional_slots = req_positional + opt_positional
+      if has_rest || positional_slots.positive?
+        args = []
+        args << key if has_rest || positional_slots >= 1
+        args << I18n.locale if has_rest || positional_slots >= 2
+        return kwargs.empty? ? value.call(*args) : value.call(*args, **kwargs)
+      end
+
+      return value.call(**kwargs) unless kwargs.empty?
+
       value.call
     end
 
     def translate_configured_i18n_key(i18n_key, key:)
-      I18n.t(i18n_key, default: DEFAULT_PAGE_COPY.fetch(key))
+      I18n.t(
+        i18n_key,
+        default: [
+          :"#{PAGE_COPY_I18N_PREFIX}.#{key}",
+          DEFAULT_PAGE_COPY.fetch(key)
+        ]
+      )
     end
 
     def translate_page_copy_key(key)
