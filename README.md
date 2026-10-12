@@ -614,8 +614,9 @@ Hosts translate defaults by defining the same keys in their own `config/locales`
 (for example `config/locales/fr.yml`). No boot-time memoization: changing
 `I18n.locale` between requests changes the rendered strings.
 
-Each `page_copy` value may be one of four forms (`nil` is also allowed and stays
-blank/omitted at render, matching the previous merge behavior):
+Each `page_copy` value may be one of four forms. For optional keys only
+(`subtitle`, `persistence_hint`), `nil` is also allowed and stays blank/omitted
+at render:
 
 **1. Plain String** — fixed in every locale (today's behavior; backward compatible):
 

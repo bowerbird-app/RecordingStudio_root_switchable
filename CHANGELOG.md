@@ -17,7 +17,9 @@ Default mounted-page `page_copy` is translatable through Rails I18n at render ti
 - `config.page_copy` values may be a plain String, a Symbol I18n key, an
   `i18n:`-prefixed String key, a per-request callable, or a locale Hash.
   Resolution happens in `page_copy_for` per request. A bare `i18n:` (empty key)
-  falls back to the gem page_copy key. Scope-level `nil` stays blank/omitted.
+  falls back to the gem page_copy key. `nil` is allowed only for optional keys
+  (`subtitle`, `persistence_hint`) at global and scope level; required keys
+  still reject `nil` at configure time.
 
 ### Changed
 - Unconfigured `page_copy` keys resolve through I18n at render time (honoring

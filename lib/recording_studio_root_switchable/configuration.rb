@@ -51,6 +51,10 @@ module RecordingStudioRootSwitchable
     PAGE_COPY_I18N_PREFIX = "recording_studio.root_switchable.page_copy"
     PAGE_COPY_STRING_KEY_PREFIX = "i18n:"
 
+    # Keys the mounted page omits when blank (PageTitle subtitle / optional hint).
+    # Nil is allowed only for these; required keys still reject nil at configure time.
+    OPTIONAL_PAGE_COPY_KEYS = %i[subtitle persistence_hint].freeze
+
     DEFAULT_SWITCH_RATE_LIMIT = { limit: 30, period: 1.minute }.freeze
 
     attr_accessor :current_actor_resolver,
@@ -106,6 +110,7 @@ module RecordingStudioRootSwitchable
       definition = scopes[key.to_s] ||= RecordingStudio::RootSwitchable::ScopeDefinition.new(key)
       definition.assign!(options)
       yield(definition) if block_given?
+      validate_page_copy!(normalize_hash(definition.page_copy), source: "scope #{definition.key}")
       definition
     end
 
@@ -177,7 +182,7 @@ module RecordingStudioRootSwitchable
     # {DEFAULT_PAGE_COPY}.
     #
     # Configured values may be:
-    # - +nil+ — omitted / blank at render (same as main's merge behavior)
+    # - +nil+ — only for {OPTIONAL_PAGE_COPY_KEYS}; omitted / blank at render
     # - String — fixed in every locale (backward compatible)
     # - Symbol — I18n key looked up at render time
     # - String starting with +"i18n:"+ — I18n key (prefix stripped); a bare
@@ -379,20 +384,29 @@ module RecordingStudioRootSwitchable
         )
       end
 
-      invalid_value_key = value.find { |_, entry| !valid_page_copy_value?(entry) }&.first
+      invalid_value_key = value.find { |key, entry| !valid_page_copy_value?(entry, key: key) }&.first
       return unless invalid_value_key
 
       raise ConfigurationError.new(
         source: source,
         config_key: :page_copy,
-        detail: "expected page_copy.#{invalid_value_key} to be nil, a String, Symbol i18n key, " \
-                "String starting with #{PAGE_COPY_STRING_KEY_PREFIX.inspect}, " \
-                "locale Hash, or callable"
+        detail: "expected page_copy.#{invalid_value_key} to be " \
+                "#{page_copy_value_type_phrase(invalid_value_key)}"
       )
     end
 
-    def valid_page_copy_value?(entry)
-      return true if entry.nil?
+    def page_copy_value_type_phrase(key)
+      allowed = "a String, Symbol i18n key, " \
+                "String starting with #{PAGE_COPY_STRING_KEY_PREFIX.inspect}, " \
+                "locale Hash, or callable"
+      return "nil, #{allowed}" if OPTIONAL_PAGE_COPY_KEYS.include?(key)
+
+      allowed
+    end
+
+    def valid_page_copy_value?(entry, key:)
+      return true if entry.nil? && OPTIONAL_PAGE_COPY_KEYS.include?(key)
+      return false if entry.nil?
       return true if entry.is_a?(String)
       return true if entry.is_a?(Symbol)
       return true if entry.respond_to?(:call)
@@ -446,7 +460,7 @@ module RecordingStudioRootSwitchable
     end
 
     def resolve_page_copy_callable(value, key:)
-      parameters = value.parameters
+      parameters = value.respond_to?(:parameters) ? value.parameters : value.method(:call).parameters
       key_names = parameters.filter_map do |type, name|
         name if %i[key keyreq].include?(type)
       end

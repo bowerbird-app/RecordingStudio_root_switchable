@@ -168,7 +168,34 @@ class ConfigurationTest < Minitest::Test
       )
     end
 
-    assert_includes error.message, "expected page_copy.switch_action_label to be nil, a String"
+    assert_includes error.message, "expected page_copy.switch_action_label to be a String"
+    refute_includes error.message, "nil,"
+  end
+
+  def test_merge_rejects_global_nil_for_each_required_page_copy_key
+    required_keys = RecordingStudioRootSwitchable::Configuration::DEFAULT_PAGE_COPY.keys -
+                    RecordingStudioRootSwitchable::Configuration::OPTIONAL_PAGE_COPY_KEYS
+
+    required_keys.each do |key|
+      configuration = RecordingStudioRootSwitchable::Configuration.new
+      error = assert_raises(RecordingStudioRootSwitchable::ConfigurationError) do
+        configuration.page_copy = { key => nil }
+      end
+
+      assert_includes error.message, "expected page_copy.#{key} to be a String"
+      refute_includes error.message, "nil,"
+    end
+  end
+
+  def test_merge_accepts_global_nil_for_optional_page_copy_keys_and_omits_at_render
+    RecordingStudioRootSwitchable::Configuration::OPTIONAL_PAGE_COPY_KEYS.each do |key|
+      @configuration.page_copy = { key => nil }
+
+      copy = @configuration.page_copy_for
+
+      assert_nil copy.fetch(key), "expected optional page_copy.#{key} nil to stay nil"
+      assert_nil copy.fetch(key).presence, "expected optional page_copy.#{key} nil to omit at render"
+    end
   end
 
   def test_merge_accepts_symbol_i18n_key_page_copy_values
@@ -264,6 +291,18 @@ class ConfigurationTest < Minitest::Test
     assert_equal "callable failed for title", error.message
   end
 
+  def test_page_copy_for_evaluates_callable_object_without_parameters_method
+    callable = Object.new
+    def callable.call
+      "Plain call object"
+    end
+    refute_respond_to callable, :parameters
+
+    @configuration.page_copy = { title: callable }
+
+    assert_equal "Plain call object", @configuration.page_copy_for.fetch(:title)
+  end
+
   def test_page_copy_for_treats_nil_scope_override_as_blank_like_main
     @configuration.scope(:clients) do |scope|
       scope.page_copy = { subtitle: nil, title: "Clients" }
@@ -275,6 +314,23 @@ class ConfigurationTest < Minitest::Test
     assert_nil copy.fetch(:subtitle)
     assert_equal "Clients", copy.fetch(:title)
     assert_nil copy.fetch(:subtitle).presence
+  end
+
+  def test_scope_rejects_nil_for_required_page_copy_keys
+    required_keys = RecordingStudioRootSwitchable::Configuration::DEFAULT_PAGE_COPY.keys -
+                    RecordingStudioRootSwitchable::Configuration::OPTIONAL_PAGE_COPY_KEYS
+
+    required_keys.each do |key|
+      configuration = RecordingStudioRootSwitchable::Configuration.new
+      error = assert_raises(RecordingStudioRootSwitchable::ConfigurationError) do
+        configuration.scope(:clients) do |scope|
+          scope.page_copy = { key => nil }
+        end
+      end
+
+      assert_includes error.message, "expected page_copy.#{key} to be a String"
+      refute_includes error.message, "nil,"
+    end
   end
 
   def test_page_copy_for_missing_symbol_key_falls_back_to_gem_key_in_current_locale
