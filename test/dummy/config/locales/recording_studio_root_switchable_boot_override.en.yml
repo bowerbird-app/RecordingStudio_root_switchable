@@ -1,0 +1,8 @@
+# Always-loaded host override for the real boot-order guard.
+# Overrides page_copy.device_label (not shown on the default switch UI) so
+# other dummy assertions keep gem English. Do not append this path in tests.
+en:
+  recording_studio:
+    root_switchable:
+      page_copy:
+        device_label: "HOST Device key"

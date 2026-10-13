@@ -18,6 +18,9 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  # Test-only i18n probe for the boot-order host override (rarely shown key).
+  get "root_switchable_i18n_probe", to: "root_switchable_i18n_probes#show", as: :root_switchable_i18n_probe
+
   # Defines the root path route ("/")
   get "setup", to: "home#setup"
   get "config", to: "home#configuration"

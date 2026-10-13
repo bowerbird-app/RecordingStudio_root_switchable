@@ -92,7 +92,7 @@ jobs:
         DB_NAME: recording_studio_root_switchable_test
 
     - name: Verify dummy app page_copy i18n
-      run: bundle exec rails test test/integration/root_switchable_page_copy_i18n_test.rb
+      run: bundle exec rails test test/integration/root_switchable_page_copy_i18n_test.rb test/integration/root_switchable_boot_order_host_override_test.rb
       working-directory: test/dummy
       env:
         RAILS_ENV: test

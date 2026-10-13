@@ -1,0 +1,12 @@
+# Test-only French page_copy for render-level multi-locale coverage.
+# Lives outside config/locales so the default dummy UI stays on gem English
+# until a test appends this file to I18n.load_path.
+fr:
+  recording_studio:
+    root_switchable:
+      page_copy:
+        title: "Changer"
+        selected_badge: "Actuel"
+        switch_action_label: "Changer"
+        empty_state_title: "Rien à changer"
+        empty_state_body: "Aucune option n'est disponible pour le moment."

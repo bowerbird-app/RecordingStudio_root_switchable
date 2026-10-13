@@ -623,8 +623,9 @@ Static chrome in the gem's own blank layout, root-switch PageNav close label,
 dropdown empty-selection label, and default mounted-page `page_copy` ship as
 English Rails I18n under `recording_studio.root_switchable` in
 `config/locales/en.yml`. Hosts can override those keys in their own
-`config/locales`. Root labels and flash notices built from selected labels stay
-caller- or data-driven. This gem does not ship a legacy top-level
+`config/locales` (same nested keys; Rails loads host files after the engine).
+Root labels and flash notices built from selected labels stay caller- or
+data-driven. This gem does not ship a legacy top-level
 `recording_studio_root_switchable.*` locale file.
 
 ### Page copy
