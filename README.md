@@ -383,7 +383,9 @@ Add the gems to your host app:
 
 ```ruby
 gem "recording_studio", "~> 4.1"
-gem "recording_studio_accessible", "~> 0.15"
+gem "recording_studio_accessible", "~> 0.17"
+gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable",
+                                  tag: "v0.10.0", require: false
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"
 gem "recording_studio_root_switchable", "~> 0.9.0"
 ```
