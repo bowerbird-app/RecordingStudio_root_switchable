@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-13
+
+Switch rate limiting uses the shared `RecordingStudioCache::RateLimiter`.
+
+### Changed
+- `RecordingStudioRootSwitchable::SwitchRateLimiter` is a thin adapter over
+  `RecordingStudioCache::RateLimiter` (`backend: :rails_cache`, `strategy: :ttl`,
+  `store: Rails.cache`, `prefix: "recording_studio_root_switchable:switch_rate"`,
+  `separator: ":"`, `fail_closed: false`, `rescue_errors: [StandardError]`).
+  Public config (`config.switch_rate_limit`) and `allowed?(actor:, device_key:)`
+  are unchanged. Cache keys, limits, windows, and fail-open error handling stay
+  the same as 0.8.x.
+- Runtime dependency `recording_studio_cache` `~> 0.5` (GitHub tag `v0.5.0`).
+
+### Upgrade Notes
+- Bump to `0.9.0`. No migration.
+- Add `recording_studio_cache` at tag `v0.5.0`:
+  `gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"`.
+- No host code changes when you already use `config.switch_rate_limit` / the
+  mounted switch page. Behavior and responses stay the same.
+
 ## [0.8.0] - 2026-10-12
 
 Default mounted-page `page_copy` is translatable through Rails I18n at render time.
