@@ -7,21 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.10.0] - 2026-10-13
-
-Render-level multi-locale coverage for mounted-page `page_copy`.
-
 ### Added
-- Dummy render tests that load a test-only French `page_copy` fixture and assert
-  English and French output under each `I18n.locale`.
-- Dummy render tests for per-locale `page_copy` Hash values, Symbol I18n keys,
-  and locale-aware callables on the real root-switch page.
-- Always-loaded dummy host override for the rarely shown
-  `page_copy.device_label` key (boot-order guard) plus a test-only probe route.
-
-### Upgrade Notes
-- Bump to `0.10.0`. No migration. No host code changes when you already use
-  `page_copy` / gem locale keys from 0.8.x. English output is unchanged.
+- Render-level multi-locale coverage for mounted-page `page_copy` (test-only
+  French fixture, plus Hash / Symbol / callable config forms on a real page).
 
 ## [0.9.0] - 2026-10-13
 
@@ -315,10 +303,7 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.10.0...HEAD
-[0.10.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.0...v0.10.0
-[0.9.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.8.1...v0.9.0
-[0.8.1]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.8.0...v0.8.1
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.8.0...HEAD
 [0.8.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.7.0...v0.8.0
 [0.3.1]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.2.0...v0.3.0
