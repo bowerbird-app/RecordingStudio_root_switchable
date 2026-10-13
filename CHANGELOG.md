@@ -17,8 +17,11 @@ Switch rate limiting uses the shared `RecordingStudioCache::RateLimiter`.
   `store: Rails.cache`, `prefix: "recording_studio_root_switchable:switch_rate"`,
   `separator: ":"`, `fail_closed: false`, `rescue_errors: [StandardError]`).
   Public config (`config.switch_rate_limit`) and `allowed?(actor:, device_key:)`
-  are unchanged. Cache keys, limits, windows, and fail-open error handling stay
-  the same as 0.8.x.
+  are unchanged. Cache keys, windows, and fail-open cache errors match 0.8.x.
+- Adapter keeps two main-era edge cases the shared limiter would otherwise flip:
+  `limit.to_i <= 0` still blocks every switch (shared treats `<= 0` as disabled),
+  and a non-Numeric `period` (e.g. `"60"`) still fails open / never limits (main
+  raised from `expires_in:` and rescued; shared would coerce via `to_i`).
 - Runtime dependency `recording_studio_cache` `~> 0.5` (GitHub tag `v0.5.0`).
 
 ### Upgrade Notes
@@ -26,7 +29,8 @@ Switch rate limiting uses the shared `RecordingStudioCache::RateLimiter`.
 - Add `recording_studio_cache` at tag `v0.5.0`:
   `gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"`.
 - No host code changes when you already use `config.switch_rate_limit` / the
-  mounted switch page. Behavior and responses stay the same.
+  mounted switch page with Numeric `limit` / `period` (including Duration).
+  `limit <= 0` still blocks; String `period` still fails open.
 
 ## [0.8.0] - 2026-10-12
 

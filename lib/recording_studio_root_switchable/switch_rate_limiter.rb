@@ -21,6 +21,11 @@ module RecordingStudioRootSwitchable
     def allowed?(actor:, device_key:)
       limit, period = rate_limit_settings
       return true if limit.blank? || period.blank?
+      return true unless cache_available?
+      # Shared RateLimiter treats limit <= 0 as disabled; main blocked every switch.
+      return false if limit.to_i <= 0
+      # Main passed period to expires_in; Strings raised and failed open.
+      return true unless period.is_a?(Numeric)
 
       RecordingStudioCache::RateLimiter.allow?(**limiter_options(actor, device_key, limit, period))
     rescue StandardError
@@ -32,6 +37,11 @@ module RecordingStudioRootSwitchable
       [config[:limit] || config["limit"], config[:period] || config["period"]]
     end
     private_class_method :rate_limit_settings
+
+    def cache_available?
+      defined?(Rails) && Rails.respond_to?(:cache) && Rails.cache
+    end
+    private_class_method :cache_available?
 
     def limiter_options(actor, device_key, limit, period)
       LIMITER_DEFAULTS.merge(

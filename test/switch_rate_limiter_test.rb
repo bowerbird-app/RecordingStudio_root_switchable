@@ -108,6 +108,31 @@ class SwitchRateLimiterTest < Minitest::Test
     assert_nil @memory.read("recording_studio_root_switchable:switch_rate:1:device")
   end
 
+  def test_non_positive_limit_blocks_every_switch
+    actor = ActorWithId.new(1)
+
+    RecordingStudioRootSwitchable.configuration.switch_rate_limit = { limit: 0, period: 1.minute }
+    refute RecordingStudioRootSwitchable::SwitchRateLimiter.allowed?(actor: actor, device_key: "device")
+    refute RecordingStudioRootSwitchable::SwitchRateLimiter.allowed?(actor: actor, device_key: "device")
+
+    RecordingStudioRootSwitchable.configuration.switch_rate_limit = { limit: -1, period: 1.minute }
+    refute RecordingStudioRootSwitchable::SwitchRateLimiter.allowed?(actor: actor, device_key: "device")
+  end
+
+  def test_string_period_fails_open_like_main
+    # Main passed period to expires_in:; a String raised and the rescue allowed.
+    # Shared RateLimiter would coerce "60".to_i and start limiting — keep fail-open.
+    RecordingStudioRootSwitchable.configuration.switch_rate_limit = { limit: 1, period: "60" }
+
+    3.times do
+      assert RecordingStudioRootSwitchable::SwitchRateLimiter.allowed?(
+        actor: ActorWithId.new(1),
+        device_key: "device"
+      )
+    end
+    assert_nil @memory.read("recording_studio_root_switchable:switch_rate:1:device")
+  end
+
   def test_string_config_keys_are_accepted
     RecordingStudioRootSwitchable.configuration.switch_rate_limit = {
       "limit" => 1,
@@ -137,8 +162,9 @@ class SwitchRateLimiterTest < Minitest::Test
     )
   end
 
-  def test_missing_rails_cache_fails_open
+  def test_missing_rails_cache_allows_even_when_limit_is_zero
     self.class.rails_cache_stub = nil
+    RecordingStudioRootSwitchable.configuration.switch_rate_limit = { limit: 0, period: 1.minute }
 
     assert RecordingStudioRootSwitchable::SwitchRateLimiter.allowed?(
       actor: ActorWithId.new(1),
