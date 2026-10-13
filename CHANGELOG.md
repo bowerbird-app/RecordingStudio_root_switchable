@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Render-level multi-locale coverage for mounted-page `page_copy` (test-only
+  French fixture, plus Hash / Symbol / callable config forms on a real page).
+
 ## [0.9.0] - 2026-10-13
 
 Switch rate limiting uses the shared `RecordingStudioCache::RateLimiter`.
