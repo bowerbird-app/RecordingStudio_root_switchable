@@ -159,8 +159,8 @@ class RootSwitchablePageCopyI18nTest < ActionDispatch::IntegrationTest
             params: { scope: "all_workspaces" }
 
         assert_response :success
-        assert_includes response.body, "Switch"
-        assert_includes response.body, "Current"
+        assert_select "h1", text: "Switch"
+        assert_select "span", text: "Current"
         refute_includes response.body, "Changer"
         refute_includes response.body, "Actuel"
       end
@@ -170,8 +170,8 @@ class RootSwitchablePageCopyI18nTest < ActionDispatch::IntegrationTest
             params: { scope: "all_workspaces" }
 
         assert_response :success
-        assert_includes response.body, "Changer"
-        assert_includes response.body, "Actuel"
+        assert_select "h1", text: "Changer"
+        assert_select "span", text: "Actuel"
         refute_includes response.body, ">Switch<"
         refute_includes response.body, ">Current<"
       end
@@ -181,8 +181,8 @@ class RootSwitchablePageCopyI18nTest < ActionDispatch::IntegrationTest
             params: { scope: "all_workspaces" }
 
         assert_response :success
-        assert_includes response.body, "Switch"
-        assert_includes response.body, "Current"
+        assert_select "h1", text: "Switch"
+        assert_select "span", text: "Current"
         refute_includes response.body, "Changer"
       end
     ensure
@@ -226,9 +226,14 @@ class RootSwitchablePageCopyI18nTest < ActionDispatch::IntegrationTest
 
   test "symbol page_copy key resolves at render time on a real page" do
     sign_in(@admin)
+    I18n.t("my_app.root_switch.title")
     I18n.backend.store_translations(
       :en,
-      my_app: { root_switch: { title: "Host Symbol Title" } }
+      my_app: { root_switch: { title: "Host Symbol EN" } }
+    )
+    I18n.backend.store_translations(
+      :fr,
+      my_app: { root_switch: { title: "Host Symbol FR" } }
     )
     RecordingStudioRootSwitchable.configuration.page_copy = {
       title: :"my_app.root_switch.title"
@@ -239,7 +244,17 @@ class RootSwitchablePageCopyI18nTest < ActionDispatch::IntegrationTest
           params: { scope: "all_workspaces" }
 
       assert_response :success
-      assert_includes response.body, "Host Symbol Title"
+      assert_includes response.body, "Host Symbol EN"
+      refute_includes response.body, "Host Symbol FR"
+    end
+
+    I18n.with_locale(:fr) do
+      get "/recording_studio_root_switchable/v1/root_switch",
+          params: { scope: "all_workspaces" }
+
+      assert_response :success
+      assert_includes response.body, "Host Symbol FR"
+      refute_includes response.body, "Host Symbol EN"
     end
   ensure
     RecordingStudioRootSwitchable.configuration.instance_variable_set(:@page_copy_overrides, {})
