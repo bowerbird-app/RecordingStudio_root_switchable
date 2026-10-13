@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-13
+
+Switch rate limiting uses the shared `RecordingStudioCache::RateLimiter`.
+
+### Changed
+- `RecordingStudioRootSwitchable::SwitchRateLimiter` is a thin adapter over
+  `RecordingStudioCache::RateLimiter` (`backend: :rails_cache`, `strategy: :ttl`,
+  `prefix: "recording_studio_root_switchable:switch_rate"`, `separator: ":"`,
+  `fail_closed: false`, `rescue_errors: [StandardError]`). Public config
+  (`config.switch_rate_limit`) and `allowed?(actor:, device_key:)` are unchanged.
+  Cache keys, windows, and fail-open cache errors match 0.8.x.
+- Store is still `Rails.cache` (what main incremented against). This gem has no
+  switch-rate `cache_store` / `config.cache` setting; the adapter passes
+  `store: Rails.cache` so the shared limiter cannot fall through to
+  `RecordingStudioCache.store`. Key TTLs are unchanged: main already passed
+  `expires_in: period` on `increment`.
+- Adapter keeps main-era edges the shared limiter would otherwise flip:
+  for `limit.to_i <= 0`, main still called `increment` first, then
+  `count.to_i <= limit.to_i` (raise still fails open). So `limit: 0` +
+  NullStore (`nil`) allows, while `limit: -1` + NullStore blocks; shared would
+  treat `<= 0` as disabled / always allow. A non-Numeric `period` (e.g. `"60"`)
+  still fails open (main raised from `expires_in:` and rescued; shared would
+  coerce via `to_i`).
+- Runtime dependency `recording_studio_cache` `~> 0.5` (GitHub tag `v0.5.0`).
+
+### Upgrade Notes
+- Bump to `0.9.0`. No migration.
+- Add `recording_studio_cache` at tag `v0.5.0`:
+  `gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"`.
+- No host code changes when you already use `config.switch_rate_limit` / the
+  mounted switch page with Numeric `limit` / `period` (including Duration).
+  `limit <= 0` still increments then compares with `count.to_i <= limit.to_i`
+  (raise fails open); String `period` still fails open.
+
 ## [0.8.0] - 2026-10-12
 
 Default mounted-page `page_copy` is translatable through Rails I18n at render time.

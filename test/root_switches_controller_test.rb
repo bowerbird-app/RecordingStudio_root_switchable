@@ -187,4 +187,26 @@ class RootSwitchesControllerTest < Minitest::Test
 
     assert_equal "recording_studio_root_switchable/blank", @controller.send(:resolved_layout)
   end
+
+  def test_enforce_switch_rate_limit_returns_too_many_requests_when_blocked
+    headed = nil
+    @controller.define_singleton_method(:head) { |status| headed = status }
+
+    RecordingStudioRootSwitchable::SwitchRateLimiter.stub(:allowed?, false) do
+      @controller.send(:enforce_switch_rate_limit!)
+    end
+
+    assert_equal :too_many_requests, headed
+  end
+
+  def test_enforce_switch_rate_limit_allows_when_under_limit
+    headed = :unset
+    @controller.define_singleton_method(:head) { |status| headed = status }
+
+    RecordingStudioRootSwitchable::SwitchRateLimiter.stub(:allowed?, true) do
+      assert_nil @controller.send(:enforce_switch_rate_limit!)
+    end
+
+    assert_equal :unset, headed
+  end
 end

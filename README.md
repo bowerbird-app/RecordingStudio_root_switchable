@@ -16,6 +16,33 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.9.0 (shared cache rate limiter)
+
+Non-breaking for normal Numeric `limit` / `period` configs. Keys, config API,
+and HTTP responses stay the same; the adapter also keeps main-era edge cases
+the shared limiter would otherwise flip (`limit <= 0` increments first;
+String `period` fails open).
+
+### What changed
+
+- `SwitchRateLimiter` delegates to `RecordingStudioCache::RateLimiter` from
+  `recording_studio_cache` `v0.5.0` instead of a bespoke `Rails.cache.increment`
+  helper.
+- Same TTL keys (`recording_studio_root_switchable:switch_rate:…`), same
+  `config.switch_rate_limit`, same fail-open cache errors, same `429` from the
+  mounted switch page when over limit. For `limit.to_i <= 0`, the adapter still
+  calls `store.increment` first, then `count.to_i <= limit.to_i` (raise fails
+  open). A non-Numeric `period` (e.g. `"60"`) still fails open.
+
+### Upgrade steps
+
+No migration. Add the cache gem pin and bump this gem:
+
+```ruby
+gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"
+gem "recording_studio_root_switchable", github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.9.0"
+```
+
 ## Upgrading to 0.8.0 (translatable page_copy)
 
 Rendered English is unchanged when you leave `page_copy` unset or keep using
@@ -356,8 +383,9 @@ Add the gems to your host app:
 
 ```ruby
 gem "recording_studio", "~> 4.1"
-gem "recording_studio_accessible", "~> 0.11"
-gem "recording_studio_root_switchable", "~> 0.5.0"
+gem "recording_studio_accessible", "~> 0.15"
+gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"
+gem "recording_studio_root_switchable", "~> 0.9.0"
 ```
 
 Then run:
