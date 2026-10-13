@@ -31,8 +31,8 @@ String `period` fails open).
 - Same TTL keys (`recording_studio_root_switchable:switch_rate:…`), same
   `config.switch_rate_limit`, same fail-open cache errors, same `429` from the
   mounted switch page when over limit. For `limit.to_i <= 0`, the adapter still
-  calls `store.increment` first (nil/raise allow; count blocks). A non-Numeric
-  `period` (e.g. `"60"`) still fails open.
+  calls `store.increment` first, then `count.to_i <= limit.to_i` (raise fails
+  open). A non-Numeric `period` (e.g. `"60"`) still fails open.
 
 ### Upgrade steps
 

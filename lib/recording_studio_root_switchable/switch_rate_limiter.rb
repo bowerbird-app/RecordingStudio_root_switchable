@@ -37,8 +37,8 @@ module RecordingStudioRootSwitchable
 
     def allowed_with_store?(store:, actor:, device_key:, limit:, period:)
       # Shared RateLimiter treats limit <= 0 as disabled. Main still incremented
-      # first: nil/raise => allow, otherwise block (count.to_i <= limit.to_i).
-      return non_positive_limit_allowed?(store:, actor:, device_key:, period:) if limit.to_i <= 0
+      # first, then compared with count.to_i <= limit.to_i (raise => allow).
+      return non_positive_limit_allowed?(store:, actor:, device_key:, limit:, period:) if limit.to_i <= 0
 
       # Positive limits: String period raised from expires_in: on main (fail open).
       # Shared RateLimiter would coerce via to_i — keep fail-open here.
@@ -57,11 +57,9 @@ module RecordingStudioRootSwitchable
 
     # Mirrors main's increment-then-compare for limit <= 0 without using the
     # shared limiter (which would treat <= 0 as disabled / always allow).
-    def non_positive_limit_allowed?(store:, actor:, device_key:, period:)
+    def non_positive_limit_allowed?(store:, actor:, device_key:, limit:, period:)
       count = store.increment(storage_key_for(actor, device_key), 1, expires_in: period)
-      return true if count.nil?
-
-      false
+      count.to_i <= limit.to_i
     rescue StandardError
       true
     end

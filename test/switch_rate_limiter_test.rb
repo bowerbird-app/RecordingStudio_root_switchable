@@ -135,10 +135,22 @@ class SwitchRateLimiterTest < Minitest::Test
   end
 
   def test_limit_zero_allows_on_null_store
+    # NullStore#increment returns nil; nil.to_i <= 0 => allow (same as main).
     self.class.rails_cache_stub = ActiveSupport::Cache::NullStore.new
     RecordingStudioRootSwitchable.configuration.switch_rate_limit = { limit: 0, period: 1.minute }
 
     assert RecordingStudioRootSwitchable::SwitchRateLimiter.allowed?(
+      actor: ActorWithId.new(1),
+      device_key: "device"
+    )
+  end
+
+  def test_limit_negative_one_blocks_on_null_store
+    # nil.to_i <= -1 => 0 <= -1 => block (main's comparison, not "nil always allows").
+    self.class.rails_cache_stub = ActiveSupport::Cache::NullStore.new
+    RecordingStudioRootSwitchable.configuration.switch_rate_limit = { limit: -1, period: 1.minute }
+
+    refute RecordingStudioRootSwitchable::SwitchRateLimiter.allowed?(
       actor: ActorWithId.new(1),
       device_key: "device"
     )

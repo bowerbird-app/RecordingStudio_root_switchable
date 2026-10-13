@@ -24,10 +24,12 @@ Switch rate limiting uses the shared `RecordingStudioCache::RateLimiter`.
   `RecordingStudioCache.store`. Key TTLs are unchanged: main already passed
   `expires_in: period` on `increment`.
 - Adapter keeps main-era edges the shared limiter would otherwise flip:
-  for `limit.to_i <= 0`, main still called `increment` first — nil or raise
-  allows, a returned count blocks (shared would treat `<= 0` as disabled /
-  always allow); a non-Numeric `period` (e.g. `"60"`) still fails open (main
-  raised from `expires_in:` and rescued; shared would coerce via `to_i`).
+  for `limit.to_i <= 0`, main still called `increment` first, then
+  `count.to_i <= limit.to_i` (raise still fails open). So `limit: 0` +
+  NullStore (`nil`) allows, while `limit: -1` + NullStore blocks; shared would
+  treat `<= 0` as disabled / always allow. A non-Numeric `period` (e.g. `"60"`)
+  still fails open (main raised from `expires_in:` and rescued; shared would
+  coerce via `to_i`).
 - Runtime dependency `recording_studio_cache` `~> 0.5` (GitHub tag `v0.5.0`).
 
 ### Upgrade Notes
@@ -36,8 +38,8 @@ Switch rate limiting uses the shared `RecordingStudioCache::RateLimiter`.
   `gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"`.
 - No host code changes when you already use `config.switch_rate_limit` / the
   mounted switch page with Numeric `limit` / `period` (including Duration).
-  `limit <= 0` still increments first (nil/raise allow; count blocks); String
-  `period` still fails open.
+  `limit <= 0` still increments then compares with `count.to_i <= limit.to_i`
+  (raise fails open); String `period` still fails open.
 
 ## [0.8.0] - 2026-10-12
 
