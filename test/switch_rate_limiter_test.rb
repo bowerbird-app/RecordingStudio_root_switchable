@@ -172,6 +172,28 @@ class SwitchRateLimiterTest < Minitest::Test
     )
   end
 
+  def test_passes_rails_cache_store_object_to_shared_limiter
+    # Main always used Rails.cache; this gem has no switch_rate cache_store config.
+    captured = nil
+    allow_stub = lambda do |**options|
+      captured = options
+      true
+    end
+
+    RecordingStudioCache::RateLimiter.stub(:allow?, allow_stub) do
+      assert RecordingStudioRootSwitchable::SwitchRateLimiter.allowed?(
+        actor: ActorWithId.new(1),
+        device_key: "device"
+      )
+    end
+
+    refute_nil captured
+    assert_same @memory, captured[:store]
+    assert_same Rails.cache, captured[:store]
+    assert_equal :rails_cache, captured[:backend]
+    assert_equal :ttl, captured[:strategy]
+  end
+
   private
 
   def install_rails_cache_stub!

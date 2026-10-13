@@ -14,10 +14,15 @@ Switch rate limiting uses the shared `RecordingStudioCache::RateLimiter`.
 ### Changed
 - `RecordingStudioRootSwitchable::SwitchRateLimiter` is a thin adapter over
   `RecordingStudioCache::RateLimiter` (`backend: :rails_cache`, `strategy: :ttl`,
-  `store: Rails.cache`, `prefix: "recording_studio_root_switchable:switch_rate"`,
-  `separator: ":"`, `fail_closed: false`, `rescue_errors: [StandardError]`).
-  Public config (`config.switch_rate_limit`) and `allowed?(actor:, device_key:)`
-  are unchanged. Cache keys, windows, and fail-open cache errors match 0.8.x.
+  `prefix: "recording_studio_root_switchable:switch_rate"`, `separator: ":"`,
+  `fail_closed: false`, `rescue_errors: [StandardError]`). Public config
+  (`config.switch_rate_limit`) and `allowed?(actor:, device_key:)` are unchanged.
+  Cache keys, windows, and fail-open cache errors match 0.8.x.
+- Store is still `Rails.cache` (what main incremented against). This gem has no
+  switch-rate `cache_store` / `config.cache` setting; the adapter resolves
+  `Rails.cache` once and passes that object as `store:` so the shared limiter
+  cannot fall through to `RecordingStudioCache.store`. Key TTLs are unchanged:
+  main already passed `expires_in: period` on `increment`.
 - Adapter keeps two main-era edge cases the shared limiter would otherwise flip:
   `limit.to_i <= 0` still blocks every switch (shared treats `<= 0` as disabled),
   and a non-Numeric `period` (e.g. `"60"`) still fails open / never limits (main

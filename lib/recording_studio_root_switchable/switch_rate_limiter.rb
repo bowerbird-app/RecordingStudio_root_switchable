@@ -5,6 +5,11 @@ require "recording_studio_cache"
 module RecordingStudioRootSwitchable
   # Thin adapter over {RecordingStudioCache::RateLimiter} that preserves the
   # historical SwitchRateLimiter key shape, TTL window, and fail-open rescue.
+  #
+  # Main always incremented through +Rails.cache+ (there is no gem-level
+  # +cache_store+ / +config.cache+ for switch rate limits). The adapter resolves
+  # that store once and passes it as +store:+ so the shared limiter cannot fall
+  # through to +RecordingStudioCache.store+.
   module SwitchRateLimiter
     CACHE_KEY_PREFIX = "recording_studio_root_switchable:switch_rate"
     LIMITER_DEFAULTS = {
@@ -21,16 +26,23 @@ module RecordingStudioRootSwitchable
     def allowed?(actor:, device_key:)
       limit, period = rate_limit_settings
       return true if limit.blank? || period.blank?
-      return true unless cache_available?
-      # Shared RateLimiter treats limit <= 0 as disabled; main blocked every switch.
+
+      store = cache_store
+      return true unless store
       return false if limit.to_i <= 0
-      # Main passed period to expires_in; Strings raised and failed open.
       return true unless period.is_a?(Numeric)
 
-      RecordingStudioCache::RateLimiter.allow?(**limiter_options(actor, device_key, limit, period))
+      shared_limiter_allows?(actor:, device_key:, limit:, period:, store:)
     rescue StandardError
       true
     end
+
+    def shared_limiter_allows?(actor:, device_key:, limit:, period:, store:)
+      RecordingStudioCache::RateLimiter.allow?(
+        **limiter_options(actor: actor, device_key: device_key, limit: limit, period: period, store: store)
+      )
+    end
+    private_class_method :shared_limiter_allows?
 
     def rate_limit_settings
       config = RecordingStudioRootSwitchable.configuration.switch_rate_limit || {}
@@ -38,17 +50,20 @@ module RecordingStudioRootSwitchable
     end
     private_class_method :rate_limit_settings
 
-    def cache_available?
-      defined?(Rails) && Rails.respond_to?(:cache) && Rails.cache
-    end
-    private_class_method :cache_available?
+    # Same store main used: +Rails.cache+. Not configurable on this gem.
+    def cache_store
+      return unless defined?(Rails) && Rails.respond_to?(:cache)
 
-    def limiter_options(actor, device_key, limit, period)
+      Rails.cache
+    end
+    private_class_method :cache_store
+
+    def limiter_options(actor:, device_key:, limit:, period:, store:)
       LIMITER_DEFAULTS.merge(
         key: "#{actor_cache_identity(actor)}:#{device_key}",
         limit: limit,
         period: period,
-        store: Rails.cache
+        store: store
       )
     end
     private_class_method :limiter_options
