@@ -20,8 +20,8 @@ This addon was derived from the Recording Studio gem template and keeps the same
 
 Non-breaking for normal Numeric `limit` / `period` configs. Keys, config API,
 and HTTP responses stay the same; the adapter also keeps main-era edge cases
-the shared limiter would otherwise flip (`limit <= 0` blocks; String `period`
-fails open).
+the shared limiter would otherwise flip (`limit <= 0` increments first;
+String `period` fails open).
 
 ### What changed
 
@@ -30,8 +30,9 @@ fails open).
   helper.
 - Same TTL keys (`recording_studio_root_switchable:switch_rate:…`), same
   `config.switch_rate_limit`, same fail-open cache errors, same `429` from the
-  mounted switch page when over limit. `limit.to_i <= 0` still blocks every
-  switch; a non-Numeric `period` (e.g. `"60"`) still fails open.
+  mounted switch page when over limit. For `limit.to_i <= 0`, the adapter still
+  calls `store.increment` first (nil/raise allow; count blocks). A non-Numeric
+  `period` (e.g. `"60"`) still fails open.
 
 ### Upgrade steps
 

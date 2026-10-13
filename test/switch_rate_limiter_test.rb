@@ -108,15 +108,51 @@ class SwitchRateLimiterTest < Minitest::Test
     assert_nil @memory.read("recording_studio_root_switchable:switch_rate:1:device")
   end
 
-  def test_non_positive_limit_blocks_every_switch
+  def test_non_positive_limit_blocks_when_increment_returns_a_count
     actor = ActorWithId.new(1)
 
+    # MemoryStore#increment returns an Integer; main then blocked via count <= 0.
     RecordingStudioRootSwitchable.configuration.switch_rate_limit = { limit: 0, period: 1.minute }
     refute RecordingStudioRootSwitchable::SwitchRateLimiter.allowed?(actor: actor, device_key: "device")
     refute RecordingStudioRootSwitchable::SwitchRateLimiter.allowed?(actor: actor, device_key: "device")
 
     RecordingStudioRootSwitchable.configuration.switch_rate_limit = { limit: -1, period: 1.minute }
     refute RecordingStudioRootSwitchable::SwitchRateLimiter.allowed?(actor: actor, device_key: "device")
+  end
+
+  def test_limit_zero_allows_when_store_increment_raises
+    boom_store = Object.new
+    boom_store.define_singleton_method(:increment) do |*|
+      raise StandardError, "cache down"
+    end
+    self.class.rails_cache_stub = boom_store
+    RecordingStudioRootSwitchable.configuration.switch_rate_limit = { limit: 0, period: 1.minute }
+
+    assert RecordingStudioRootSwitchable::SwitchRateLimiter.allowed?(
+      actor: ActorWithId.new(1),
+      device_key: "device"
+    )
+  end
+
+  def test_limit_zero_allows_on_null_store
+    self.class.rails_cache_stub = ActiveSupport::Cache::NullStore.new
+    RecordingStudioRootSwitchable.configuration.switch_rate_limit = { limit: 0, period: 1.minute }
+
+    assert RecordingStudioRootSwitchable::SwitchRateLimiter.allowed?(
+      actor: ActorWithId.new(1),
+      device_key: "device"
+    )
+  end
+
+  def test_limit_zero_with_string_period_fails_open
+    # Main called increment(expires_in: "60"), which raised and rescued to allow.
+    RecordingStudioRootSwitchable.configuration.switch_rate_limit = { limit: 0, period: "60" }
+
+    assert RecordingStudioRootSwitchable::SwitchRateLimiter.allowed?(
+      actor: ActorWithId.new(1),
+      device_key: "device"
+    )
+    assert_nil @memory.read("recording_studio_root_switchable:switch_rate:1:device")
   end
 
   def test_string_period_fails_open_like_main
