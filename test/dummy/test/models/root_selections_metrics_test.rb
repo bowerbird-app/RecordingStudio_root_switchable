@@ -28,9 +28,20 @@ class RootSelectionsMetricsTest < ActiveSupport::TestCase
     assert_includes identifiers, "root_selections.by_platform"
     assert_includes identifiers, "root_selections.by_browser"
 
+    expected_mcp_tools = {
+      "root_selections.active_actors_7d" => "root_selections-active_actors_7d",
+      "root_selections.active_actors_30d" => "root_selections-active_actors_30d",
+      "root_selections.active_devices_30d" => "root_selections-active_devices_30d",
+      "root_selections.by_device_type" => "root_selections-by_device_type",
+      "root_selections.by_platform" => "root_selections-by_platform",
+      "root_selections.by_browser" => "root_selections-by_browser"
+    }
+
     RecordingStudioMetrics.for_resource(:root_selections).each do |definition|
       assert_equal [:operations], definition.exposed_apis
       assert_equal :site, definition.blast_radius
+      refute_equal :timeseries, definition.metric_type
+      assert_equal expected_mcp_tools.fetch(definition.identifier), definition.identifier.sub(".", "-")
     end
   end
 

@@ -97,6 +97,10 @@ class EngineTest < Minitest::Test
     assert_equal :recording_studio_root_switchable, error.config_key
   end
 
+  def test_metrics_initializer_is_registered
+    refute_nil find_initializer("recording_studio_root_switchable.metrics")
+  end
+
   def test_load_config_rejects_invalid_x_config_payloads
     x_config = Struct.new(:recording_studio_root_switchable).new(["invalid"])
     app_config = Struct.new(:x).new(x_config)
