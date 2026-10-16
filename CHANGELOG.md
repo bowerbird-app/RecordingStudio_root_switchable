@@ -10,6 +10,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Render-level multi-locale coverage for mounted-page `page_copy` (test-only
   French fixture, plus Hash / Symbol / callable config forms on a real page).
+- MCP 0.17 tool names for the existing `:root_selections` metrics (dot becomes
+  a hyphen). None of these metrics is a timeseries, so they do not take
+  `from`, `to`, or `interval`.
+
+### Changed
+- Runtime dependency `recording_studio_metrics` is `>= 0.3.0, < 0.4` (GitHub
+  tag `v0.3.1`). Registration is unchanged: boot still calls
+  `RecordingStudioRootSwitchable::Metrics.register!`, which calls
+  `RecordingStudioMetrics.register` with
+  `api_authorize: RecordingStudioRootSwitchable::Api::Access.can_view?`.
+
+## [0.9.4] - 2026-10-16
+
+Site selection metrics stay on the existing Metrics engine. The pin moves to
+Metrics 0.3 so RecordingStudio MCP 0.17 can advertise one tool per metric.
+
+### Added
+- Documented MCP tool names for `root_selections.*` (see README). Scalars and
+  breakdowns do not take `from`, `to`, or `interval`.
+
+### Changed
+- Runtime dependency `recording_studio_metrics` from `~> 0.2` to
+  `>= 0.3.0, < 0.4` (GitHub tag `v0.3.1`).
+
+### Upgrade Notes
+- Bump to `0.9.4`. No migration.
+- Pin `recording_studio_metrics` to `>= 0.3.0, < 0.4` (tag `v0.3.1`).
+- This gem still does not call `RecordingStudioMetrics::Api.register!`. The
+  host registers Metrics endpoints once:
+
+```ruby
+RecordingStudioMetrics::Api.register!(api: :operations)
+```
+
+- MCP 0.17 names tools from the metric identifier: `users.total` becomes
+  `users-total`. This gem's tools are `root_selections-active_actors_7d`,
+  `root_selections-active_actors_30d`, `root_selections-active_devices_30d`,
+  `root_selections-by_device_type`, `root_selections-by_platform`, and
+  `root_selections-by_browser`. Windows are baked into each metric. Do not
+  send `from`, `to`, or `interval`.
 
 ## [0.9.0] - 2026-10-13
 
@@ -303,7 +343,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.4...HEAD
+[0.9.4]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.3...v0.9.4
 [0.8.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.7.0...v0.8.0
 [0.3.1]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.2.0...v0.3.0

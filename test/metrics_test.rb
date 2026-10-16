@@ -48,6 +48,14 @@ class MetricsTest < Minitest::Test
     %w[root_selections.by_device_type root_selections.by_platform root_selections.by_browser].each do |id|
       assert_equal :breakdown, RecordingStudioMetrics.find(id).metric_type
     end
+
+    RecordingStudioMetrics.for_resource(:root_selections).each do |definition|
+      refute_equal :timeseries, definition.metric_type
+      tool_name = definition.identifier.sub(".", "-")
+      assert_equal expected_mcp_tools.fetch(definition.identifier), tool_name
+      assert_match(/\A[a-z][a-z0-9_]*-[a-z][a-z0-9_]*\z/, tool_name)
+      assert tool_name.length <= 64
+    end
   ensure
     RecordingStudioMetrics.registry.reset!
   end
@@ -63,5 +71,16 @@ class MetricsTest < Minitest::Test
       root_selections.by_device_type
       root_selections.by_platform
     ]
+  end
+
+  def expected_mcp_tools
+    {
+      "root_selections.active_actors_7d" => "root_selections-active_actors_7d",
+      "root_selections.active_actors_30d" => "root_selections-active_actors_30d",
+      "root_selections.active_devices_30d" => "root_selections-active_devices_30d",
+      "root_selections.by_device_type" => "root_selections-by_device_type",
+      "root_selections.by_platform" => "root_selections-by_platform",
+      "root_selections.by_browser" => "root_selections-by_browser"
+    }
   end
 end
