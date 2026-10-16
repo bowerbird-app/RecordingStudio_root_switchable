@@ -12,6 +12,7 @@ This Rails app exists to validate RecordingStudioRootSwitchable in a real host a
 - A seeded shared root (`MessageRoot`) that is never switchable
 - Device-key-backed selection persistence through `RecordingStudio::RootSwitchable::ControllerSupport`
 - FlatPack layout integration, PageNav-backed gem views, and mounted engine routes for RecordingStudio, RecordingStudioAccessible, and RecordingStudioRootSwitchable
+- last-used `:root_selections` metrics on the operations API (AdminRoot `:view`)
 
 ## Quick Start
 

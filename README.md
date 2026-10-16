@@ -13,8 +13,50 @@ It lets a host app resolve and persist a current root recording per actor, per d
 - helper APIs for `current_root`, `current_root_recording`, `current_root_recordable`, and `current_root_scope_key`
 - a dedicated FlatPack-powered root-switch page
 - default access integration through `RecordingStudioAccessible`
+- site-wide last-used selection metrics on the operations API (`:root_selections`)
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
+
+## Upgrading to 0.9.4 (Metrics 0.3 / MCP tool names)
+
+Registration is unchanged. Boot still calls
+`RecordingStudioRootSwitchable::Metrics.register!`, which registers
+`:root_selections` with `RecordingStudioMetrics.register` and
+`api_authorize` via `RecordingStudioRootSwitchable::Api::Access.can_view?`
+(AdminRoot `:view`). This gem does not call
+`RecordingStudioMetrics::Api.register!`. The host registers Metrics endpoints
+once:
+
+```ruby
+RecordingStudioMetrics::Api.register!(api: :operations)
+```
+
+RecordingStudio MCP 0.17 advertises one read-only tool per exposed metric.
+The tool name replaces the identifier's single dot with a hyphen.
+
+| Metric identifier | MCP tool | Kind |
+| --- | --- | --- |
+| `root_selections.active_actors_7d` | `root_selections-active_actors_7d` | scalar |
+| `root_selections.active_actors_30d` | `root_selections-active_actors_30d` | scalar |
+| `root_selections.active_devices_30d` | `root_selections-active_devices_30d` | scalar |
+| `root_selections.by_device_type` | `root_selections-by_device_type` | breakdown |
+| `root_selections.by_platform` | `root_selections-by_platform` | breakdown |
+| `root_selections.by_browser` | `root_selections-by_browser` | breakdown |
+
+`from`, `to`, and `interval` apply only to timeseries. This gem has none.
+Windows are last-used cutoffs on each metric (`7d` / `30d`). Do not send a
+date range.
+
+### Upgrade steps
+
+No migration. Pin Metrics 0.3 and bump this gem:
+
+```ruby
+gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics",
+                                tag: "v0.3.1"
+gem "recording_studio_root_switchable", github: "bowerbird-app/RecordingStudio_root_switchable",
+                                        tag: "v0.9.4"
+```
 
 ## Upgrading to 0.9.0 (shared cache rate limiter)
 
@@ -387,7 +429,8 @@ gem "recording_studio_accessible", "~> 0.18"
 gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable",
                                   tag: "v0.11.0", require: false
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"
-gem "recording_studio_root_switchable", "~> 0.9.0"
+gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.3.1"
+gem "recording_studio_root_switchable", "~> 0.9.4"
 ```
 
 Then run:
