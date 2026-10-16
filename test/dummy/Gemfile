@@ -4,14 +4,14 @@ source "https://rubygems.org"
 gem "recording_studio_root_switchable", path: "../.."
 
 # RecordingStudio engine
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.6.0"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.7.0"
 gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.18.0"
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.3.1"
 # Query-only trash helpers for Accessible 0.17 (gemspec ~> 0.10). require: false so
 # Bundler does not auto-load the Trashable engine.
 gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable",
-                                  tag: "v0.10.0", require: false
+                                  tag: "v0.11.0", require: false
 
 # Devise authentication
 gem "devise"
