@@ -72,6 +72,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
 
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio", "~> 4.1"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.18"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_metrics", ">= 0.3.0", "< 0.6"'
   end
 
   def test_gem_ships_blank_layout_template
