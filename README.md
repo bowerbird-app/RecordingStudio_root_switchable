@@ -17,6 +17,18 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.9.7 (Metrics 0.6)
+
+No migration. >= 0.3, < 1.0 (tested with 0.6.1). Dummy and this repo pin
+tag `v0.6.1`. Registration is unchanged.
+
+```ruby
+gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics",
+                                tag: "v0.6.1"
+gem "recording_studio_root_switchable", github: "bowerbird-app/RecordingStudio_root_switchable",
+                                        tag: "v0.9.7"
+```
+
 ## Upgrading to 0.9.6 (Metrics 0.5)
 
 No migration. Metrics 0.3 through 0.5 are in range. Dummy and this repo pin
@@ -441,8 +453,8 @@ gem "recording_studio_accessible", "~> 0.18"
 gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable",
                                   tag: "v0.11.0", require: false
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"
-gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.5.0"
-gem "recording_studio_root_switchable", "~> 0.9.6"
+gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.6.1"
+gem "recording_studio_root_switchable", "~> 0.9.7"
 ```
 
 Then run:
