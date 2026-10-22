@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.7] - 2026-10-22
+
+Site selection metrics still register through the existing Metrics engine.
+The runtime range now includes Metrics 0.6.
+
+### Changed
+- Runtime dependency `recording_studio_metrics` is `>= 0.3.0, < 1.0`.
+  Registration is unchanged: boot still calls
+  `RecordingStudioRootSwitchable::Metrics.register!`, which calls
+  `RecordingStudioMetrics.register` with
+  `api_authorize: RecordingStudioRootSwitchable::Api::Access.can_view?`.
+
+### Upgrade Notes
+- Bump to `0.9.7`. No migration.
+- Pin `recording_studio_metrics` to `>= 0.3.0, < 1.0` (GitHub tag `v0.6.1`).
+- This gem still does not call `RecordingStudioMetrics::Api.register!`. The
+  host registers Metrics endpoints once:
+
+```ruby
+RecordingStudioMetrics::Api.register!(api: :operations)
+```
+
 ## [0.9.6] - 2026-10-20
 
 Site selection metrics still register through the existing Metrics engine.
@@ -358,7 +380,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.6...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.7...HEAD
+[0.9.7]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.6...v0.9.7
 [0.9.6]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.4...v0.9.6
 [0.9.4]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.3...v0.9.4
 [0.8.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.7.0...v0.8.0
