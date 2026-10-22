@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.9.7] - 2026-10-22
 
 Site selection metrics still register through the existing Metrics engine.
-The runtime range now includes Metrics 0.6.
+>= 0.3, < 1.0 (tested with 0.6.1).
 
 ### Changed
 - Runtime dependency `recording_studio_metrics` is `>= 0.3.0, < 1.0`.

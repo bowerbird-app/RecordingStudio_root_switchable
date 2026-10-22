@@ -19,7 +19,7 @@ This addon was derived from the Recording Studio gem template and keeps the same
 
 ## Upgrading to 0.9.7 (Metrics 0.6)
 
-No migration. Metrics 0.3 through 0.6 are in range. Dummy and this repo pin
+No migration. >= 0.3, < 1.0 (tested with 0.6.1). Dummy and this repo pin
 tag `v0.6.1`. Registration is unchanged.
 
 ```ruby
