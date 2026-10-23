@@ -17,6 +17,11 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.9.8
+
+No migration and no host-app change. CI runs every test under `test/dummy/test`,
+and SimpleCov output under `test/dummy/coverage/` stays untracked.
+
 ## Upgrading to 0.9.7 (Metrics 0.6)
 
 No migration. >= 0.3, < 1.0 (tested with 0.6.1). Dummy and this repo pin
@@ -426,6 +431,10 @@ import "@hotwired/turbo-rails"
 
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
+### 0.9.8
+- CI runs the full dummy app suite
+- Dummy SimpleCov output is no longer tracked
+
 ### 0.3.5
 - Optimistic dropdown trigger update + pending state
 - Dropdown forms use Turbo Drive when Turbo is loaded
@@ -454,7 +463,7 @@ gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashab
                                   tag: "v0.11.0", require: false
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.6.1"
-gem "recording_studio_root_switchable", "~> 0.9.7"
+gem "recording_studio_root_switchable", "~> 0.9.8"
 ```
 
 Then run:
