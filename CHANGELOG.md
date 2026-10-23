@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.8] - 2026-10-23
+
+CI runs the whole dummy app suite, and SimpleCov output stays untracked.
+
+### Changed
+- CI runs every test under `test/dummy/test` (dropdown, site-selection metrics,
+  and credentials included), then RuboCop and `rake app:test`.
+- `test/dummy/coverage/` is no longer in the index. The existing `coverage/`
+  ignore rule already matches that directory.
+
+### Upgrade Notes
+- Bump to `0.9.8`. No migration. No host-app changes.
+
 ## [0.9.7] - 2026-10-22
 
 Site selection metrics still register through the existing Metrics engine.
@@ -380,7 +393,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.7...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.8...HEAD
+[0.9.8]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.7...v0.9.8
 [0.9.7]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.6...v0.9.7
 [0.9.6]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.4...v0.9.6
 [0.9.4]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.3...v0.9.4

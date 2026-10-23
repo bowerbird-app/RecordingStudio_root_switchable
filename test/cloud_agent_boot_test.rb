@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "json"
+require "yaml"
 require "test_helper"
 
 class CloudAgentBootTest < Minitest::Test
@@ -49,6 +50,28 @@ class CloudAgentBootTest < Minitest::Test
     assert_includes gitignore, ".cursor/rules/"
   end
 
+  def test_dummy_coverage_is_ignored_and_untracked
+    sample = "test/dummy/coverage/index.html"
+    ignored = git("check-ignore", "--no-index", "-v", "--", sample)
+
+    assert_match(%r{\.gitignore:\d+:coverage/\s+#{Regexp.escape(sample)}}, ignored)
+
+    tracked = git("ls-files", "--", "test/dummy/coverage")
+    assert_equal "", tracked
+  end
+
+  def test_ci_runs_the_full_dummy_suite_then_rubocop_and_the_gem_suite
+    workflow = YAML.safe_load_file(File.join(ROOT, ".github/workflows/ci.yml"))
+    steps = workflow.dig("jobs", "test", "steps")
+    runs = steps.filter_map { |step| step["run"] }
+    dummy_runs = steps.select { |step| step["working-directory"] == "test/dummy" }.filter_map { |step| step["run"] }
+
+    assert_includes dummy_runs, "bundle exec rails test"
+    refute(dummy_runs.any? { |run| run.include?("_test.rb") })
+    assert_includes runs, "bundle exec rubocop"
+    assert_includes runs, "bundle exec rake app:test"
+  end
+
   def test_lockfiles_match_gem_version
     version = RecordingStudioRootSwitchable::VERSION
 
@@ -64,5 +87,11 @@ class CloudAgentBootTest < Minitest::Test
     refute_nil spec
     cursor_files = spec.files.select { |path| path.start_with?(".cursor/") }
     assert_empty cursor_files
+  end
+
+  private
+
+  def git(*args)
+    IO.popen(["git", "-C", ROOT, *args], &:read)
   end
 end
