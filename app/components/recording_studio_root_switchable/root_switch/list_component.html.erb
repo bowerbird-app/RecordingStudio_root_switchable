@@ -1,0 +1,8 @@
+<%= render FlatPack::Menu::Collapse::Component.new(
+  title: menu_rows.current_label,
+  open: false
+) do |section| %>
+  <% section.items do %>
+    <%= render RecordingStudioRootSwitchable::RootSwitch::RowsComponent.new(menu_rows: menu_rows) %>
+  <% end %>
+<% end %>

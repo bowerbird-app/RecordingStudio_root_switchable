@@ -26,7 +26,6 @@ Metrics/ClassLength:
     - 'lib/recording_studio/root_switchable/scope_definition.rb'
     - 'lib/recording_studio_root_switchable/configuration.rb'
     - 'app/models/recording_studio/root_switchable/selection.rb'
-    - 'app/helpers/recording_studio_root_switchable/root_switch_dropdown_helper.rb'
 
 Metrics/MethodLength:
   Exclude:

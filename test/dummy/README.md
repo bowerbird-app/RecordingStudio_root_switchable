@@ -35,6 +35,7 @@ These seeded credentials are for local demo use only.
 - `/` - dummy app home page and root-switch summary
 - `/recording_studio` - mounted Recording Studio engine
 - `/recording_studio_accessible` - mounted Recording Studio Accessible engine
+- `/placements` - standalone switcher, the same list inside a host menu, and a collapsing button group
 - `/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces` - root switch page for all accessible workspace roots
 - `/recording_studio_root_switchable/v1/root_switch?scope=client_workspaces` - root switch page filtered to client workspaces
 - `/users/sign_in` - Devise sign-in page

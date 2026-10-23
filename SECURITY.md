@@ -3,7 +3,7 @@
 ## Threat model
 
 This gem persists a per-actor, per-device root selection and exposes a mounted
-switch page plus a dropdown helper. The main risks are:
+switch page, a dropdown component, and a list component for host menus. The main risks are:
 
 - device-key cookie theft or fixation
 - open redirects through `return_to` / `after_switch_redirect`

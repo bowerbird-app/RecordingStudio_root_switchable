@@ -8,8 +8,9 @@
 @source "../../../vendor/recording_studio/app/views/**/*.erb";
 @source "../../../vendor/recording_studio/app/components/**/*.{rb,erb}";
 
-/* Include the engine's views in the Tailwind build */
+/* Include the engine's views and components in the Tailwind build */
 @source "../../../../../app/views/**/*.erb";
+@source "../../../../../app/components/**/*.{rb,erb}";
 
 /* Fallback scan paths for common Bundler install locations */
 @source "../../../vendor/bundle/**/flat_pack*/app/components/**/*.{rb,erb}";

@@ -73,6 +73,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio", "~> 4.1"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.18"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_metrics", ">= 0.3.0", "< 1.0"'
+    assert_includes gemspec_source, 'spec.add_dependency "flat_pack", ">= 0.1.304"'
   end
 
   def test_gem_ships_blank_layout_template
@@ -98,8 +99,10 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     view_source = File.read(view_path)
 
     assert_includes view_source, "FlatPack::PageNav::Component"
-    assert_includes view_source, "anchor_url: @return_anchor_url"
+    assert_includes view_source, "nav.with_close("
+    assert_includes view_source, "href: @return_anchor_url"
     assert_includes view_source, 't("recording_studio.root_switchable.navigation.close")'
+    refute_includes view_source, "anchor_label:"
     refute_includes view_source, "FlatPack::Breadcrumb::Component"
     assert_includes view_source, "FlatPack::PageTitle::Component"
     assert_includes view_source, "title: @page_copy.fetch(:title)"
@@ -140,33 +143,39 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_operator notice_index, :<, title_index
   end
 
-  def test_root_switch_dropdown_partial_uses_optimistic_stimulus_and_turbo_forms
-    partial_path = File.expand_path(
-      "../app/views/recording_studio_root_switchable/_root_switch_dropdown.html.erb",
-      __dir__
+  def test_root_switch_dropdown_does_not_ship_a_stimulus_controller
+    refute File.exist?(
+      File.expand_path(
+        "../app/javascript/recording_studio_root_switchable/controllers/root_switch_dropdown_controller.js",
+        __dir__
+      )
     )
-    partial_source = File.read(partial_path)
-
-    assert_includes partial_source, 'data-controller="recording-studio-root-switchable--root-switch-dropdown"'
-    assert_includes partial_source, "click->recording-studio-root-switchable--root-switch-dropdown#select"
-    assert_includes partial_source, "form_with url: root_switch_dropdown.fetch(:form_action), method: :patch"
-    refute_includes partial_source, "local: true"
-
-    controller_path = File.expand_path(
-      "../app/javascript/recording_studio_root_switchable/controllers/root_switch_dropdown_controller.js",
-      __dir__
+    refute File.exist?(
+      File.expand_path("../app/views/recording_studio_root_switchable/_root_switch_dropdown.html.erb", __dir__)
     )
-    assert_path_exists controller_path
+    refute File.exist?(File.expand_path("../config/importmap.rb", __dir__))
+
+    component_source = File.read(
+      File.expand_path(
+        "../app/components/recording_studio_root_switchable/root_switch/dropdown_component.rb",
+        __dir__
+      )
+    )
+    assert_includes component_source, "def menu_row"
+    assert_includes component_source, "ListComponent.new"
   end
 
-  def test_root_switch_dropdown_helper_uses_i18n_for_none_selected_label
+  def test_root_switch_helper_uses_i18n_for_none_selected_label
     helper_path = File.expand_path(
-      "../app/helpers/recording_studio_root_switchable/root_switch_dropdown_helper.rb",
+      "../app/helpers/recording_studio_root_switchable/root_switch_helper.rb",
       __dir__
     )
     helper_source = File.read(helper_path)
 
     assert_includes helper_source, 't("recording_studio.root_switchable.dropdown.none_selected")'
     refute_includes helper_source, '"None selected"'
+    assert_includes helper_source, "def recording_studio_root_switch_for"
+    assert_includes helper_source, "def recording_studio_root_switch_list_for"
+    assert_includes helper_source, "def render_recording_studio_root_switch_list"
   end
 end
