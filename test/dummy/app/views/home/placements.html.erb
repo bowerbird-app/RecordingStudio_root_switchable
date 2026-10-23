@@ -1,0 +1,34 @@
+<%= render FlatPack::PageTitle::Component.new(
+  title: "Where it sits",
+  subtitle: "The same workspace list, wherever you need it.",
+  variant: :h1
+) %>
+
+<%= render FlatPack::SectionTitle::Component.new(title: "On its own") %>
+<section id="root-switch-standalone">
+  <%= recording_studio_root_switch_dropdown(style: :secondary, size: :md) %>
+</section>
+
+<%= render FlatPack::SectionTitle::Component.new(title: "In your menu") %>
+<section id="root-switch-host-menu">
+  <% menu_html = safe_join([
+    render(FlatPack::Button::DropdownItem::Component.new(text: "Rename", icon: "pencil", type: "button")),
+    render(FlatPack::Button::DropdownItem::Component.new(text: "Duplicate", icon: "document-duplicate", type: "button")),
+    render_recording_studio_root_switch_list
+  ]) %>
+  <%= render RootSwitchPlacements::Menu.new(
+    text: "Actions",
+    style: :secondary,
+    size: :md,
+    placement: :bottom_left,
+    menu_html: menu_html
+  ) %>
+</section>
+
+<%= render FlatPack::SectionTitle::Component.new(title: "In a button group") %>
+<section id="root-switch-button-group">
+  <%= render FlatPack::ButtonGroup::Component.new(collapse: :menu, menu_label: "More") do |group| %>
+    <% group.button(recording_studio_root_switch_for(style: :secondary, size: :md)) %>
+    <% group.button(FlatPack::Button::Component.new(text: "Invite", style: :secondary, size: :md, type: "button")) %>
+  <% end %>
+</section>

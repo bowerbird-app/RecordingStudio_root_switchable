@@ -1,0 +1,10 @@
+<% menu_rows.switch_rows.each do |row| %>
+  <%= button_to menu_rows.form_action,
+    method: :patch,
+    params: menu_rows.form_params_for(row),
+    form: { class: "w-full" },
+    class: item_classes,
+    role: "menuitem" do %>
+    <span class="flex-1"><%= row.label %></span>
+  <% end %>
+<% end %>

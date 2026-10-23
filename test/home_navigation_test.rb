@@ -148,6 +148,25 @@ class HomeNavigationTest < Minitest::Test
     refute_includes initializer, "scope.page_copy"
   end
 
+  def test_placements_page_demos_the_three_switcher_placements
+    routes = read_dummy_file("config/routes.rb")
+    controller = read_dummy_file("app/controllers/home_controller.rb")
+    view = read_dummy_file("app/views/home/placements.html.erb")
+    sidebar = read_dummy_file("app/views/layouts/flat_pack/_sidebar.html.erb")
+
+    assert_includes routes, "get \"placements\", to: \"home#placements\""
+    assert_includes controller, "def placements"
+    assert_includes sidebar, "text: \"Placements\""
+    assert_includes sidebar, "href: \"/placements\""
+    assert_includes view, "recording_studio_root_switch_dropdown(style: :secondary, size: :md)"
+    assert_includes view, "render_recording_studio_root_switch_list"
+    assert_includes view, "recording_studio_root_switch_for(style: :secondary, size: :md)"
+    assert_includes view, "FlatPack::ButtonGroup::Component.new(collapse: :menu, menu_label: \"More\")"
+    assert_includes view, "id=\"root-switch-standalone\""
+    assert_includes view, "id=\"root-switch-host-menu\""
+    assert_includes view, "id=\"root-switch-button-group\""
+  end
+
   def test_gem_views_page_lists_engine_templates
     routes = read_dummy_file("config/routes.rb")
     controller = read_dummy_file("app/controllers/home_controller.rb")

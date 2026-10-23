@@ -12,10 +12,41 @@ It lets a host app resolve and persist a current root recording per actor, per d
 - configuration hooks for scopes, available roots, defaults, labels, descriptions, and page copy
 - helper APIs for `current_root`, `current_root_recording`, `current_root_recordable`, and `current_root_scope_key`
 - a dedicated FlatPack-powered root-switch page
+- a FlatPack dropdown, a host-menu list, and a button-group `menu_row` for the same accessible roots
 - default access integration through `RecordingStudioAccessible`
 - site-wide last-used selection metrics on the operations API (`:root_selections`)
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
+
+## Upgrading to 0.10.0 (switcher placements)
+
+No migration. Require `flat_pack` >= 0.1.304 (this repo pins tag `v0.1.305`).
+
+The switcher is a FlatPack dropdown. FlatPack opens and closes it. The gem Stimulus
+controller is gone. Remove a host pin if you added one:
+
+```ruby
+# delete this pin
+pin_all_from RecordingStudioRootSwitchable::Engine.root.join("app/javascript/recording_studio_root_switchable/controllers"),
+             under: "controllers/recording_studio_root_switchable",
+             to: "recording_studio_root_switchable/controllers"
+```
+
+```js
+// delete this eager load
+eagerLoadControllersFrom("controllers/recording_studio_root_switchable", application)
+```
+
+`position:` on `recording_studio_root_switch_dropdown` is now `placement:`, the FlatPack name.
+
+The mounted switch page uses `PageNav` `with_close`. FlatPack removed `anchor_label` and `anchor_url`. If you overrode that view, switch the close control to `with_close(href:, tooltip:)`.
+
+Scan this gem's `app/components` in the host Tailwind build. The install generator adds those `@source` lines for new installs.
+
+```ruby
+gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.305"
+gem "recording_studio_root_switchable", "~> 0.10.0"
+```
 
 ## Upgrading to 0.9.8
 
@@ -431,6 +462,10 @@ import "@hotwired/turbo-rails"
 
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
+### 0.10.0
+- The same workspace list can sit in a FlatPack dropdown, a host menu, and a collapsing button group
+- The Stimulus dropdown controller is gone. Require `flat_pack` >= 0.1.304
+
 ### 0.9.8
 - CI runs the full dummy app suite
 - Dummy SimpleCov output is no longer tracked
@@ -463,7 +498,7 @@ gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashab
                                   tag: "v0.11.0", require: false
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.6.1"
-gem "recording_studio_root_switchable", "~> 0.9.8"
+gem "recording_studio_root_switchable", "~> 0.10.0"
 ```
 
 Then run:
@@ -845,19 +880,51 @@ From a mounted host app, you can link to it with the engine route helper:
 recording_studio_root_switchable.root_switch_path(scope: "all_workspaces", return_to: request.fullpath)
 ```
 
-If you want a compact top-nav switcher backed by the same controller action, the gem
-also exposes a helper that renders a FlatPack button dropdown using the current root
-as the trigger label and the other available roots as PATCH actions:
+The same accessible roots can sit in three places. Each one submits the existing
+switch update (`PATCH` `root_switch` with `root_recording_id` and a sanitized
+`return_to`). Recording Studio Accessible, `ScopeContext`, and `SwitchRoot` still
+decide which roots are allowed.
+
+On its own, a FlatPack dropdown labelled with the current root. The menu items
+switch to the other accessible roots:
 
 ```erb
-<%= recording_studio_root_switch_dropdown(style: :ghost, size: :md) %>
+<%= recording_studio_root_switch_dropdown(style: :ghost, size: :md, placement: :bottom_right) %>
 ```
 
-The dropdown is built for a fast feel:
+Inside a host dropdown, render the list. The gem wraps the rows in
+`FlatPack::Menu::Collapse`. The header is the current root, and the rows switch
+to the others. FlatPack dropdown slots only accept a link or a bare button, so
+pass the rendered list in as menu HTML:
 
-- clicking an option updates the trigger label immediately and disables the control while the request is in flight
-- forms submit with Turbo Drive when Turbo is loaded in the host app
-- load the gem Stimulus controller via importmap (see install notes) so optimistic feedback is registered
+```erb
+<% menu_html = safe_join([
+  render(FlatPack::Button::DropdownItem::Component.new(text: "Rename", icon: "pencil", type: "button")),
+  render_recording_studio_root_switch_list
+]) %>
+<%= render HostMenu.new(text: "Actions", style: :secondary, menu_html: menu_html) %>
+```
+
+`recording_studio_root_switch_list_for` returns that list component when you need
+the object instead of rendered HTML.
+
+Inside a collapsing button group, pass the dropdown component. On a phone the
+group asks it for `menu_row`, which is the same collapse:
+
+```erb
+<%= render FlatPack::ButtonGroup::Component.new(collapse: :menu) do |group| %>
+  <% group.button(recording_studio_root_switch_for(style: :secondary, size: :md)) %>
+  <% group.button(FlatPack::Button::Component.new(text: "Invite", style: :secondary, size: :md)) %>
+<% end %>
+```
+
+`register_page_nav component: recording_studio_root_switch_for, role: :secondary`
+and `page_nav_button_group(styles:, from:, collapse: :menu)` use that same
+component. FlatPack opens and closes the dropdown. Load Turbo so the switch
+uses Turbo Drive.
+
+`Menu::Collapse` text renders at 16px while a host menu item is 14px. That
+comes from FlatPack. This gem does not override it.
 
 If you want to return the user to the page that launched the switcher, pass a `return_to`
 param when linking to the mounted page and set `config.after_switch_redirect` to prefer that
@@ -871,6 +938,7 @@ The dummy app in `test/dummy/` demonstrates:
 - Devise authentication with `Current.actor`
 - multiple accessible workspace roots
 - two scopes (`all_workspaces` and `client_workspaces`)
+- `/placements` shows the dropdown, the host-menu list, and a collapsing button group
 - per-device persistence through the encrypted cookie-backed device key
 - fallback behavior when a persisted selection is no longer valid
 - Accessible `v0.11.1` wiring: 0.8–0.11 migrations (string `role`,
@@ -914,8 +982,9 @@ If dummy app boot, migrations, or assets change, also validate the dummy app flo
 - no mutation of the RecordingStudio graph when switching roots
 - no automatic global query scoping across the host app
 
-The dedicated mounted page remains the primary switcher. A compact FlatPack
-dropdown helper is also available for host chrome that needs an inline switcher.
+The dedicated mounted page remains the primary switcher. Host chrome can also
+render the dropdown, drop the list into its own menu, or place the dropdown
+component in a collapsing FlatPack button group.
 
 ## Documentation
 

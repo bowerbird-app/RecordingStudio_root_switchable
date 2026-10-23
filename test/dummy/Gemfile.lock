@@ -47,10 +47,10 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/flatpack.git
-  revision: 20a17d7dcb76686ea5e5964dd6483a455b2a32d6
-  tag: v0.1.198
+  revision: 3d8f939114a2e3e88af95b15433de7b8fe32d339
+  tag: v0.1.305
   specs:
-    flat_pack (0.1.198)
+    flat_pack (0.1.305)
       pagy (~> 9.0)
       rails (>= 7.1, < 9)
       tailwind_merge (~> 0.13)
@@ -59,8 +59,8 @@ GIT
 PATH
   remote: ../..
   specs:
-    recording_studio_root_switchable (0.9.8)
-      flat_pack
+    recording_studio_root_switchable (0.10.0)
+      flat_pack (>= 0.1.304)
       rails (~> 8.1.0)
       recording_studio (~> 4.1)
       recording_studio_accessible (~> 0.18)
@@ -389,7 +389,7 @@ GEM
       ffi (~> 1.12)
       logger
     securerandom (0.4.1)
-    sin_lru_redux (2.5.2)
+    sin_lru_redux (2.5.3)
     solid_cable (3.0.12)
       actioncable (>= 7.2)
       activejob (>= 7.2)
@@ -551,7 +551,7 @@ CHECKSUMS
   ffi (1.17.2-x86_64-darwin) sha256=981f2d4e32ea03712beb26e55e972797c2c5a7b0257955d8667ba58f2da6440e
   ffi (1.17.2-x86_64-linux-gnu) sha256=05d2026fc9dbb7cfd21a5934559f16293815b7ce0314846fee2ac8efbdb823ea
   ffi (1.17.2-x86_64-linux-musl) sha256=97c0eb3981414309285a64dc4d466bd149e981c279a56371ef811395d68cb95c
-  flat_pack (0.1.198)
+  flat_pack (0.1.305)
   fugit (1.12.1) sha256=5898f478ede9b415f0804e42b8f3fd53f814bd85eebffceebdbc34e1107aaf68
   globalid (1.4.0) sha256=037f12fbf1d9d7a014d501c2d5c77356fd4ddd96d7a7991d6700bba96706f427
   i18n (1.15.2) sha256=00f9eb62412fe593b2a65a97daa75300d37abb8f7202ec748e94b6d46a9dd1b5
@@ -624,7 +624,7 @@ CHECKSUMS
   recording_studio_accessible (0.18.0)
   recording_studio_cache (0.5.0)
   recording_studio_metrics (0.6.1)
-  recording_studio_root_switchable (0.9.8)
+  recording_studio_root_switchable (0.10.0)
   recording_studio_trashable (0.11.0)
   regexp_parser (2.11.3) sha256=ca13f381a173b7a93450e53459075c9b76a10433caadcb2f1180f2c741fc55a4
   reline (0.7.0) sha256=5b012d8e55dbf9d450f12bde2cf7d15ff546ae80b3f8f3b30e570d431815583d
@@ -637,7 +637,7 @@ CHECKSUMS
   ruby-progressbar (1.13.0) sha256=80fc9c47a9b640d6834e0dc7b3c94c9df37f08cb072b7761e4a71e22cff29b33
   ruby-vips (2.2.5) sha256=f3c547a172c36ba26b8614c809f5823bc6199623ec6204ec7c3bce29037f7758
   securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1
-  sin_lru_redux (2.5.2) sha256=feed104c943afaeeecb1ad83f3f63562088b9785a816625c32b2305eccbd9963
+  sin_lru_redux (2.5.3) sha256=d9bcc184537cb0781cccfb283a18d36c5b820cf811b2637b398b55e98f4cecbd
   solid_cable (3.0.12) sha256=a168a54731a455d5627af48d8441ea3b554b8c1f6e6cd6074109de493e6b0460
   solid_cache (1.0.10) sha256=bc05a2fb3ac78a6f43cbb5946679cf9db67dd30d22939ededc385cb93e120d41
   solid_queue (1.2.4) sha256=bb60f9552a969ac377d87601b0ff6a088f5e6f20b0cbbe3844a59d022cac0e4b

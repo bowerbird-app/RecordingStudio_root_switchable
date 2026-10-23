@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-23
+
+Hosts can put the same root list in their own dropdown and in a FlatPack
+button group that collapses to a menu.
+
+### Added
+- `RecordingStudioRootSwitchable::RootSwitch::MenuRows` builds the current root
+  and the other accessible roots. The list comes from the request resolution,
+  which already applied `ScopeContext` and Recording Studio Accessible.
+  `return_to` still goes through `RedirectSanitizer`. Each other root submits
+  the existing switch update.
+- `RootSwitch::DropdownComponent`, a FlatPack `Button::Dropdown` labelled with
+  the current root. `recording_studio_root_switch_dropdown` renders it.
+  `recording_studio_root_switch_for` returns it for a button group or
+  `register_page_nav`.
+- `menu_row` on that dropdown, so `FlatPack::ButtonGroup` with `collapse: :menu`
+  gets a `FlatPack::Menu::Collapse` (header = current root, rows = the other roots).
+- `RootSwitch::ListComponent` for a host dropdown, plus
+  `recording_studio_root_switch_list_for` and
+  `render_recording_studio_root_switch_list`. The gem wraps the rows in the
+  collapse so the host does not.
+
+### Changed
+- Runtime dependency `flat_pack` is `>= 0.1.304`. Development and the dummy app
+  pin tag `v0.1.305`.
+- The mounted switch page closes with `FlatPack::PageNav` `with_close`. FlatPack
+  0.1.304 removed `anchor_label` and `anchor_url`.
+- The install generator also scans this gem's `app/components` for Tailwind.
+
+### Removed
+- Stimulus controller `recording-studio-root-switchable--root-switch-dropdown`,
+  the dropdown partial, and the gem importmap pin. FlatPack opens and closes
+  the menu.
+
+### Upgrade Notes
+- Bump to `0.10.0`. No migration.
+- Require `flat_pack` >= 0.1.304 (tag `v0.1.305`).
+- Remove the root-switch Stimulus pin and
+  `eagerLoadControllersFrom("controllers/recording_studio_root_switchable", application)`.
+- Pass `placement:` instead of `position:` on the dropdown helper.
+- Add the gem `app/components` paths to the host Tailwind `@source` list. New
+  installs get them from the generator.
+- `Menu::Collapse` text renders at 16px. Host menu items stay 14px. That size
+  comes from FlatPack. This gem does not override it.
+
 ## [0.9.8] - 2026-10-23
 
 CI runs the whole dummy app suite, and SimpleCov output stays untracked.
@@ -393,7 +438,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.8...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.8...v0.10.0
 [0.9.8]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.7...v0.9.8
 [0.9.7]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.6...v0.9.7
 [0.9.6]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.4...v0.9.6

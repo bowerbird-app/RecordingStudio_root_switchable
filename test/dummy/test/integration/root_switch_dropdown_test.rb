@@ -21,32 +21,15 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
         }
 
     assert_response :success
+    assert_select "[data-controller='recording-studio-root-switchable--root-switch-dropdown']", count: 0
 
-    assert_select "[data-controller='recording-studio-root-switchable--root-switch-dropdown']" do
-      assert_select "[data-controller='flat-pack--button-dropdown']" do
-        assert_select "[data-flat-pack--button-dropdown-target='trigger']", text: /Studio Workspace/
-        assert_select "[role='menuitem'][form^='root-switch-dropdown-all_roots-']", text: /Client Alpha/
-        assert_select(
-          "[role='menuitem'][data-action='click->recording-studio-root-switchable--root-switch-dropdown#select']",
-          minimum: 1
-        )
-      end
+    assert_select "[data-controller='flat-pack--button-dropdown']" do
+      assert_select "[data-flat-pack--button-dropdown-target='trigger']", text: /Studio Workspace/
+      assert_select "button[role='menuitem']", text: /Client Alpha/
     end
 
-    assert_select "form.hidden[id^='root-switch-dropdown-all_roots-'][data-turbo='false']", count: 0
-    assert_select "form.hidden[id^='root-switch-dropdown-all_roots-'] input[name='root_switch[root_recording_id]']",
-                  minimum: 1
-    assert_select "form.hidden[id^='root-switch-dropdown-all_roots-'] input[name='root_switch[return_to]'][value='/config']",
-                  minimum: 1
-  end
-
-  test "dropdown helper resolves none selected to literal English" do
-    helper = Object.new.extend(RecordingStudioRootSwitchable::RootSwitchDropdownHelper)
-    helper.define_singleton_method(:t) { |key, **options| I18n.t(key, **options) }
-
-    I18n.with_locale(:en) do
-      label = helper.send(:recording_studio_root_switch_dropdown_label, scope: Object.new, root_recording: nil)
-      assert_equal "None selected", label
-    end
+    assert_select "form[action*='root_switch'] input[name='root_switch[root_recording_id]']", minimum: 1
+    assert_select "form[action*='root_switch'] input[name='root_switch[return_to]'][value='/config']", minimum: 1
+    assert_select "form[action*='root_switch'] input[name='_method'][value='patch']", minimum: 1
   end
 end

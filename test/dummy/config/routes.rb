@@ -25,6 +25,7 @@ Rails.application.routes.draw do
   get "switch_log", to: "home#switch_log"
    get "persistence", to: redirect("/switch_log")
   get "method", to: "home#method_docs"
+  get "placements", to: "home#placements"
   get "gem_views", to: "home#gem_views"
   get "gem_views/*view_path", to: "home#gem_view", as: :gem_view
   root "home#index"

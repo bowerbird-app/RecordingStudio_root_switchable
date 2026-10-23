@@ -28,6 +28,9 @@ class HomeController < ApplicationController
     render :methods
   end
 
+  def placements
+  end
+
   def gem_views
     @gem_views = gem_view_entries
   end
