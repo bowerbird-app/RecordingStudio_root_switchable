@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-10-26
+
+The mounted switch page renders on FlatPack 0.1.311.
+
+### Changed
+- The switch page card passes `background: :default`, `border: :default`, and
+  `shadow: :none`. That is the FlatPack 0.1.311 spelling of the old
+  `style: :default` card: the default fill, a 1px border, and no shadow.
+  `Card` `style:` raises `ArgumentError` on this FlatPack.
+- The close control stays `PageNav` `with_close`. `anchor_label:` raises on
+  0.1.311. `anchor_url:` alone does not, and it also does not draw the close
+  control.
+- Development and the dummy app pin FlatPack tag `v0.1.311`. The runtime floor
+  stays `flat_pack >= 0.1.304`. `with_close`, `background:`, `border:`, and
+  `shadow: :none` already exist there, so this page does not need a 0.1.311-only
+  API.
+- Lockfiles move `view_component` from 4.12.0 to 4.19.0. FlatPack 0.1.311
+  requires `view_component >= 4.14, < 5`. 4.12.0 is GHSA-8qw7-6phv-7q6p (a
+  reused component instance could leak slot content). A host that stays on
+  `flat_pack` < 0.1.311 keeps `view_component` `~> 4.12.0` through FlatPack
+  itself (that is the constraint on 0.1.304 through 0.1.310), so it cannot
+  take that fix until it bumps `flat_pack` to >= 0.1.311.
+- Lockfiles already resolved `crass` 1.0.8 (GHSA-pq4g-8rxf-4g29). A
+  conservative lock update left that pin in place. `Gemfile.lock` and
+  `test/dummy/Gemfile.lock` both resolve `crass (1.0.8)` and
+  `view_component (4.19.0)`. There is no other lockfile.
+
+### Upgrade Notes
+- Bump to `0.10.1`. No migration.
+- Hosts can stay on `flat_pack` >= 0.1.304. Move to tag `v0.1.311` when you
+  want that release. That tag requires `view_component` >= 4.14 and < 5
+  (this repo locks 4.19.0). Render each component instance once.
+- A copied switch page that still passes `PageNav` `anchor_label:` or `Card`
+  `style:` will raise. Use `with_close(href:, tooltip:)` and
+  `background:` / `border:` / `shadow:`.
+- On the rounded theme, a card that omitted `border:` and `shadow:` followed
+  the theme edge (no border, a soft shadow). This page now keeps the old
+  `style: :default` edge: 1px border, no shadow.
+- FlatPack 0.1.310 stopped putting `h-full` on `Card`. This page does not add
+  it back. The card sits in the show template's `flex flex-col` wrapper, which
+  has no fixed height, and the default blank layout's `main` is a flex row
+  with no fixed height. `h-full` would not change the painted height.
+- A host on `flat_pack` < 0.1.311 stays on `view_component` `~> 4.12.0` via
+  FlatPack's own dependency. That range cannot install the GHSA-8qw7-6phv-7q6p
+  fix. Bump `flat_pack` to >= 0.1.311 to take `view_component` >= 4.14, < 5.
+
 ## [0.10.0] - 2026-10-23
 
 Hosts can put the same root list in their own dropdown and in a FlatPack
