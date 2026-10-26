@@ -76,6 +76,22 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes gemspec_source, 'spec.add_dependency "flat_pack", ">= 0.1.304"'
   end
 
+  def test_development_pins_flat_pack_0_1_311_and_patched_lockfile_gems
+    root = File.expand_path("..", __dir__)
+
+    assert_includes File.read(File.join(root, "Gemfile")), 'tag: "v0.1.311"'
+    assert_includes File.read(File.join(root, "test/dummy/Gemfile")), 'tag: "v0.1.311"'
+
+    %w[Gemfile.lock test/dummy/Gemfile.lock].each do |relative|
+      lock = File.read(File.join(root, relative))
+
+      assert_includes lock, "flat_pack (0.1.311)", relative
+      assert_includes lock, "tag: v0.1.311", relative
+      assert_includes lock, "view_component (4.19.0)", relative
+      assert_includes lock, "crass (1.0.8)", relative
+    end
+  end
+
   def test_gem_ships_blank_layout_template
     layout_path = File.expand_path("../app/views/layouts/recording_studio_root_switchable/blank.html.erb", __dir__)
     layout_source = File.read(layout_path)
@@ -111,6 +127,11 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes view_source, "@page_copy.fetch(:persistence_hint).presence"
     refute_includes view_source, "<p class=\"text-sm text-(--surface-muted-content-color)\"><%= @page_copy.fetch(:persistence_hint) %></p>"
     assert_includes view_source, "FlatPack::Card::Component"
+    card_call = view_source[/FlatPack::Card::Component\.new\(.*?\) do/m]
+    assert_includes card_call, "background: :default"
+    assert_includes card_call, "border: :default"
+    assert_includes card_call, "shadow: :none"
+    refute_includes card_call, "style:"
     assert_includes view_source, "card.body do"
     assert_includes view_source, "FlatPack::List::Component"
     assert_includes view_source, "FlatPack::List::Item.new"

@@ -33,7 +33,12 @@
       <p class="text-sm text-(--surface-muted-content-color)"><%= persistence_hint %></p>
     <% end %>
 
-    <%= render FlatPack::Card::Component.new(class: "w-full") do |card| %>
+    <%= render FlatPack::Card::Component.new(
+      background: :default,
+      border: :default,
+      shadow: :none,
+      class: "w-full"
+    ) do |card| %>
       <% card.body do %>
         <%= render FlatPack::List::Component.new(selectable: true, class: "w-full") do %>
           <% @available_roots.each do |root_recording| %>

@@ -40,6 +40,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Studio Workspace"
     assert_includes response.body, "Client Alpha"
     assert_operator response.body.index("Studio Workspace"), :<, response.body.index("Client Alpha")
+    assert_flatpack_0_1_311_switch_page(response.body)
   end
 
   test "root switch empty state renders configured English copy" do
@@ -164,6 +165,26 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  # style: :default on FlatPack 0.1.290 was the default fill plus border: :default
+  # and shadow: :none. 0.1.311 names the fill background: and rejects style:.
+  def assert_flatpack_0_1_311_switch_page(body)
+    assert_equal "0.1.311", FlatPack::VERSION
+
+    assert_select "nav.flat-pack-page-nav a[aria-label='Close'][href='/']", minimum: 1
+
+    cards = Nokogiri::HTML(body).css(".fp-card[data-background='default']")
+    assert_equal 1, cards.size
+    classes = cards.first["class"].split
+
+    assert_includes classes, "[background:var(--card-background-default)]"
+    assert_includes classes, "border"
+    assert_includes classes, "border-[var(--card-border-color)]"
+    assert_includes classes, "shadow-none"
+    assert_includes classes, "w-full"
+    refute_includes classes, "shadow-[var(--card-shadow)]"
+    refute_includes classes, "border-solid"
+  end
 
   def root_recording_for(workspace_name)
     RecordingStudio.root_recording_for(Workspace.find_by!(name: workspace_name))
