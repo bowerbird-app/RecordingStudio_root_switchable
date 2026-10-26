@@ -26,11 +26,17 @@ tag `v0.1.311`.
 The mounted switch page still closes with `PageNav` `with_close`. `anchor_label:`
 raises on FlatPack 0.1.311. The list sits in a card with `background: :default`,
 `border: :default`, and `shadow: :none` (the old `style: :default` card: default
-fill, 1px border, no shadow).
+fill, 1px border, no shadow). FlatPack 0.1.310 stopped putting `h-full` on
+`Card`. This page does not add it back. The card sits in the show template's
+`flex flex-col` wrapper, which has no fixed height, and the default blank
+layout's `main` is a flex row with no fixed height, so `h-full` would not
+change the painted height.
 
 FlatPack 0.1.311 requires `view_component` >= 4.14, < 5. These lockfiles resolve
 `view_component` 4.19.0 (GHSA-8qw7-6phv-7q6p). `crass` stays 1.0.8
-(GHSA-pq4g-8rxf-4g29). This gem does not depend on either gem directly.
+(GHSA-pq4g-8rxf-4g29). This gem does not depend on either gem directly. A host
+on `flat_pack` < 0.1.311 stays on `view_component` `~> 4.12.0` through FlatPack
+itself, so it cannot take that fix until it bumps `flat_pack` to >= 0.1.311.
 
 ```ruby
 gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.311"
