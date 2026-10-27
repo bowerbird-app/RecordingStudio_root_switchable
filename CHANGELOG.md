@@ -11,11 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 The mounted switch page uses the Recording Studio 6.1 default layout.
 
+### Added
+- A scope can set `new_root_path` and `new_root_label`. The path is a String or a callable that receives `controller:`, `actor:`, `device_key:`, `scope:`, `current_root_recording:`, and `return_to:`. `nil`, `false`, a raised error, or an unsafe URL hides the link. A safe path gains `return_to` when it does not already have one.
+- The dropdown, the collapsed list, and `recording_studio_new_root_path` use that path. Pass `new_root_path: false` to hide it on one placement. The switch page registers it with `register_page_nav` when the path is present.
+- The dropdown trigger stays enabled when the path is present, including when the actor has one workspace or none.
+- Page copy key `new_root_action_label` and `recording_studio.root_switchable.dropdown.new_root` default to "New workspace".
+
 ### Changed
 - Requires `recording_studio` >= 6.1.0 (git tag `v6.1.0`) and `flat_pack` >= 0.1.315. Development and the dummy app pin Flatpack commit `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`FlatPack::VERSION` `0.1.319`). `view_component` is `>= 4.14, < 5`. These lockfiles resolve `4.19.0`.
 - `config.layout` is checked by `RecordingStudio::Layout.accept`. `nil` follows `RecordingStudio.configuration.layout`, then `"recording_studio/default_layout"`. `false` renders no layout. A String is a layout name. A callable is invoked as `call(controller:)` and returns a String, `nil`, or `false`.
 - `RecordingStudioRootSwitchable::ApplicationController` calls `recording_studio_layout`. The gem blank layout is removed.
-- The switch page sets `content_for :title` and, when the subtitle is present, `content_for :subtitle`. Close uses `flat_pack_page_nav`. The default layout draws the single heading, the top nav, and flash.
+- The switch page sets `content_for :title` and, when the subtitle is present, `content_for :subtitle`. Close uses `flat_pack_page_nav`. The default layout draws the single heading, the top nav, and flash. The switch card spans the layout width. `mx-auto` and `max-w-3xl` are gone from that wrapper.
 - The root-switch dropdown uses FlatPack's dropdown trigger. FlatPack 0.1.319 removed `button_attributes` from `Button::Dropdown`. `menu_row` is unchanged.
 
 ### Upgrade Notes
@@ -25,6 +31,7 @@ The mounted switch page uses the Recording Studio 6.1 default layout.
 - Replace `config.layout = :some_method` and any callable that takes a positional argument or a keyword other than `controller:`. `RecordingStudio::Layout.accept` raises `ArgumentError` for those values.
 - Move a copied heading into `content_for :title` (and `content_for :subtitle` when the page has one). Put back and close on `flat_pack_page_nav`. Put a page action on `register_page_nav`.
 - A host layout that replaces the default has to render `:title`, flash, and `flat_pack_page_nav_tag`. Load `flat_pack/variables`, `flat_pack/application`, and `flat_pack/rich_text` before the host Tailwind sheet.
+- `new_root_path` defaults to `nil`. Existing scopes gain no create link until you set it. Return `nil` or `false` from the callable when the actor cannot create a root.
 - If a sibling gemspec still requires `recording_studio` below 6, load `test/support/widen_recording_studio_requirement.rb` before Bundler evaluates gemspecs. Accessible `v0.18.0`, Cache `v0.5.0`, Metrics `v0.6.1`, and Trashable `v0.11.0` need that hook.
 
 ## [0.10.1] - 2026-10-26

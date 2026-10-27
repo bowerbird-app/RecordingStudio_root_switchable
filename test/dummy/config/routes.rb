@@ -19,6 +19,7 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
+  get "workspaces/new", to: "workspaces#new", as: :new_workspace
   get "setup", to: "home#setup"
   get "config", to: "home#configuration"
   get "usage", to: "home#usage"

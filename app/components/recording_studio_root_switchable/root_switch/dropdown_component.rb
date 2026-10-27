@@ -12,7 +12,7 @@ module RecordingStudioRootSwitchable
         system_arguments.delete(:disabled)
         super(
           text: menu_rows.current_label,
-          disabled: menu_rows.switch_rows.empty?,
+          disabled: menu_rows.switch_rows.empty? && menu_rows.new_root_path.blank?,
           **system_arguments
         )
       end

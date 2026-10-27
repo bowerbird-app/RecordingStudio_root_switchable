@@ -26,7 +26,7 @@ class RootSwitchMenuRowsTest < Minitest::Test
       selected: nil,
       form_action: "/switch",
       return_to: "/placements",
-      none_selected_label: "None selected"
+      options: menu_options
     )
 
     assert_equal "None selected", rows.current_label
@@ -40,7 +40,7 @@ class RootSwitchMenuRowsTest < Minitest::Test
       selected: { id: "hidden", label: "Hidden Workspace" },
       form_action: "/switch",
       return_to: "/placements",
-      none_selected_label: "None selected"
+      options: menu_options
     )
 
     assert_equal "Hidden Workspace", rows.current_label
@@ -71,7 +71,7 @@ class RootSwitchMenuRowsTest < Minitest::Test
       selected: nil,
       form_action: "/switch",
       return_to: "/placements",
-      none_selected_label: "None selected"
+      options: menu_options
     )
 
     assert_nil rows
@@ -89,7 +89,15 @@ class RootSwitchMenuRowsTest < Minitest::Test
       selected: { id: "studio", label: "Studio" },
       form_action: "/recording_studio_root_switchable/v1/root_switch?scope=all_roots",
       return_to: return_to,
-      none_selected_label: "None selected"
+      options: menu_options
+    )
+  end
+
+  def menu_options(new_root_path: nil, new_root_label: nil)
+    RecordingStudioRootSwitchable::RootSwitch::MenuRows::Options.new(
+      none_selected_label: "None selected",
+      new_root_path: new_root_path,
+      new_root_label: new_root_label
     )
   end
 end

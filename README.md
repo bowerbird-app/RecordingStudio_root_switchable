@@ -13,6 +13,7 @@ It lets a host app resolve and persist a current root recording per actor, per d
 - helper APIs for `current_root`, `current_root_recording`, `current_root_recordable`, and `current_root_scope_key`
 - a dedicated FlatPack-powered root-switch page
 - a FlatPack dropdown, a host-menu list, and a button-group `menu_row` for the same accessible roots
+- an optional host link for creating a root, from `new_root_path` on a scope
 - default access integration through `RecordingStudioAccessible`
 - site-wide last-used selection metrics on the operations API (`:root_selections`)
 
@@ -33,7 +34,21 @@ string, or a positional parameter raises `ArgumentError`.
 
 The gem blank layout is gone. The switch page sets `content_for :title` from
 page copy and calls `flat_pack_page_nav` for close. The default layout draws
-one heading, the top nav, and flash.
+one heading, the top nav, and flash. The switch card uses the full width of
+that layout.
+
+A scope may link to a host form that creates a root. Leave `new_root_path`
+unset and the link stays hidden. A String is used as the path. A callable is
+invoked with `controller:`, `actor:`, `device_key:`, `scope:`,
+`current_root_recording:`, and `return_to:`. Return `nil` or `false` when this
+actor cannot create a root. The gem drops any path that is not a same-origin
+relative path, then adds `return_to` when the path does not already include it.
+`new_root_label` is the link text. A blank label uses page copy
+`new_root_action_label`, then the English "New workspace".
+
+The dropdown, the collapsed list, and the switch page top nav share that path.
+`recording_studio_new_root_path(scope:, return_to:)` returns it for a host link
+of your own. Pass `new_root_path: false` to hide the link on one dropdown or list.
 
 ```ruby
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.1.0"
@@ -624,6 +639,13 @@ RecordingStudioRootSwitchable.configure do |config|
       RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
     end
     scope.default_root = ->(roots:, **) { roots.first }
+    # Optional. nil hides the create link. A callable can return nil or false
+    # for an actor who cannot create a root. Unsafe URLs are dropped.
+    # scope.new_root_path = ->(actor:, controller:, **) do
+    #   next if actor.blank?
+    #   controller.main_app.new_workspace_path
+    # end
+    # scope.new_root_label = "New workspace"
   end
 end
 ```
@@ -960,10 +982,13 @@ switch update (`PATCH` `root_switch` with `root_recording_id` and a sanitized
 decide which roots are allowed.
 
 On its own, a FlatPack dropdown labelled with the current root. The menu items
-switch to the other accessible roots:
+switch to the other accessible roots. When the scope allows a new root, the
+menu also links to that path, and the trigger stays enabled with one workspace
+or with none.
 
 ```erb
 <%= recording_studio_root_switch_dropdown(style: :ghost, size: :md, placement: :bottom_right) %>
+<%= recording_studio_new_root_path(return_to: request.fullpath) %>
 ```
 
 Inside a host dropdown, render the list. The gem wraps the rows in

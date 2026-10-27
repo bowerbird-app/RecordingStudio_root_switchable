@@ -68,6 +68,27 @@ module RecordingStudioRootSwitchable
       @page_copy = page_copy
       @safe_return_to = safe_return_to_param
       @return_anchor_url = return_anchor_url
+      @new_root_path = new_root_path_for_page
+      @new_root_label = new_root_label_for_page
+    end
+
+    def new_root_path_for_page
+      @scope.new_root_path_for(**new_root_hook_arguments)
+    end
+
+    def new_root_label_for_page
+      @scope.new_root_label_for(**new_root_hook_arguments, fallback: @page_copy[:new_root_action_label])
+    end
+
+    def new_root_hook_arguments
+      {
+        controller: self,
+        actor: RecordingStudio::RootSwitchable::Current.actor,
+        device_key: RecordingStudio::RootSwitchable::Current.device_key,
+        scope: @scope,
+        current_root_recording: current_root_recording,
+        return_to: @safe_return_to
+      }
     end
 
     def prioritize_selected_root(available_roots, selected_root)

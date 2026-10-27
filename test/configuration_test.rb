@@ -405,6 +405,7 @@ class ConfigurationTest < Minitest::Test
       assert_equal "Current", copy.fetch(:selected_badge)
       assert_equal "Nothing to switch", copy.fetch(:empty_state_title)
       assert_equal "There are no options available right now.", copy.fetch(:empty_state_body)
+      assert_equal "New workspace", copy.fetch(:new_root_action_label)
     end
   end
 

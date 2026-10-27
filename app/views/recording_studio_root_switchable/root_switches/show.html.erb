@@ -7,8 +7,11 @@
   anchor_href: @return_anchor_url,
   anchor_tooltip: t("recording_studio.root_switchable.navigation.close", default: "Close")
 ) %>
+<% if @new_root_path.present? %>
+  <% register_page_nav(@new_root_label, @new_root_path, role: :primary, icon: "plus") %>
+<% end %>
 
-<div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
+<div class="flex w-full flex-col gap-6">
   <% if @available_roots.empty? %>
     <%= render FlatPack::Alert::Component.new(
       style: :info,

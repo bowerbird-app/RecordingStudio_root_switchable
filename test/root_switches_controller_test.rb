@@ -10,7 +10,15 @@ require_relative "../app/controllers/recording_studio_root_switchable/applicatio
 require_relative "../app/controllers/recording_studio_root_switchable/root_switches_controller"
 
 class RootSwitchesControllerTest < Minitest::Test
-  Scope = Struct.new(:key)
+  Scope = Struct.new(:key) do
+    def new_root_path_for(**)
+      nil
+    end
+
+    def new_root_label_for(**)
+      nil
+    end
+  end
   Result = Struct.new(:root_recording)
 
   def setup

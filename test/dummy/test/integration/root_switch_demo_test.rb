@@ -41,7 +41,45 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Studio Workspace"
     assert_includes response.body, "Client Alpha"
     assert_operator response.body.index("Studio Workspace"), :<, response.body.index("Client Alpha")
+    refute_includes response.body, "max-w-3xl"
+    assert_select "a[href^='/workspaces/new']", text: "New workspace", minimum: 1
     assert_flatpack_0_1_311_switch_page(response.body)
+  end
+
+  test "client scope omits the new workspace action" do
+    sign_in(@admin)
+
+    get "/recording_studio_root_switchable/v1/root_switch",
+        params: { scope: "client_workspaces" }
+
+    assert_response :success
+    refute_includes response.body, "/workspaces/new"
+  end
+
+  test "new workspace page is the host create form" do
+    sign_in(@admin)
+
+    get "/workspaces/new", params: { return_to: "/placements" }
+
+    assert_response :success
+    assert_select "h1", text: "New workspace"
+    assert_includes response.body, "does not persist a workspace"
+    assert_select "a[href='/placements']"
+  end
+
+  test "dropdown stays enabled when one workspace can create another" do
+    sign_in(@admin)
+    scope = RecordingStudioRootSwitchable.configuration.scopes.fetch("all_roots")
+    original_available_roots = scope.available_roots
+    scope.available_roots = ->(**) { [ root_recording_for("Studio Workspace") ] }
+
+    get "/"
+
+    assert_response :success
+    assert_select "a[role='menuitem'][href*='/workspaces/new']", text: /New workspace/, minimum: 1
+    assert_select "button[disabled]", count: 0
+  ensure
+    scope.available_roots = original_available_roots if scope
   end
 
   test "root switch empty state renders configured English copy" do

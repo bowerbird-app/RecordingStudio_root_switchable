@@ -45,6 +45,7 @@ module RecordingStudioRootSwitchable
       persistence_hint: "",
       selected_badge: "Current",
       switch_action_label: "Switch",
+      new_root_action_label: "New workspace",
       empty_state_title: "Nothing to switch",
       empty_state_body: "There are no options available right now."
     }.freeze

@@ -15,6 +15,18 @@ class RootSwitchContextTest < Minitest::Test
         "hidden" => "Hidden Workspace"
       }.fetch(recording.id)
     end
+
+    def new_root_path_for(**)
+      nil
+    end
+
+    def new_root_label_for(**)
+      "New workspace"
+    end
+
+    def page_copy
+      {}
+    end
   end
 
   def test_rows_come_from_the_resolution_available_roots

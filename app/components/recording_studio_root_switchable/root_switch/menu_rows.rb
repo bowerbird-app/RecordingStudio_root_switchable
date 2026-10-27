@@ -10,25 +10,37 @@ module RecordingStudioRootSwitchable
         end
       end
 
-      def self.build(entries:, selected:, form_action:, return_to:, none_selected_label:)
-        rows = build_rows(entries, selected&.fetch(:id))
-        return if nothing_to_show?(selected, rows)
+      Options = Data.define(:none_selected_label, :new_root_path, :new_root_label)
+      Override = Data.define(:path, :label) do
+        def self.from(path, label)
+          return if path.nil? && label.nil?
 
-        compose(rows, selected, form_action, return_to, none_selected_label)
+          new(path: path, label: label)
+        end
       end
 
-      def self.nothing_to_show?(selected, rows)
+      def self.build(entries:, selected:, form_action:, return_to:, options:)
+        rows = build_rows(entries, selected&.fetch(:id))
+        safe_new_root_path = RecordingStudioRootSwitchable::RedirectSanitizer.sanitize(options.new_root_path)
+        return if nothing_to_show?(selected, rows, safe_new_root_path)
+
+        compose(rows, selected, form_action, return_to, options.with(new_root_path: safe_new_root_path))
+      end
+
+      def self.nothing_to_show?(selected, rows, new_root_path = nil)
+        return false if new_root_path.present?
+
         selected&.fetch(:id).blank? && selected&.fetch(:label).blank? && rows.empty?
       end
       private_class_method :nothing_to_show?
 
-      def self.compose(rows, selected, form_action, return_to, none_selected_label)
+      def self.compose(rows, selected, form_action, return_to, options)
         new(
           rows: order_current_first(rows),
           selected_label: rows.any?(&:current?) ? nil : selected&.fetch(:label),
           form_action: form_action,
           return_to: RecordingStudioRootSwitchable::RedirectSanitizer.sanitize(return_to),
-          none_selected_label: none_selected_label
+          options: options
         )
       end
       private_class_method :compose
@@ -57,15 +69,17 @@ module RecordingStudioRootSwitchable
       end
       private_class_method :order_current_first
 
-      def initialize(rows:, selected_label:, form_action:, return_to:, none_selected_label:)
+      def initialize(rows:, selected_label:, form_action:, return_to:, options:)
         @rows = rows
         @selected_label = selected_label
         @form_action = form_action
         @return_to = return_to
-        @none_selected_label = none_selected_label
+        @none_selected_label = options.none_selected_label
+        @new_root_path = options.new_root_path
+        @new_root_label = options.new_root_label
       end
 
-      attr_reader :rows, :form_action, :return_to
+      attr_reader :rows, :form_action, :return_to, :new_root_path
 
       def current_label
         current = rows.find(&:current?)
@@ -77,6 +91,13 @@ module RecordingStudioRootSwitchable
 
       def switch_rows
         rows.reject(&:current?)
+      end
+
+      def new_root_label
+        @new_root_label.presence || I18n.t(
+          "recording_studio.root_switchable.dropdown.new_root",
+          default: "New workspace"
+        )
       end
 
       def form_params_for(row)
