@@ -5,8 +5,10 @@ RecordingStudioRootSwitchable.configure do |config|
     Current.actor || controller.current_user
   end
 
-  # Optional: render the mounted page inside a host layout instead of the gem blank layout.
-  # config.layout = :application_layout
+  # Optional. nil follows RecordingStudio.configuration.layout, then
+  # "recording_studio/default_layout". false renders with no layout.
+  # A callable is invoked as call(controller:) and returns a String, nil, or false.
+  # config.layout = "application"
 
   # Secure cookies are enabled automatically in production. Prefer HTTPS in production hosts.
   config.device_key_cookie_options = config.device_key_cookie_options.merge(secure: Rails.env.production?)

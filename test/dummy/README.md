@@ -6,7 +6,7 @@ This Rails app exists to validate RecordingStudioRootSwitchable in a real host a
 
 - Devise authentication with a seeded admin user
 - `Current.actor` wiring for Recording Studio events
-- Multiple declared RecordingStudio 4.1 root recordings
+- Multiple declared RecordingStudio 6.1 root recordings
 - Configured root-switch scopes (`all_workspaces`, `client_workspaces`, and `all_roots`)
 - A seeded non-workspace root (`Team`) to demonstrate `switchable_root_types` filtering
 - A seeded shared root (`MessageRoot`) that is never switchable

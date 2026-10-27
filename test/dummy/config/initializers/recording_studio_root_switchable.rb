@@ -1,5 +1,11 @@
 # frozen_string_literal: true
 
+new_workspace_path = lambda do |actor:, controller:, **|
+  next if actor.blank?
+
+  controller.main_app.new_workspace_path
+end
+
 RecordingStudioRootSwitchable.configure do |config|
   config.current_actor_resolver = lambda do |controller:|
     Current.actor || controller.current_user
@@ -27,6 +33,8 @@ RecordingStudioRootSwitchable.configure do |config|
       role = RecordingStudioAccessible.role_for(actor: actor, recording: recording)
       "#{recording.recordable.name} · access role #{role || "unknown"}"
     end
+    scope.new_root_path = new_workspace_path
+    scope.new_root_label = "New workspace"
   end
 
   config.scope :client_workspaces do |scope|
@@ -66,5 +74,7 @@ RecordingStudioRootSwitchable.configure do |config|
       role = RecordingStudioAccessible.role_for(actor: actor, recording: recording)
       "#{recording.recordable.class.name} · #{recording.recordable.try(:name) || recording.recordable.try(:title)} · role #{role || "unknown"}"
     end
+    scope.new_root_path = new_workspace_path
+    scope.new_root_label = "New workspace"
   end
 end

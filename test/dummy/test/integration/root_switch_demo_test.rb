@@ -33,14 +33,111 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
         }
 
     assert_response :success
-    assert_includes response.body, "<title>Recording Studio</title>"
-    assert_includes response.body, 'content="Recording Studio"'
+    assert_includes response.body, "<title>Switch</title>"
+    assert_includes response.body, 'data-recording-studio-default-layout="true"'
+    assert_equal 1, response.body.scan(/<h1\b/).size
     assert_includes response.body, "Switch"
     assert_includes response.body, "Current"
     assert_includes response.body, "Studio Workspace"
     assert_includes response.body, "Client Alpha"
     assert_operator response.body.index("Studio Workspace"), :<, response.body.index("Client Alpha")
+    refute_includes response.body, "max-w-3xl"
+    assert_select "a[href^='/workspaces/new']", text: "New workspace", minimum: 1
+    assert_select "a[href^='/workspaces/new'] svg[data-flat-pack--icon-name-value='plus']", minimum: 1
     assert_flatpack_0_1_311_switch_page(response.body)
+  end
+
+  test "client scope omits the new workspace action" do
+    sign_in(@admin)
+
+    get "/recording_studio_root_switchable/v1/root_switch",
+        params: { scope: "client_workspaces" }
+
+    assert_response :success
+    refute_includes response.body, "/workspaces/new"
+  end
+
+  test "new workspace page is the host create form" do
+    sign_in(@admin)
+
+    get "/workspaces/new", params: { return_to: "/placements" }
+
+    assert_response :success
+    assert_select "h1", text: "New workspace"
+    assert_includes response.body, "does not persist a workspace"
+    assert_select "a[href='/placements']"
+  end
+
+  test "dropdown stays enabled when one workspace can create another" do
+    sign_in(@admin)
+    scope = RecordingStudioRootSwitchable.configuration.scopes.fetch("all_roots")
+    original_available_roots = scope.available_roots
+    scope.available_roots = ->(**) { [ root_recording_for("Studio Workspace") ] }
+
+    get "/"
+
+    assert_response :success
+    assert_select "a[role='menuitem'][href*='/workspaces/new']", text: /New workspace/, minimum: 1
+    assert_select "a[role='menuitem'][href*='/workspaces/new'] svg[data-flat-pack--icon-name-value='plus']", minimum: 1
+    assert_select "button[disabled]", count: 0
+  ensure
+    scope.available_roots = original_available_roots if scope
+  end
+
+  test "placements list uses the default plus icon" do
+    sign_in(@admin)
+
+    get "/placements"
+
+    assert_response :success
+    assert_select(
+      "#root-switch-host-menu .fp-menu-collapse__items a[href*='/workspaces/new'] " \
+      "svg[data-flat-pack--icon-name-value='plus']",
+      minimum: 1
+    )
+  end
+
+  test "switch page uses a configured new root icon" do
+    sign_in(@admin)
+    scope = RecordingStudioRootSwitchable.configuration.scopes.fetch("all_workspaces")
+    original_icon = scope.new_root_icon
+    scope.new_root_icon = "folder"
+
+    get "/recording_studio_root_switchable/v1/root_switch", params: { scope: "all_workspaces" }
+
+    assert_response :success
+    assert_select "a[href^='/workspaces/new'] svg[data-flat-pack--icon-name-value='folder']", minimum: 1
+  ensure
+    scope.new_root_icon = original_icon if scope
+  end
+
+  test "switch page uses a callable new root icon" do
+    sign_in(@admin)
+    scope = RecordingStudioRootSwitchable.configuration.scopes.fetch("all_workspaces")
+    original_icon = scope.new_root_icon
+    scope.new_root_icon = ->(**) { "sparkles" }
+
+    get "/recording_studio_root_switchable/v1/root_switch", params: { scope: "all_workspaces" }
+
+    assert_response :success
+    assert_select "a[href^='/workspaces/new'] svg[data-flat-pack--icon-name-value='sparkles']", minimum: 1
+  ensure
+    scope.new_root_icon = original_icon if scope
+  end
+
+  test "switch page omits the icon when new_root_icon is false" do
+    sign_in(@admin)
+    scope = RecordingStudioRootSwitchable.configuration.scopes.fetch("all_workspaces")
+    original_icon = scope.new_root_icon
+    scope.new_root_icon = false
+
+    get "/recording_studio_root_switchable/v1/root_switch", params: { scope: "all_workspaces" }
+
+    assert_response :success
+    assert_select "a[href^='/workspaces/new']", text: "New workspace", minimum: 1
+    assert_select "a[href^='/workspaces/new'] svg", count: 0
+  ensure
+    scope.new_root_icon = original_icon if scope
   end
 
   test "root switch empty state renders configured English copy" do
@@ -169,7 +266,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
   # style: :default on FlatPack 0.1.290 was the default fill plus border: :default
   # and shadow: :none. 0.1.311 names the fill background: and rejects style:.
   def assert_flatpack_0_1_311_switch_page(body)
-    assert_equal "0.1.311", FlatPack::VERSION
+    assert_equal "0.1.319", FlatPack::VERSION
 
     assert_select "nav.flat-pack-page-nav a[aria-label='Close'][href='/']", minimum: 1
 

@@ -2,11 +2,27 @@
 
 require "test_helper"
 require "action_controller/railtie"
+require File.join(
+  Gem.loaded_specs.fetch("recording_studio").full_gem_path,
+  "app/helpers/recording_studio/layout_helper"
+)
 require_relative "../app/controllers/recording_studio_root_switchable/application_controller"
 require_relative "../app/controllers/recording_studio_root_switchable/root_switches_controller"
 
 class RootSwitchesControllerTest < Minitest::Test
-  Scope = Struct.new(:key)
+  Scope = Struct.new(:key) do
+    def new_root_path_for(**)
+      nil
+    end
+
+    def new_root_label_for(**)
+      nil
+    end
+
+    def new_root_icon_for(**)
+      "plus"
+    end
+  end
   Result = Struct.new(:root_recording)
 
   def setup
@@ -154,38 +170,6 @@ class RootSwitchesControllerTest < Minitest::Test
     @controller.stub(:root_switch_params, ActionController::Parameters.new) do
       assert_equal "/workspace_home", @controller.send(:after_switch_redirect_location, @result)
     end
-  end
-
-  def test_resolved_layout_defaults_to_gem_blank_layout
-    assert_equal "recording_studio_root_switchable/blank", @controller.send(:resolved_layout)
-  end
-
-  def test_resolved_layout_uses_configured_string_layout
-    RecordingStudioRootSwitchable.configuration.layout = "application"
-
-    assert_equal "application", @controller.send(:resolved_layout)
-  end
-
-  def test_resolved_layout_calls_configured_symbol_layout_method
-    RecordingStudioRootSwitchable.configuration.layout = :application_layout
-    @controller.define_singleton_method(:application_layout) { "flat_pack_sidebar" }
-
-    assert_equal "flat_pack_sidebar", @controller.send(:resolved_layout)
-  end
-
-  def test_resolved_layout_calls_configured_proc
-    RecordingStudioRootSwitchable.configuration.layout = lambda do |scope:, **|
-      scope.key == "all_workspaces" ? "application" : "admin"
-    end
-
-    assert_equal "application", @controller.send(:resolved_layout)
-  end
-
-  def test_resolved_layout_falls_back_to_gem_blank_layout_when_layout_method_errors
-    RecordingStudioRootSwitchable.configuration.layout = :application_layout
-    @controller.define_singleton_method(:application_layout) { raise "boom" }
-
-    assert_equal "recording_studio_root_switchable/blank", @controller.send(:resolved_layout)
   end
 
   def test_enforce_switch_rate_limit_returns_too_many_requests_when_blocked

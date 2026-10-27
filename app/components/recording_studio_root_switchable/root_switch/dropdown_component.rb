@@ -12,12 +12,17 @@ module RecordingStudioRootSwitchable
         system_arguments.delete(:disabled)
         super(
           text: menu_rows.current_label,
-          disabled: menu_rows.switch_rows.empty?,
+          disabled: menu_rows.switch_rows.empty? && menu_rows.new_root_path.blank?,
           **system_arguments
         )
       end
 
       attr_reader :menu_rows
+
+      def before_render
+        menu_html(render(RowsComponent.new(menu_rows: menu_rows)))
+        super
+      end
 
       def menu_row
         render(ListComponent.new(menu_rows: menu_rows))

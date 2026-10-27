@@ -1,9 +1,7 @@
+<% content_for :title, "Gem views" %>
+<% content_for :subtitle, "ERB templates currently shipped by recording_studio_root_switchable." %>
+
 <div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
-  <%= render FlatPack::PageTitle::Component.new(
-    title: "Gem views",
-    subtitle: "ERB templates currently shipped by recording_studio_root_switchable.",
-    variant: :h1
-  ) %>
 
   <%= render FlatPack::List::Component.new(class: "w-full") do %>
     <% @gem_views.each do |view| %>

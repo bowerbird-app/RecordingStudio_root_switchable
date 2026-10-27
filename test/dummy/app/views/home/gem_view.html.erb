@@ -6,11 +6,8 @@
     back_href: "/gem_views"
   ) %>
 
-  <%= render FlatPack::PageTitle::Component.new(
-    title: File.basename(@gem_view_path),
-    subtitle: File.join("app/views", @gem_view_path),
-    variant: :h1
-  ) %>
+  <% content_for :title, File.basename(@gem_view_path) %>
+  <% content_for :subtitle, File.join("app/views", @gem_view_path) %>
 
   <%= render FlatPack::CodeBlock::Component.new(
     title: @gem_view_path,

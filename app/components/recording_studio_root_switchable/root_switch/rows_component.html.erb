@@ -8,3 +8,14 @@
     <span class="flex-1"><%= row.label %></span>
   <% end %>
 <% end %>
+<% if menu_rows.new_root_path.present? %>
+  <% if menu_rows.switch_rows.any? %>
+    <div class="my-1 border-t border-(--surface-border-color)" role="separator"></div>
+  <% end %>
+  <%= link_to menu_rows.new_root_path, class: item_classes, role: "menuitem" do %>
+    <% if menu_rows.new_root_icon.present? %>
+      <%= render FlatPack::Shared::IconComponent.new(name: menu_rows.new_root_icon.to_s, size: :sm) %>
+    <% end %>
+    <span class="flex-1"><%= menu_rows.new_root_label %></span>
+  <% end %>
+<% end %>

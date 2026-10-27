@@ -1,9 +1,7 @@
+<% content_for :title, "Method" %>
+<% content_for :subtitle, "Public gem entry points for reading, resolving, and switching the current root." %>
+
 <div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
-  <%= render FlatPack::PageTitle::Component.new(
-    title: "Method",
-    subtitle: "Public gem entry points for reading, resolving, and switching the current root.",
-    variant: :h1
-  ) %>
 
   <% @documented_methods.each do |method| %>
     <%= render FlatPack::SectionTitle::Component.new(

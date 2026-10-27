@@ -1,9 +1,7 @@
+<% content_for :title, "Usage" %>
+<% content_for :subtitle, "Resolve the current root once per request, then use it only in the parts of the app that need workspace-aware behavior." %>
+
 <div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
-  <%= render FlatPack::PageTitle::Component.new(
-    title: "Usage",
-    subtitle: "Resolve the current root once per request, then use it only in the parts of the app that need workspace-aware behavior.",
-    variant: :h1
-  ) %>
 
   <%= render FlatPack::Card::Component.new do |card| %>
     <% card.header do %>

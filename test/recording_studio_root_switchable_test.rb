@@ -2,6 +2,10 @@
 
 require "test_helper"
 require "action_controller/railtie"
+require File.join(
+  Gem.loaded_specs.fetch("recording_studio").full_gem_path,
+  "app/helpers/recording_studio/layout_helper"
+)
 require_relative "../app/controllers/recording_studio_root_switchable/application_controller"
 require_relative "../app/controllers/recording_studio_root_switchable/root_switches_controller"
 
@@ -10,8 +14,9 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     refute_nil RecordingStudioRootSwitchable::VERSION
   end
 
-  def test_root_switch_controller_uses_runtime_layout_resolution
-    assert_equal :resolved_layout, RecordingStudioRootSwitchable::RootSwitchesController.send(:_layout)
+  def test_root_switch_controller_uses_recording_studio_layout
+    assert_equal :recording_studio_resolved_layout,
+                 RecordingStudioRootSwitchable::RootSwitchesController.send(:_layout)
   end
 
   def test_engine_exists
@@ -51,7 +56,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     refute_empty migration_files
   end
 
-  def test_dummy_app_initializer_uses_gem_blank_layout_by_default
+  def test_dummy_app_initializer_leaves_layout_unset
     initializer_path = File.expand_path("dummy/config/initializers/recording_studio_root_switchable.rb", __dir__)
     initializer_source = File.read(initializer_path)
 
@@ -66,63 +71,83 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes initializer_source, 'child_recordables: [ "RecordingStudio::Access" ]'
   end
 
-  def test_gemspec_targets_recording_studio_4_1_and_accessible_0_18
+  def test_gemspec_targets_recording_studio_6_1_and_accessible_0_18
     gemspec_path = File.expand_path("../recording_studio_root_switchable.gemspec", __dir__)
     gemspec_source = File.read(gemspec_path)
 
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", "~> 4.1"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", ">= 6.1.0"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.18"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_metrics", ">= 0.3.0", "< 1.0"'
-    assert_includes gemspec_source, 'spec.add_dependency "flat_pack", ">= 0.1.304"'
+    assert_includes gemspec_source, 'spec.add_dependency "flat_pack", ">= 0.1.315"'
+    assert_includes gemspec_source, 'spec.add_dependency "view_component", ">= 4.14", "< 5"'
   end
 
-  def test_development_pins_flat_pack_0_1_311_and_patched_lockfile_gems
+  def test_development_pins_flat_pack_0_1_319_and_recording_studio_6_1
     root = File.expand_path("..", __dir__)
+    flat_pack_ref = "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"
 
-    assert_includes File.read(File.join(root, "Gemfile")), 'tag: "v0.1.311"'
-    assert_includes File.read(File.join(root, "test/dummy/Gemfile")), 'tag: "v0.1.311"'
+    [File.join(root, "Gemfile"), File.join(root, "test/dummy/Gemfile")].each do |gemfile|
+      source = File.read(gemfile)
+
+      assert_includes source, %(ref: "#{flat_pack_ref}")
+      assert_includes source, 'tag: "v6.1.0"'
+      assert_includes source, 'gem "view_component", "4.19.0"'
+    end
 
     %w[Gemfile.lock test/dummy/Gemfile.lock].each do |relative|
       lock = File.read(File.join(root, relative))
 
-      assert_includes lock, "flat_pack (0.1.311)", relative
-      assert_includes lock, "tag: v0.1.311", relative
+      assert_includes lock, "flat_pack (0.1.319)", relative
+      assert_includes lock, "revision: #{flat_pack_ref}", relative
+      assert_includes lock, "recording_studio (6.1.0)", relative
       assert_includes lock, "view_component (4.19.0)", relative
       assert_includes lock, "crass (1.0.8)", relative
     end
   end
 
-  def test_gem_ships_blank_layout_template
-    layout_path = File.expand_path("../app/views/layouts/recording_studio_root_switchable/blank.html.erb", __dir__)
-    layout_source = File.read(layout_path)
+  def test_dummy_layouts_load_flatpack_stylesheets_before_tailwind
+    root = File.expand_path("dummy/app/views/layouts", __dir__)
 
-    assert_includes layout_source, "csrf_meta_tags"
-    assert_includes layout_source, "csp_meta_tag"
-    assert_includes layout_source, 'stylesheet_link_tag "application"'
-    assert_includes layout_source, 'stylesheet_link_tag "flat_pack/variables"'
-    assert_includes layout_source, 'stylesheet_link_tag "flat_pack/application"'
-    assert_includes layout_source, 'stylesheet_link_tag "tailwind"'
-    assert_includes layout_source, "javascript_importmap_tags"
-    assert_includes layout_source, 'render "layouts/icon_sprite"'
-    assert_includes layout_source, "yield"
-    assert_includes layout_source, 't("recording_studio.root_switchable.layout.title", default: "Recording Studio")'
-    assert_includes layout_source,
-                    't("recording_studio.root_switchable.layout.application_name", default: "Recording Studio")'
+    ["application.html.erb", "flat_pack_sidebar.html.erb"].each do |name|
+      source = File.read(File.join(root, name))
+      flat_pack = source.index('stylesheet_link_tag "flat_pack/variables"')
+      tailwind = source.index('stylesheet_link_tag "tailwind"')
+
+      refute_nil flat_pack, name
+      refute_nil tailwind, name
+      assert_operator flat_pack, :<, tailwind, name
+      assert_operator source.index('stylesheet_link_tag "flat_pack/application"'), :<, tailwind, name
+      assert_operator source.index('stylesheet_link_tag "flat_pack/rich_text"'), :<, tailwind, name
+    end
   end
 
   def test_root_switch_view_uses_page_nav_and_list_based_selector_without_item_subtitles
     view_path = File.expand_path("../app/views/recording_studio_root_switchable/root_switches/show.html.erb", __dir__)
     view_source = File.read(view_path)
 
-    assert_includes view_source, "FlatPack::PageNav::Component"
-    assert_includes view_source, "nav.with_close("
-    assert_includes view_source, "href: @return_anchor_url"
-    assert_includes view_source, 't("recording_studio.root_switchable.navigation.close")'
+    assert_includes view_source, "flat_pack_page_nav("
+    assert_includes view_source, "round: true"
+    assert_includes view_source, "style: :default"
+    assert_includes view_source, "anchor_href: @return_anchor_url"
+    assert_includes view_source, 't("recording_studio.root_switchable.navigation.close", default: "Close")'
     refute_includes view_source, "anchor_label:"
+    refute_includes view_source, "FlatPack::PageNav::Component"
+    refute_includes view_source, "FlatPack::PageTitle::Component"
     refute_includes view_source, "FlatPack::Breadcrumb::Component"
-    assert_includes view_source, "FlatPack::PageTitle::Component"
-    assert_includes view_source, "title: @page_copy.fetch(:title)"
-    assert_includes view_source, "subtitle: page_subtitle"
+    assert_includes view_source, 'class="flex w-full flex-col gap-6"'
+    refute_includes view_source, "max-w-3xl"
+    assert_includes view_source, "register_page_nav(@new_root_label, @new_root_path, role: :primary, icon: @new_root_icon)"
+    rows_source = File.read(
+      File.expand_path(
+        "../app/components/recording_studio_root_switchable/root_switch/rows_component.html.erb",
+        __dir__
+      )
+    )
+    assert_includes rows_source, "FlatPack::Shared::IconComponent.new(name: menu_rows.new_root_icon.to_s, size: :sm)"
+    assert_includes rows_source, "if menu_rows.new_root_icon.present?"
+    refute_includes rows_source, 'aria-hidden="true">+</span>'
+    assert_includes view_source, "content_for :title, @page_copy.fetch(:title)"
+    assert_includes view_source, "content_for :subtitle, page_subtitle if page_subtitle"
     assert_includes view_source, "@page_copy.fetch(:subtitle).presence"
     assert_includes view_source, "@page_copy.fetch(:persistence_hint).presence"
     refute_includes view_source, "<p class=\"text-sm text-(--surface-muted-content-color)\"><%= @page_copy.fetch(:persistence_hint) %></p>"
@@ -149,19 +174,13 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     refute_includes view_source, "@supported_scopes.each"
   end
 
-  def test_root_switch_view_renders_flash_before_page_nav_and_title
+  def test_root_switch_view_leaves_flash_and_the_heading_to_the_layout
     view_path = File.expand_path("../app/views/recording_studio_root_switchable/root_switches/show.html.erb", __dir__)
     view_source = File.read(view_path)
 
-    notice_index = view_source.index("flash[:notice]")
-    page_nav_index = view_source.index("FlatPack::PageNav::Component")
-    title_index = view_source.index("FlatPack::PageTitle::Component")
-
-    refute_nil notice_index
-    refute_nil page_nav_index
-    refute_nil title_index
-    assert_operator notice_index, :<, page_nav_index
-    assert_operator notice_index, :<, title_index
+    refute_includes view_source, "flash[:notice]"
+    refute_includes view_source, "flash[:alert]"
+    refute_includes view_source, "FlatPack::PageTitle::Component"
   end
 
   def test_root_switch_dropdown_does_not_ship_a_stimulus_controller
@@ -195,8 +214,10 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
 
     assert_includes helper_source, 't("recording_studio.root_switchable.dropdown.none_selected")'
     refute_includes helper_source, '"None selected"'
+    assert_includes helper_source, "def recording_studio_new_root_path"
     assert_includes helper_source, "def recording_studio_root_switch_for"
     assert_includes helper_source, "def recording_studio_root_switch_list_for"
     assert_includes helper_source, "def render_recording_studio_root_switch_list"
+    assert_includes helper_source, "new_root_icon: nil"
   end
 end

@@ -47,7 +47,7 @@ class ConfigurationTest < Minitest::Test
     refute_match(/\broot\b/i, copy.fetch(:empty_state_body))
   end
 
-  def test_layout_defaults_to_nil_for_gem_blank_layout
+  def test_layout_defaults_to_nil
     assert_nil @configuration.layout
   end
 
@@ -405,7 +405,17 @@ class ConfigurationTest < Minitest::Test
       assert_equal "Current", copy.fetch(:selected_badge)
       assert_equal "Nothing to switch", copy.fetch(:empty_state_title)
       assert_equal "There are no options available right now.", copy.fetch(:empty_state_body)
+      assert_equal "New workspace", copy.fetch(:new_root_action_label)
+      assert_equal "plus", copy.fetch(:new_root_action_icon)
     end
+  end
+
+  def test_page_copy_for_accepts_a_suppressed_new_root_icon
+    @configuration.page_copy = { new_root_action_icon: false }
+    assert_equal false, @configuration.page_copy_for.fetch(:new_root_action_icon)
+
+    @configuration.page_copy = { new_root_action_icon: "" }
+    assert_equal "", @configuration.page_copy_for.fetch(:new_root_action_icon)
   end
 
   def test_page_copy_for_follows_locale_without_memoizing_boot_defaults
@@ -437,15 +447,12 @@ class ConfigurationTest < Minitest::Test
   end
 
   def test_merge_rejects_invalid_layout_type
-    error = assert_raises(RecordingStudioRootSwitchable::ConfigurationError) do
+    assert_raises(ArgumentError) do
       @configuration.merge!(
         { layout: 123 },
         source: "config.x.recording_studio_root_switchable"
       )
     end
-
-    assert_includes error.message, "expected a String, Symbol, callable, or nil"
-    assert_equal :layout, error.config_key
   end
 
   def test_after_switch_redirect_calls_configured_proc_with_context
@@ -465,24 +472,6 @@ class ConfigurationTest < Minitest::Test
     )
 
     assert_equal "/projects", redirect
-  end
-
-  def test_layout_for_calls_configured_proc_with_context
-    layout_proc = lambda do |scope:, **|
-      scope.key == "clients" ? "application" : "admin"
-    end
-    @configuration.layout = layout_proc
-    scope = Struct.new(:key).new("clients")
-
-    layout = @configuration.layout_for(
-      controller: Object.new,
-      actor: Object.new,
-      device_key: "device-1",
-      scope: scope,
-      current_root_recording: Object.new
-    )
-
-    assert_equal "application", layout
   end
 
   private

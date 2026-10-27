@@ -3,10 +3,6 @@
 module RecordingStudioRootSwitchable
   # rubocop:disable Metrics/ClassLength
   class RootSwitchesController < ApplicationController
-    DEFAULT_LAYOUT = "recording_studio_root_switchable/blank"
-
-    layout :resolved_layout
-
     before_action :set_scope
     before_action :authorize_page!
     before_action :enforce_switch_rate_limit!, only: :update
@@ -72,6 +68,32 @@ module RecordingStudioRootSwitchable
       @page_copy = page_copy
       @safe_return_to = safe_return_to_param
       @return_anchor_url = return_anchor_url
+      @new_root_path = new_root_path_for_page
+      @new_root_label = new_root_label_for_page
+      @new_root_icon = new_root_icon_for_page
+    end
+
+    def new_root_path_for_page
+      @scope.new_root_path_for(**new_root_hook_arguments)
+    end
+
+    def new_root_label_for_page
+      @scope.new_root_label_for(**new_root_hook_arguments, fallback: @page_copy[:new_root_action_label])
+    end
+
+    def new_root_icon_for_page
+      @scope.new_root_icon_for(**new_root_hook_arguments, fallback: @page_copy[:new_root_action_icon])
+    end
+
+    def new_root_hook_arguments
+      {
+        controller: self,
+        actor: RecordingStudio::RootSwitchable::Current.actor,
+        device_key: RecordingStudio::RootSwitchable::Current.device_key,
+        scope: @scope,
+        current_root_recording: current_root_recording,
+        return_to: @safe_return_to
+      }
     end
 
     def prioritize_selected_root(available_roots, selected_root)
@@ -96,28 +118,6 @@ module RecordingStudioRootSwitchable
 
     def switch_success_notice(root_recording)
       "#{selected_root_label(root_recording)} is now active."
-    end
-
-    def resolved_layout
-      layout_value = RecordingStudioRootSwitchable.configuration.layout_for(
-        controller: self,
-        actor: RecordingStudio::RootSwitchable::Current.actor,
-        device_key: RecordingStudio::RootSwitchable::Current.device_key,
-        scope: @scope,
-        current_root_recording: current_root_recording
-      )
-
-      case layout_value
-      when nil
-        DEFAULT_LAYOUT
-      when Symbol
-        send(layout_value).presence || DEFAULT_LAYOUT
-      else
-        layout_value.presence || DEFAULT_LAYOUT
-      end
-    rescue StandardError => e
-      log_controller_rescue("layout", e)
-      DEFAULT_LAYOUT
     end
 
     def after_switch_redirect_location(result)

@@ -1,9 +1,7 @@
+<% content_for :title, "Config" %>
+<% content_for :subtitle, "Register the actor resolver and one or more scopes so the root switcher can resolve available roots for each signed-in user." %>
+
 <div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
-  <%= render FlatPack::PageTitle::Component.new(
-    title: "Config",
-    subtitle: "Register the actor resolver and one or more scopes so the root switcher can resolve available roots for each signed-in user.",
-    variant: :h1
-  ) %>
 
   <%= render FlatPack::CodeBlock::Component.new(
     title: "recording_studio_root_switchable.rb",
@@ -14,8 +12,8 @@
 RecordingStudioRootSwitchable.configure do |config|
   config.current_actor_resolver = -&gt;(controller:) { Current.actor || controller.current_user }
 
-  # Optional: render the gem page inside your app layout instead of the gem blank layout.
-  config.layout = :application_layout
+  # nil follows RecordingStudio.configuration.layout, then "recording_studio/default_layout".
+  config.layout = "application"
 
   # Each scope defines a switcher tab and the set of roots available inside it.
   config.scope :all_workspaces do |scope|
