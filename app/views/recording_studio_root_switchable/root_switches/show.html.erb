@@ -1,26 +1,14 @@
+<% content_for :title, @page_copy.fetch(:title) %>
+<% page_subtitle = @page_copy.fetch(:subtitle).presence %>
+<% content_for :subtitle, page_subtitle if page_subtitle %>
+<% flat_pack_page_nav(
+  round: true,
+  style: :default,
+  anchor_href: @return_anchor_url,
+  anchor_tooltip: t("recording_studio.root_switchable.navigation.close", default: "Close")
+) %>
+
 <div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
-  <% if flash[:notice].present? %>
-    <%= render FlatPack::Alert::Component.new(style: :success, title: flash[:notice]) %>
-  <% end %>
-
-  <% if flash[:alert].present? %>
-    <%= render FlatPack::Alert::Component.new(style: :danger, title: flash[:alert]) %>
-  <% end %>
-
-  <%= render FlatPack::PageNav::Component.new do |nav| %>
-    <% nav.with_close(
-      href: @return_anchor_url,
-      tooltip: t("recording_studio.root_switchable.navigation.close")
-    ) %>
-  <% end %>
-
-  <% page_subtitle = @page_copy.fetch(:subtitle).presence %>
-  <%= render FlatPack::PageTitle::Component.new(
-    title: @page_copy.fetch(:title),
-    subtitle: page_subtitle,
-    variant: :h1
-  ) %>
-
   <% if @available_roots.empty? %>
     <%= render FlatPack::Alert::Component.new(
       style: :info,

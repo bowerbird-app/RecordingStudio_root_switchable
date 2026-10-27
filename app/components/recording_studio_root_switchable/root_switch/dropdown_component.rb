@@ -19,6 +19,11 @@ module RecordingStudioRootSwitchable
 
       attr_reader :menu_rows
 
+      def before_render
+        menu_html(render(RowsComponent.new(menu_rows: menu_rows)))
+        super
+      end
+
       def menu_row
         render(ListComponent.new(menu_rows: menu_rows))
       end

@@ -1,9 +1,0 @@
-<div <%= tag.attributes(wrapper_attributes) %>>
-  <button type="button" <%= tag.attributes(button_attributes) %><%= " disabled" if @disabled %>>
-    <%= button_content %>
-  </button>
-
-  <div <%= tag.attributes(menu_attributes) %>>
-    <%= render RecordingStudioRootSwitchable::RootSwitch::RowsComponent.new(menu_rows: menu_rows) %>
-  </div>
-</div>

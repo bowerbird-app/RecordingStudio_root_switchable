@@ -18,6 +18,35 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.11.0 (Recording Studio 6.1 layout)
+
+No migration. Require `recording_studio` >= 6.1.0 and `flat_pack` >= 0.1.315.
+This repo pins Recording Studio tag `v6.1.0` and Flatpack commit
+`1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`FlatPack::VERSION` `0.1.319`).
+Lock `view_component` at `4.19.0` (`>= 4.14, < 5`).
+
+`config.layout` now uses the Recording Studio layout setting. `nil` follows
+`RecordingStudio.configuration.layout`, then `"recording_studio/default_layout"`.
+`false` renders no layout. A String is a layout name. A callable is invoked as
+`call(controller:)` and returns a String, `nil`, or `false`. A Symbol, a blank
+string, or a positional parameter raises `ArgumentError`.
+
+The gem blank layout is gone. The switch page sets `content_for :title` from
+page copy and calls `flat_pack_page_nav` for close. The default layout draws
+one heading, the top nav, and flash.
+
+```ruby
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.1.0"
+gem "flat_pack", github: "bowerbird-app/flatpack", ref: "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"
+gem "view_component", "4.19.0"
+gem "recording_studio_root_switchable", "~> 0.11.0"
+```
+
+If Accessible, Cache, Metrics, or Trashable still require `recording_studio`
+below 6, load `test/support/widen_recording_studio_requirement.rb` from the
+Gemfile before Bundler evaluates those gemspecs. See the changelog upgrade
+notes for the pins this repo uses.
+
 ## Upgrading to 0.10.1 (FlatPack 0.1.311)
 
 No migration. The runtime floor stays `flat_pack >= 0.1.304`. This repo pins
@@ -521,13 +550,15 @@ Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 Add the gems to your host app:
 
 ```ruby
-gem "recording_studio", "~> 4.7"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.1.0"
+gem "flat_pack", github: "bowerbird-app/flatpack", ref: "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"
+gem "view_component", "4.19.0"
 gem "recording_studio_accessible", "~> 0.18"
 gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable",
                                   tag: "v0.11.0", require: false
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.6.1"
-gem "recording_studio_root_switchable", "~> 0.10.0"
+gem "recording_studio_root_switchable", "~> 0.11.0"
 ```
 
 Then run:
@@ -563,9 +594,10 @@ Configure scopes in `config/initializers/recording_studio_root_switchable.rb`:
 RecordingStudioRootSwitchable.configure do |config|
   config.current_actor_resolver = ->(controller:) { Current.actor || controller.current_user }
 
-  # Optional: render the mounted page inside a host layout instead of the gem blank layout.
-  # Accepts a String, Symbol, callable, or nil.
-  # config.layout = :application_layout
+  # Optional. nil follows RecordingStudio.configuration.layout, then
+  # "recording_studio/default_layout". false renders no layout.
+  # A callable is invoked as call(controller:) and returns a String, nil, or false.
+  # config.layout = "application"
 
   # Optional: choose where to redirect after a successful switch.
   # Available args: controller:, actor:, device_key:, scope:, root_recording:, return_to:
@@ -757,16 +789,29 @@ config.page_copy = {
 
 Filtering rules (such as which root types are switchable) belong in scope configuration and docs, not in default page copy.
 
-`layout` controls which Rails layout the mounted root-switch page renders inside. When `layout` is `nil`, the gem uses its own blank layout. Host apps can set `layout` to a String such as `"application"`, a Symbol such as `:application_layout`, or a callable that returns either value per request.
+`layout` chooses the Rails layout for the mounted switch page.
+`RecordingStudio::Layout.accept` checks the value on assignment.
+
+- `nil`, the default, uses `RecordingStudio.configuration.layout`, then `"recording_studio/default_layout"`.
+- `false` renders no layout.
+- A String is a layout name. A blank String raises `ArgumentError`.
+- A callable is invoked as `call(controller:)` and returns a String, `nil`, or `false`. A Symbol or a positional parameter raises `ArgumentError`.
+
+The switch page sets `content_for :title` from page copy and calls
+`flat_pack_page_nav` for close. `recording_studio/default_layout` draws one
+heading, the top nav, and flash. A host layout that replaces the default has
+to render those slots. Load `flat_pack/variables`, `flat_pack/application`,
+and `flat_pack/rich_text` before the host Tailwind sheet.
 
 ### Interface text
 
-Static chrome in the gem's own blank layout, root-switch PageNav close label,
-dropdown empty-selection label, and default mounted-page `page_copy` ship as
-English Rails I18n under `recording_studio.root_switchable` in
-`config/locales/en.yml`. Hosts can override those keys in their own
-`config/locales`. Root labels and flash notices built from selected labels stay
-caller- or data-driven. This gem does not ship a legacy top-level
+The close control uses `recording_studio.root_switchable.navigation.close`
+with English `default: "Close"`. The dropdown empty-selection label and
+mounted-page `page_copy` stay under `recording_studio.root_switchable` in
+`config/locales/en.yml`. The document title is `content_for :title`, then
+`RecordingStudio.configuration.app_name`. Hosts can override these keys in
+their own `config/locales`. Root labels and flash notices built from selected
+labels stay caller- or data-driven. This gem does not ship a legacy top-level
 `recording_studio_root_switchable.*` locale file.
 
 ### Page copy

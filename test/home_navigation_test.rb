@@ -58,10 +58,10 @@ class HomeNavigationTest < Minitest::Test
   def test_config_page_contains_documented_configuration_example
     config_view = read_dummy_file("app/views/home/config.html.erb")
 
-    assert_includes config_view, "title: \"Config\""
+    assert_includes config_view, 'content_for :title, "Config"'
     assert_includes config_view, "RecordingStudioRootSwitchable.configure do |config|"
     assert_includes config_view, "current_actor_resolver tells the gem which actor to use for root lookup"
-    assert_includes config_view, "config.layout = :application_layout"
+    assert_includes config_view, 'config.layout = "application"'
     assert_includes config_view, "default_root chooses the initial selection when the device has no saved root yet"
   end
 
@@ -84,7 +84,7 @@ class HomeNavigationTest < Minitest::Test
     assert_includes controller, "@saved_sessions = RecordingStudio::RootSwitchable::Selection"
     assert_includes controller, "def saved_session_device_context"
     assert_includes controller, "def saved_session_device_key"
-    assert_includes view, "title: \"Switch log\""
+    assert_includes view, "content_for :title, \"Switch log\""
     assert_includes view, "Workspace name"
     assert_includes view, "Device"
     assert_includes view, "Device key"
@@ -99,7 +99,7 @@ class HomeNavigationTest < Minitest::Test
     view = read_dummy_file("app/views/home/switch_log.html.erb")
 
     assert_includes routes, "get \"persistence\", to: redirect(\"/switch_log\")"
-    assert_includes view, "title: \"Switch log\""
+    assert_includes view, "content_for :title, \"Switch log\""
     assert_includes view, "No saved workspace sessions have been recorded yet."
   end
 
@@ -113,7 +113,7 @@ class HomeNavigationTest < Minitest::Test
     assert_includes controller, "def documented_methods"
     assert_includes controller, "code: <<~'CODE'"
     assert_includes controller, 'Rails.logger.info("Active root scope: #{scope_key}")'
-    assert_includes view, "title: \"Method\""
+    assert_includes view, "content_for :title, \"Method\""
     assert_includes view, "FlatPack::SectionTitle::Component.new"
     assert_includes view, "anchor_link: true"
     assert_includes view, "FlatPack::CodeBlock::Component.new"
@@ -179,7 +179,7 @@ class HomeNavigationTest < Minitest::Test
     assert_includes controller, "def gem_view"
     assert_includes controller, "GEM_VIEWS_ROOT = RecordingStudioRootSwitchable::Engine.root.join(\"app/views\").freeze"
     assert_includes controller, "href: gem_view_path(relative_path)"
-    assert_includes view, "title: \"Gem views\""
+    assert_includes view, "content_for :title, \"Gem views\""
     assert_includes view, "FlatPack::List::Component.new"
     assert_includes view, "FlatPack::List::Item.new(href: view.fetch(:href), hover: true)"
     assert_includes detail_view, "FlatPack::CodeBlock::Component.new"

@@ -1,9 +1,7 @@
+<% content_for :title, "Setup" %>
+<% content_for :subtitle, "Install the gem, copy the engine migrations, and wire the controller support into your host app." %>
+
 <div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
-  <%= render FlatPack::PageTitle::Component.new(
-    title: "Setup",
-    subtitle: "Install the gem, copy the engine migrations, and wire the controller support into your host app.",
-    variant: :h1
-  ) %>
 
   <%= render FlatPack::CodeBlock::Component.new(
     title: "Host app setup",

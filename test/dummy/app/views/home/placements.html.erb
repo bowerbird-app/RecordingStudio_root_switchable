@@ -1,8 +1,5 @@
-<%= render FlatPack::PageTitle::Component.new(
-  title: "Where it sits",
-  subtitle: "The same workspace list, wherever you need it.",
-  variant: :h1
-) %>
+<% content_for :title, "Where it sits" %>
+<% content_for :subtitle, "The same workspace list, wherever you need it." %>
 
 <%= render FlatPack::SectionTitle::Component.new(title: "On its own") %>
 <section id="root-switch-standalone">

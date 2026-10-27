@@ -1,9 +1,7 @@
+<% content_for :title, "Switch log" %>
+<% content_for :subtitle, "Saved workspace selections for the current actor and device contexts." %>
+
 <div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
-  <%= render FlatPack::PageTitle::Component.new(
-    title: "Switch log",
-    subtitle: "Saved workspace selections for the current actor and device contexts.",
-    variant: :h1
-  ) %>
 
   <div class="overflow-hidden rounded-xl border border-(--surface-border-color) bg-(--surface-background-color) shadow-sm">
     <table class="min-w-full divide-y divide-(--table-border-color)">

@@ -33,8 +33,9 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
         }
 
     assert_response :success
-    assert_includes response.body, "<title>Recording Studio</title>"
-    assert_includes response.body, 'content="Recording Studio"'
+    assert_includes response.body, "<title>Switch</title>"
+    assert_includes response.body, 'data-recording-studio-default-layout="true"'
+    assert_equal 1, response.body.scan(/<h1\b/).size
     assert_includes response.body, "Switch"
     assert_includes response.body, "Current"
     assert_includes response.body, "Studio Workspace"
@@ -169,7 +170,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
   # style: :default on FlatPack 0.1.290 was the default fill plus border: :default
   # and shadow: :none. 0.1.311 names the fill background: and rejects style:.
   def assert_flatpack_0_1_311_switch_page(body)
-    assert_equal "0.1.311", FlatPack::VERSION
+    assert_equal "0.1.319", FlatPack::VERSION
 
     assert_select "nav.flat-pack-page-nav a[aria-label='Close'][href='/']", minimum: 1
 

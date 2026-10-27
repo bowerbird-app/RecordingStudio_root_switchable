@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-10-27
+
+The mounted switch page uses the Recording Studio 6.1 default layout.
+
+### Changed
+- Requires `recording_studio` >= 6.1.0 (git tag `v6.1.0`) and `flat_pack` >= 0.1.315. Development and the dummy app pin Flatpack commit `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`FlatPack::VERSION` `0.1.319`). `view_component` is `>= 4.14, < 5`. These lockfiles resolve `4.19.0`.
+- `config.layout` is checked by `RecordingStudio::Layout.accept`. `nil` follows `RecordingStudio.configuration.layout`, then `"recording_studio/default_layout"`. `false` renders no layout. A String is a layout name. A callable is invoked as `call(controller:)` and returns a String, `nil`, or `false`.
+- `RecordingStudioRootSwitchable::ApplicationController` calls `recording_studio_layout`. The gem blank layout is removed.
+- The switch page sets `content_for :title` and, when the subtitle is present, `content_for :subtitle`. Close uses `flat_pack_page_nav`. The default layout draws the single heading, the top nav, and flash.
+- The root-switch dropdown uses FlatPack's dropdown trigger. FlatPack 0.1.319 removed `button_attributes` from `Button::Dropdown`. `menu_row` is unchanged.
+
+### Upgrade Notes
+- Bump to `0.11.0`. No migration.
+- Pin `recording_studio` to tag `v6.1.0` and `flat_pack` to ref `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (or tag `v0.1.315` or newer). Lock `view_component` at `4.19.0`.
+- Delete `include RecordingStudio::UsesDefaultLayout`, `layout "recording_studio/default_layout"`, and `layout "recording_studio_root_switchable/blank"`.
+- Replace `config.layout = :some_method` and any callable that takes a positional argument or a keyword other than `controller:`. `RecordingStudio::Layout.accept` raises `ArgumentError` for those values.
+- Move a copied heading into `content_for :title` (and `content_for :subtitle` when the page has one). Put back and close on `flat_pack_page_nav`. Put a page action on `register_page_nav`.
+- A host layout that replaces the default has to render `:title`, flash, and `flat_pack_page_nav_tag`. Load `flat_pack/variables`, `flat_pack/application`, and `flat_pack/rich_text` before the host Tailwind sheet.
+- If a sibling gemspec still requires `recording_studio` below 6, load `test/support/widen_recording_studio_requirement.rb` before Bundler evaluates gemspecs. Accessible `v0.18.0`, Cache `v0.5.0`, Metrics `v0.6.1`, and Trashable `v0.11.0` need that hook.
+
 ## [0.10.1] - 2026-10-26
 
 The mounted switch page renders on FlatPack 0.1.311.

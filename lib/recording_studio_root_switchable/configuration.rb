@@ -2,6 +2,7 @@
 
 require "active_support/core_ext/integer/time"
 require "i18n"
+require "recording_studio/layout"
 
 module RecordingStudioRootSwitchable
   class ConfigurationError < StandardError
@@ -61,14 +62,13 @@ module RecordingStudioRootSwitchable
                   :default_scope_key_resolver,
                   :device_key_cookie_name,
                   :device_key_cookie_options,
-                  :layout,
                   :mounted_page_authorizer,
                   :after_switch_redirect,
                   :allow_anonymous_selections,
                   :store_raw_user_agent,
                   :last_used_at_touch_interval,
                   :switch_rate_limit
-    attr_reader :scopes
+    attr_reader :layout, :scopes
 
     def initialize
       @device_key_cookie_name = :recording_studio_root_switchable_device_key
@@ -162,13 +162,8 @@ module RecordingStudioRootSwitchable
       redirect
     end
 
-    def layout_for(**context)
-      configured_layout = layout
-      return if configured_layout.nil?
-
-      return configured_layout.call(**context) if configured_layout.respond_to?(:call)
-
-      configured_layout
+    def layout=(value)
+      @layout = RecordingStudio::Layout.accept(value)
     end
 
     def page_copy=(value)
@@ -226,7 +221,6 @@ module RecordingStudioRootSwitchable
           validate_device_key_cookie_options!(cookie_options, source: source)
           self.device_key_cookie_options = device_key_cookie_options.merge(cookie_options)
         when :layout
-          validate_layout!(value, source: source)
           self.layout = value
         when :page_copy
           apply_page_copy(value, source: source)
@@ -313,16 +307,6 @@ module RecordingStudioRootSwitchable
         source: source,
         config_key: :after_switch_redirect,
         detail: "expected a String, callable, or nil"
-      )
-    end
-
-    def validate_layout!(value, source:)
-      return if value.nil? || value.is_a?(String) || value.is_a?(Symbol) || value.respond_to?(:call)
-
-      raise ConfigurationError.new(
-        source: source,
-        config_key: :layout,
-        detail: "expected a String, Symbol, callable, or nil"
       )
     end
 

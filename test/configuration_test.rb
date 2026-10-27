@@ -47,7 +47,7 @@ class ConfigurationTest < Minitest::Test
     refute_match(/\broot\b/i, copy.fetch(:empty_state_body))
   end
 
-  def test_layout_defaults_to_nil_for_gem_blank_layout
+  def test_layout_defaults_to_nil
     assert_nil @configuration.layout
   end
 
@@ -437,15 +437,12 @@ class ConfigurationTest < Minitest::Test
   end
 
   def test_merge_rejects_invalid_layout_type
-    error = assert_raises(RecordingStudioRootSwitchable::ConfigurationError) do
+    assert_raises(ArgumentError) do
       @configuration.merge!(
         { layout: 123 },
         source: "config.x.recording_studio_root_switchable"
       )
     end
-
-    assert_includes error.message, "expected a String, Symbol, callable, or nil"
-    assert_equal :layout, error.config_key
   end
 
   def test_after_switch_redirect_calls_configured_proc_with_context
@@ -465,24 +462,6 @@ class ConfigurationTest < Minitest::Test
     )
 
     assert_equal "/projects", redirect
-  end
-
-  def test_layout_for_calls_configured_proc_with_context
-    layout_proc = lambda do |scope:, **|
-      scope.key == "clients" ? "application" : "admin"
-    end
-    @configuration.layout = layout_proc
-    scope = Struct.new(:key).new("clients")
-
-    layout = @configuration.layout_for(
-      controller: Object.new,
-      actor: Object.new,
-      device_key: "device-1",
-      scope: scope,
-      current_root_recording: Object.new
-    )
-
-    assert_equal "application", layout
   end
 
   private

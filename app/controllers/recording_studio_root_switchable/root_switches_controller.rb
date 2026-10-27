@@ -3,10 +3,6 @@
 module RecordingStudioRootSwitchable
   # rubocop:disable Metrics/ClassLength
   class RootSwitchesController < ApplicationController
-    DEFAULT_LAYOUT = "recording_studio_root_switchable/blank"
-
-    layout :resolved_layout
-
     before_action :set_scope
     before_action :authorize_page!
     before_action :enforce_switch_rate_limit!, only: :update
@@ -96,28 +92,6 @@ module RecordingStudioRootSwitchable
 
     def switch_success_notice(root_recording)
       "#{selected_root_label(root_recording)} is now active."
-    end
-
-    def resolved_layout
-      layout_value = RecordingStudioRootSwitchable.configuration.layout_for(
-        controller: self,
-        actor: RecordingStudio::RootSwitchable::Current.actor,
-        device_key: RecordingStudio::RootSwitchable::Current.device_key,
-        scope: @scope,
-        current_root_recording: current_root_recording
-      )
-
-      case layout_value
-      when nil
-        DEFAULT_LAYOUT
-      when Symbol
-        send(layout_value).presence || DEFAULT_LAYOUT
-      else
-        layout_value.presence || DEFAULT_LAYOUT
-      end
-    rescue StandardError => e
-      log_controller_rescue("layout", e)
-      DEFAULT_LAYOUT
     end
 
     def after_switch_redirect_location(result)
