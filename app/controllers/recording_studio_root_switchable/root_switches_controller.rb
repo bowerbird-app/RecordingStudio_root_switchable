@@ -70,6 +70,7 @@ module RecordingStudioRootSwitchable
       @return_anchor_url = return_anchor_url
       @new_root_path = new_root_path_for_page
       @new_root_label = new_root_label_for_page
+      @new_root_icon = new_root_icon_for_page
     end
 
     def new_root_path_for_page
@@ -78,6 +79,10 @@ module RecordingStudioRootSwitchable
 
     def new_root_label_for_page
       @scope.new_root_label_for(**new_root_hook_arguments, fallback: @page_copy[:new_root_action_label])
+    end
+
+    def new_root_icon_for_page
+      @scope.new_root_icon_for(**new_root_hook_arguments, fallback: @page_copy[:new_root_action_icon])
     end
 
     def new_root_hook_arguments

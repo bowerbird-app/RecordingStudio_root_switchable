@@ -69,7 +69,8 @@ module RecordingStudioRootSwitchable
         MenuRows::Options.new(
           none_selected_label: none_selected_label,
           new_root_path: resolved_new_root_path(resolution),
-          new_root_label: resolved_new_root_label(resolution)
+          new_root_label: resolved_new_root_label(resolution),
+          new_root_icon: resolved_new_root_icon(resolution)
         )
       end
 
@@ -93,6 +94,19 @@ module RecordingStudioRootSwitchable
 
       def scope_new_root_label(resolution, arguments, fallback)
         resolution.scope.new_root_label_for(**arguments, fallback: fallback)
+      end
+
+      def resolved_new_root_icon(resolution)
+        arguments = hook_arguments(resolution)
+        fallback = new_root_icon_fallback(resolution)
+        icon = new_root&.icon
+        return resolution.scope.new_root_icon_for(**arguments, fallback: fallback) if icon.nil?
+
+        resolution.scope.new_root_icon_for(**arguments, fallback: fallback, override: call_override(icon, arguments))
+      end
+
+      def new_root_icon_fallback(resolution)
+        RecordingStudioRootSwitchable.configuration.page_copy_for(scope: resolution.scope)[:new_root_action_icon]
       end
 
       def new_root_label_fallback(resolution)

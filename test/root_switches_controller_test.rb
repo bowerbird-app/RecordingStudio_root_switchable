@@ -18,6 +18,10 @@ class RootSwitchesControllerTest < Minitest::Test
     def new_root_label_for(**)
       nil
     end
+
+    def new_root_icon_for(**)
+      "plus"
+    end
   end
   Result = Struct.new(:root_recording)
 

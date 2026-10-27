@@ -10,12 +10,12 @@ module RecordingStudioRootSwitchable
         end
       end
 
-      Options = Data.define(:none_selected_label, :new_root_path, :new_root_label)
-      Override = Data.define(:path, :label) do
-        def self.from(path, label)
-          return if path.nil? && label.nil?
+      Options = Data.define(:none_selected_label, :new_root_path, :new_root_label, :new_root_icon)
+      Override = Data.define(:path, :label, :icon) do
+        def self.from(path, label, icon = nil)
+          return if path.nil? && label.nil? && icon.nil?
 
-          new(path: path, label: label)
+          new(path: path, label: label, icon: icon)
         end
       end
 
@@ -77,9 +77,10 @@ module RecordingStudioRootSwitchable
         @none_selected_label = options.none_selected_label
         @new_root_path = options.new_root_path
         @new_root_label = options.new_root_label
+        @new_root_icon = options.new_root_icon
       end
 
-      attr_reader :rows, :form_action, :return_to, :new_root_path
+      attr_reader :rows, :form_action, :return_to, :new_root_path, :new_root_icon
 
       def current_label
         current = rows.find(&:current?)

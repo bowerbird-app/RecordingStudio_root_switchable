@@ -406,7 +406,16 @@ class ConfigurationTest < Minitest::Test
       assert_equal "Nothing to switch", copy.fetch(:empty_state_title)
       assert_equal "There are no options available right now.", copy.fetch(:empty_state_body)
       assert_equal "New workspace", copy.fetch(:new_root_action_label)
+      assert_equal "plus", copy.fetch(:new_root_action_icon)
     end
+  end
+
+  def test_page_copy_for_accepts_a_suppressed_new_root_icon
+    @configuration.page_copy = { new_root_action_icon: false }
+    assert_equal false, @configuration.page_copy_for.fetch(:new_root_action_icon)
+
+    @configuration.page_copy = { new_root_action_icon: "" }
+    assert_equal "", @configuration.page_copy_for.fetch(:new_root_action_icon)
   end
 
   def test_page_copy_for_follows_locale_without_memoizing_boot_defaults

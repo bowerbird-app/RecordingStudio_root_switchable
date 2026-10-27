@@ -9,6 +9,7 @@ module RecordingStudio
         default_root
         description
         label
+        new_root_icon
         new_root_label
         new_root_path
         page_copy
@@ -24,6 +25,7 @@ module RecordingStudio
                     :default_root,
                     :description,
                     :label,
+                    :new_root_icon,
                     :new_root_label,
                     :new_root_path,
                     :page_copy,
@@ -48,6 +50,7 @@ module RecordingStudio
         @root_description = method(:default_root_description)
         @new_root_path = nil
         @new_root_label = nil
+        @new_root_icon = nil
       end
 
       def assign!(options)
@@ -132,6 +135,28 @@ module RecordingStudio
         nil
       end
 
+      ICON_FROM_SCOPE = Object.new
+      private_constant :ICON_FROM_SCOPE
+
+      def new_root_icon_for(fallback: nil, override: ICON_FROM_SCOPE, **)
+        chosen = override.equal?(ICON_FROM_SCOPE) ? resolve_callable(new_root_icon, **) : override
+        resolved = interpreted_icon(chosen)
+        return resolved unless icon_unset?(resolved)
+
+        if page_copy.key?(:new_root_action_icon)
+          resolved = interpreted_icon(page_copy[:new_root_action_icon])
+          return resolved unless icon_unset?(resolved)
+        end
+
+        resolved = interpreted_icon(fallback)
+        return resolved unless icon_unset?(resolved)
+
+        default_new_root_icon
+      rescue StandardError => e
+        log_hook_failure("new_root_icon", e)
+        default_new_root_icon
+      end
+
       def new_root_label_for(fallback: nil, **)
         text = label_text(resolve_callable(new_root_label, **))
         return text if text
@@ -166,6 +191,31 @@ module RecordingStudio
       def default_new_root_label
         I18n.t("recording_studio.root_switchable.dropdown.new_root", default: "New workspace")
       end
+
+      def interpreted_icon(value)
+        return ICON_UNSET if value.nil?
+        return if value == false
+        return if value.is_a?(String) && value.strip.empty?
+        return icon_name(value) if value.is_a?(String) || value.is_a?(Symbol)
+
+        ICON_UNSET
+      end
+
+      def icon_name(value)
+        name = value.to_s
+        name == "+" ? "plus" : name
+      end
+
+      def icon_unset?(value)
+        value.equal?(ICON_UNSET)
+      end
+
+      def default_new_root_icon
+        I18n.t("recording_studio.root_switchable.dropdown.new_root_icon", default: "plus")
+      end
+
+      ICON_UNSET = Object.new
+      private_constant :ICON_UNSET
 
       def normalize_root_recording(candidate)
         return candidate if recording_candidate?(candidate)

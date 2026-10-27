@@ -93,11 +93,12 @@ class RootSwitchMenuRowsTest < Minitest::Test
     )
   end
 
-  def menu_options(new_root_path: nil, new_root_label: nil)
+  def menu_options(new_root_path: nil, new_root_label: nil, new_root_icon: nil)
     RecordingStudioRootSwitchable::RootSwitch::MenuRows::Options.new(
       none_selected_label: "None selected",
       new_root_path: new_root_path,
-      new_root_label: new_root_label
+      new_root_label: new_root_label,
+      new_root_icon: new_root_icon
     )
   end
 end

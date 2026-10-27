@@ -43,6 +43,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     assert_operator response.body.index("Studio Workspace"), :<, response.body.index("Client Alpha")
     refute_includes response.body, "max-w-3xl"
     assert_select "a[href^='/workspaces/new']", text: "New workspace", minimum: 1
+    assert_select "a[href^='/workspaces/new'] svg[data-flat-pack--icon-name-value='plus']", minimum: 1
     assert_flatpack_0_1_311_switch_page(response.body)
   end
 
@@ -77,9 +78,66 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "a[role='menuitem'][href*='/workspaces/new']", text: /New workspace/, minimum: 1
+    assert_select "a[role='menuitem'][href*='/workspaces/new'] svg[data-flat-pack--icon-name-value='plus']", minimum: 1
     assert_select "button[disabled]", count: 0
   ensure
     scope.available_roots = original_available_roots if scope
+  end
+
+  test "placements list uses the default plus icon" do
+    sign_in(@admin)
+
+    get "/placements"
+
+    assert_response :success
+    assert_select(
+      "#root-switch-host-menu .fp-menu-collapse__items a[href*='/workspaces/new'] " \
+      "svg[data-flat-pack--icon-name-value='plus']",
+      minimum: 1
+    )
+  end
+
+  test "switch page uses a configured new root icon" do
+    sign_in(@admin)
+    scope = RecordingStudioRootSwitchable.configuration.scopes.fetch("all_workspaces")
+    original_icon = scope.new_root_icon
+    scope.new_root_icon = "folder"
+
+    get "/recording_studio_root_switchable/v1/root_switch", params: { scope: "all_workspaces" }
+
+    assert_response :success
+    assert_select "a[href^='/workspaces/new'] svg[data-flat-pack--icon-name-value='folder']", minimum: 1
+  ensure
+    scope.new_root_icon = original_icon if scope
+  end
+
+  test "switch page uses a callable new root icon" do
+    sign_in(@admin)
+    scope = RecordingStudioRootSwitchable.configuration.scopes.fetch("all_workspaces")
+    original_icon = scope.new_root_icon
+    scope.new_root_icon = ->(**) { "sparkles" }
+
+    get "/recording_studio_root_switchable/v1/root_switch", params: { scope: "all_workspaces" }
+
+    assert_response :success
+    assert_select "a[href^='/workspaces/new'] svg[data-flat-pack--icon-name-value='sparkles']", minimum: 1
+  ensure
+    scope.new_root_icon = original_icon if scope
+  end
+
+  test "switch page omits the icon when new_root_icon is false" do
+    sign_in(@admin)
+    scope = RecordingStudioRootSwitchable.configuration.scopes.fetch("all_workspaces")
+    original_icon = scope.new_root_icon
+    scope.new_root_icon = false
+
+    get "/recording_studio_root_switchable/v1/root_switch", params: { scope: "all_workspaces" }
+
+    assert_response :success
+    assert_select "a[href^='/workspaces/new']", text: "New workspace", minimum: 1
+    assert_select "a[href^='/workspaces/new'] svg", count: 0
+  ensure
+    scope.new_root_icon = original_icon if scope
   end
 
   test "root switch empty state renders configured English copy" do

@@ -8,7 +8,7 @@
   anchor_tooltip: t("recording_studio.root_switchable.navigation.close", default: "Close")
 ) %>
 <% if @new_root_path.present? %>
-  <% register_page_nav(@new_root_label, @new_root_path, role: :primary, icon: "plus") %>
+  <% register_page_nav(@new_root_label, @new_root_path, role: :primary, icon: @new_root_icon) %>
 <% end %>
 
 <div class="flex w-full flex-col gap-6">

@@ -9,6 +9,7 @@ en:
       dropdown:
         none_selected: "None selected"
         new_root: "New workspace"
+        new_root_icon: "plus"
       page_copy:
         title: "Switch"
         subtitle: ""
@@ -20,5 +21,6 @@ en:
         selected_badge: "Current"
         switch_action_label: "Switch"
         new_root_action_label: "New workspace"
+        new_root_action_icon: "plus"
         empty_state_title: "Nothing to switch"
         empty_state_body: "There are no options available right now."

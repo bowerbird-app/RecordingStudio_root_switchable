@@ -24,6 +24,10 @@ class RootSwitchContextTest < Minitest::Test
       "New workspace"
     end
 
+    def new_root_icon_for(**)
+      "plus"
+    end
+
     def page_copy
       {}
     end

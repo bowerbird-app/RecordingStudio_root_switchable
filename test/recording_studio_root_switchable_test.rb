@@ -136,7 +136,16 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     refute_includes view_source, "FlatPack::Breadcrumb::Component"
     assert_includes view_source, 'class="flex w-full flex-col gap-6"'
     refute_includes view_source, "max-w-3xl"
-    assert_includes view_source, "register_page_nav(@new_root_label, @new_root_path, role: :primary, icon: \"plus\")"
+    assert_includes view_source, "register_page_nav(@new_root_label, @new_root_path, role: :primary, icon: @new_root_icon)"
+    rows_source = File.read(
+      File.expand_path(
+        "../app/components/recording_studio_root_switchable/root_switch/rows_component.html.erb",
+        __dir__
+      )
+    )
+    assert_includes rows_source, "FlatPack::Shared::IconComponent.new(name: menu_rows.new_root_icon.to_s, size: :sm)"
+    assert_includes rows_source, "if menu_rows.new_root_icon.present?"
+    refute_includes rows_source, 'aria-hidden="true">+</span>'
     assert_includes view_source, "content_for :title, @page_copy.fetch(:title)"
     assert_includes view_source, "content_for :subtitle, page_subtitle if page_subtitle"
     assert_includes view_source, "@page_copy.fetch(:subtitle).presence"
@@ -209,5 +218,6 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes helper_source, "def recording_studio_root_switch_for"
     assert_includes helper_source, "def recording_studio_root_switch_list_for"
     assert_includes helper_source, "def render_recording_studio_root_switch_list"
+    assert_includes helper_source, "new_root_icon: nil"
   end
 end

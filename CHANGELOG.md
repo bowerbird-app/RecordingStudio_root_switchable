@@ -16,6 +16,7 @@ The mounted switch page uses the Recording Studio 6.1 default layout.
 - The dropdown, the collapsed list, and `recording_studio_new_root_path` use that path. Pass `new_root_path: false` to hide it on one placement. The switch page registers it with `register_page_nav` when the path is present.
 - The dropdown trigger stays enabled when the path is present, including when the actor has one workspace or none.
 - Page copy key `new_root_action_label` and `recording_studio.root_switchable.dropdown.new_root` default to "New workspace".
+- `new_root_icon` on a scope, and `new_root_icon:` on the dropdown and list helpers, chooses the FlatPack icon. Unset uses page copy `new_root_action_icon`, then `"plus"`. `false` or `""` omits the icon on the menu row and on `register_page_nav`. `recording_studio.root_switchable.dropdown.new_root_icon` defaults to `"plus"`.
 
 ### Changed
 - Requires `recording_studio` >= 6.1.0 (git tag `v6.1.0`) and `flat_pack` >= 0.1.315. Development and the dummy app pin Flatpack commit `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`FlatPack::VERSION` `0.1.319`). `view_component` is `>= 4.14, < 5`. These lockfiles resolve `4.19.0`.

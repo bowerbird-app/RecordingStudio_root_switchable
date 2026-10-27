@@ -75,6 +75,89 @@ class NewRootPathTest < Minitest::Test
     assert_equal "From copy", @scope.new_root_label_for(fallback: "Fallback")
   end
 
+  def test_icon_defaults_to_plus
+    assert_equal "plus", @scope.new_root_icon_for
+  end
+
+  def test_string_symbol_and_callable_icons
+    @scope.new_root_icon = "folder"
+    assert_equal "folder", @scope.new_root_icon_for
+
+    @scope.new_root_icon = :sparkles
+    assert_equal "sparkles", @scope.new_root_icon_for
+
+    @scope.new_root_icon = ->(**) { "folder-plus" }
+    assert_equal "folder-plus", @scope.new_root_icon_for
+
+    @scope.new_root_icon = "+"
+    assert_equal "plus", @scope.new_root_icon_for
+  end
+
+  def test_false_and_blank_suppress_the_icon
+    @scope.new_root_icon = false
+    assert_nil @scope.new_root_icon_for
+
+    @scope.new_root_icon = ""
+    assert_nil @scope.new_root_icon_for
+
+    @scope.new_root_icon = "   "
+    assert_nil @scope.new_root_icon_for
+  end
+
+  def test_page_copy_and_fallback_can_name_or_suppress_the_icon
+    assert_equal "star", @scope.new_root_icon_for(fallback: "star")
+    assert_nil @scope.new_root_icon_for(fallback: false)
+    assert_nil @scope.new_root_icon_for(fallback: "")
+
+    @scope.page_copy = { new_root_action_icon: "folder" }
+    assert_equal "folder", @scope.new_root_icon_for(fallback: "star")
+
+    @scope.page_copy = { new_root_action_icon: false }
+    assert_nil @scope.new_root_icon_for(fallback: "star")
+
+    @scope.page_copy = { new_root_action_icon: "" }
+    assert_nil @scope.new_root_icon_for(fallback: "star")
+  end
+
+  def test_icon_hook_errors_use_plus
+    @scope.new_root_icon = ->(**) { raise "nope" }
+
+    assert_equal "plus", @scope.new_root_icon_for
+  end
+
+  def test_menu_keeps_a_supplied_icon_and_drops_a_blank_one
+    named = build_menu(
+      entries: [],
+      selected: nil,
+      new_root_path: "/workspaces/new",
+      new_root_label: "New workspace",
+      new_root_icon: "folder"
+    )
+    hidden = build_menu(
+      entries: [],
+      selected: nil,
+      new_root_path: "/workspaces/new",
+      new_root_icon: nil
+    )
+
+    assert_equal "folder", named.new_root_icon
+    assert_nil hidden.new_root_icon
+  end
+
+  def test_helper_override_replaces_or_hides_the_scope_icon
+    @scope.new_root_path = "/workspaces/new"
+    @scope.new_root_icon = "folder"
+
+    named = context_rows(new_root_path: nil, new_root_icon: "sparkles")
+    hidden = context_rows(new_root_path: nil, new_root_icon: false)
+    callable = context_rows(new_root_path: nil, new_root_icon: ->(**) { :sparkles })
+
+    assert_equal "sparkles", named.new_root_icon
+    assert_nil hidden.new_root_icon
+    assert_equal "sparkles", callable.new_root_icon
+    assert_equal "/workspaces/new?return_to=%2Fhere", hidden.new_root_path
+  end
+
   def test_menu_stays_open_when_the_only_offer_is_a_new_root
     rows = build_menu(entries: [], selected: nil, new_root_path: "/workspaces/new", new_root_label: "New workspace")
 
@@ -136,7 +219,7 @@ class NewRootPathTest < Minitest::Test
 
   private
 
-  def build_menu(entries:, selected:, new_root_path:, new_root_label: nil)
+  def build_menu(entries:, selected:, new_root_path:, new_root_label: nil, new_root_icon: nil)
     RecordingStudioRootSwitchable::RootSwitch::MenuRows.build(
       entries: entries,
       selected: selected,
@@ -145,12 +228,13 @@ class NewRootPathTest < Minitest::Test
       options: RecordingStudioRootSwitchable::RootSwitch::MenuRows::Options.new(
         none_selected_label: "None selected",
         new_root_path: new_root_path,
-        new_root_label: new_root_label
+        new_root_label: new_root_label,
+        new_root_icon: new_root_icon
       )
     )
   end
 
-  def context_rows(new_root_path:)
+  def context_rows(new_root_path:, new_root_icon: nil)
     recording = Recording.new("studio", Recordable.new("Studio"))
     resolution = Resolution.new(scope: @scope, available_roots: [recording], root_recording: recording)
     controller = Object.new
@@ -162,7 +246,11 @@ class NewRootPathTest < Minitest::Test
       return_to: "/here",
       form_action_for: ->(scope) { "/switch?scope=#{scope.key}" },
       none_selected_label: "None selected",
-      new_root: RecordingStudioRootSwitchable::RootSwitch::MenuRows::Override.from(new_root_path, nil)
+      new_root: RecordingStudioRootSwitchable::RootSwitch::MenuRows::Override.from(
+        new_root_path,
+        nil,
+        new_root_icon
+      )
     ).menu_rows
   end
 end

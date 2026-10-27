@@ -46,6 +46,12 @@ relative path, then adds `return_to` when the path does not already include it.
 `new_root_label` is the link text. A blank label uses page copy
 `new_root_action_label`, then the English "New workspace".
 
+`new_root_icon` is the FlatPack icon name on that link. Leave it unset and the
+link uses page copy `new_root_action_icon`, then `"plus"`. A String or Symbol
+is an icon name (`"folder"`, `:sparkles`). `false` or `""` draws the label
+with no icon. The same values work as `new_root_icon:` on the dropdown and
+list helpers. See `docs/new_root.md`.
+
 The dropdown, the collapsed list, and the switch page top nav share that path.
 `recording_studio_new_root_path(scope:, return_to:)` returns it for a host link
 of your own. Pass `new_root_path: false` to hide the link on one dropdown or list.
@@ -646,6 +652,8 @@ RecordingStudioRootSwitchable.configure do |config|
     #   controller.main_app.new_workspace_path
     # end
     # scope.new_root_label = "New workspace"
+    # scope.new_root_icon = "folder"
+    # scope.new_root_icon = false
   end
 end
 ```
@@ -984,7 +992,8 @@ decide which roots are allowed.
 On its own, a FlatPack dropdown labelled with the current root. The menu items
 switch to the other accessible roots. When the scope allows a new root, the
 menu also links to that path, and the trigger stays enabled with one workspace
-or with none.
+or with none. `new_root_icon:` overrides the icon for that placement.
+`new_root_icon: false` or `new_root_icon: ""` leaves the label and drops the icon.
 
 ```erb
 <%= recording_studio_root_switch_dropdown(style: :ghost, size: :md, placement: :bottom_right) %>

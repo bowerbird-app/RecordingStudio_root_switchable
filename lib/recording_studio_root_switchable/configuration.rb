@@ -46,6 +46,7 @@ module RecordingStudioRootSwitchable
       selected_badge: "Current",
       switch_action_label: "Switch",
       new_root_action_label: "New workspace",
+      new_root_action_icon: "plus",
       empty_state_title: "Nothing to switch",
       empty_state_body: "There are no options available right now."
     }.freeze
@@ -381,15 +382,17 @@ module RecordingStudioRootSwitchable
     end
 
     def page_copy_value_type_phrase(key)
+      tail = key == :new_root_action_icon ? "callable, or false" : "or callable"
       allowed = "a String, Symbol i18n key, " \
                 "String starting with #{PAGE_COPY_STRING_KEY_PREFIX.inspect}, " \
-                "locale Hash, or callable"
+                "locale Hash, #{tail}"
       return "nil, #{allowed}" if OPTIONAL_PAGE_COPY_KEYS.include?(key)
 
       allowed
     end
 
     def valid_page_copy_value?(entry, key:)
+      return true if entry == false && key == :new_root_action_icon
       return true if entry.nil? && OPTIONAL_PAGE_COPY_KEYS.include?(key)
       return false if entry.nil?
       return true if entry.is_a?(String)
@@ -403,6 +406,7 @@ module RecordingStudioRootSwitchable
     end
 
     def resolve_page_copy_value(value, key:)
+      return value if value == false && key == :new_root_action_icon
       return translate_configured_i18n_key(value, key: key) if value.is_a?(Symbol)
 
       if value.is_a?(String)

@@ -11,6 +11,7 @@ class LocalesTest < Minitest::Test
     "navigation.close" => "Close",
     "dropdown.none_selected" => "None selected",
     "dropdown.new_root" => "New workspace",
+    "dropdown.new_root_icon" => "plus",
     "page_copy.title" => "Switch",
     "page_copy.subtitle" => "",
     "page_copy.scope_heading" => "Scopes",
@@ -21,6 +22,7 @@ class LocalesTest < Minitest::Test
     "page_copy.selected_badge" => "Current",
     "page_copy.switch_action_label" => "Switch",
     "page_copy.new_root_action_label" => "New workspace",
+    "page_copy.new_root_action_icon" => "plus",
     "page_copy.empty_state_title" => "Nothing to switch",
     "page_copy.empty_state_body" => "There are no options available right now."
   }.freeze
