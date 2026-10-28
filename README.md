@@ -19,6 +19,19 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.11.1
+
+No migration and no host-app change. Bump the gem. Do not load
+`test/support/widen_recording_studio_requirement.rb`; that Bundler shim is
+gone. Sibling gems already require `recording_studio` >= 6.1.0.
+
+`0.10.1` was never tagged (`v0.10.0` then `v0.11.0`). The FlatPack 0.1.311
+switch-page work from #51 shipped inside `0.11.0`. Use `0.11.0` or later.
+
+```ruby
+gem "recording_studio_root_switchable", "~> 0.11.1"
+```
+
 ## Upgrading to 0.11.0 (Recording Studio 6.1 layout)
 
 No migration. Require `recording_studio` >= 6.1.0 and `flat_pack` >= 0.1.315.
@@ -63,12 +76,11 @@ gem "view_component", "4.19.0"
 gem "recording_studio_root_switchable", "~> 0.11.0"
 ```
 
-If Accessible, Cache, Metrics, or Trashable still require `recording_studio`
-below 6, load `test/support/widen_recording_studio_requirement.rb` from the
-Gemfile before Bundler evaluates those gemspecs. See the changelog upgrade
-notes for the pins this repo uses.
+## Upgrading to 0.10.1 (superseded / unreleased)
 
-## Upgrading to 0.10.1 (FlatPack 0.1.311)
+Never tagged. Git tags go `v0.10.0` then `v0.11.0`. The work landed on main
+as #51 with `VERSION` `0.10.1`, then `0.11.0` superseded it. Use `0.11.0` or
+later.
 
 No migration. The runtime floor stays `flat_pack >= 0.1.304`. This repo pins
 tag `v0.1.311`.
@@ -537,9 +549,9 @@ import "@hotwired/turbo-rails"
 
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
-### 0.10.1
-- The mounted switch page renders on FlatPack 0.1.311
-- The runtime floor stays `flat_pack` >= 0.1.304. This repo pins tag `v0.1.311`
+### 0.10.1 (superseded / unreleased)
+- Never tagged. The FlatPack 0.1.311 switch-page work from #51 shipped in `0.11.0`.
+- Use `0.11.0` or later. Do not wait for a `v0.10.1` tag.
 
 ### 0.10.0
 - The same workspace list can sit in a FlatPack dropdown, a host menu, and a collapsing button group
@@ -579,7 +591,7 @@ gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashab
                                   tag: "v0.11.0", require: false
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.6.1"
-gem "recording_studio_root_switchable", "~> 0.11.0"
+gem "recording_studio_root_switchable", "~> 0.11.1"
 ```
 
 Then run:
@@ -1098,4 +1110,3 @@ component in a collapsing FlatPack button group.
 
 - Gem security notes: [`SECURITY.md`](SECURITY.md)
 - Cloud Agent boot and fetched Cursor skills: [`docs/cursor-skills.md`](docs/cursor-skills.md)
-- Template reference material remains archived under `docs/gem_template/`.

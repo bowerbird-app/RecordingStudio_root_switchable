@@ -60,6 +60,33 @@ class CloudAgentBootTest < Minitest::Test
     assert_equal "", tracked
   end
 
+  def test_dummy_nested_ci_workflow_is_absent
+    refute File.exist?(File.join(ROOT, "test/dummy/.github/workflows/ci.yml"))
+  end
+
+  def test_security_workflow_runs_brakeman_and_bundler_audit_on_dummy
+    workflow = YAML.safe_load_file(File.join(ROOT, ".github/workflows/security.yml"))
+
+    assert_equal "Security", workflow["name"]
+    assert_equal %w[bundler-audit brakeman importmap-audit], workflow["jobs"].keys
+
+    assert_equal "test/dummy", workflow.dig("jobs", "bundler-audit", "steps").last["working-directory"]
+    assert_equal "bin/bundler-audit", workflow.dig("jobs", "bundler-audit", "steps").last["run"]
+    assert_equal "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error",
+                 workflow.dig("jobs", "brakeman", "steps").last["run"]
+  end
+
+  def test_bundler_shim_and_gem_template_archive_are_gone
+    refute File.exist?(File.join(ROOT, "test/support/widen_recording_studio_requirement.rb"))
+    refute File.exist?(File.join(ROOT, "docs/gem_template"))
+    refute File.exist?(File.join(ROOT, ".github/agents/rails_architect.agent.md"))
+
+    gemfile = File.read(File.join(ROOT, "Gemfile"))
+    dummy_gemfile = File.read(File.join(ROOT, "test/dummy/Gemfile"))
+    refute_includes gemfile, "widen_recording_studio_requirement"
+    refute_includes dummy_gemfile, "widen_recording_studio_requirement"
+  end
+
   def test_ci_runs_the_full_dummy_suite_then_rubocop_and_the_gem_suite
     workflow = YAML.safe_load_file(File.join(ROOT, ".github/workflows/ci.yml"))
     steps = workflow.dig("jobs", "test", "steps")
