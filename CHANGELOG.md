@@ -12,9 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Housekeeping. No behavior change.
 
 ### Changed
-- Dropped `test/support/widen_recording_studio_requirement.rb`. Accessible,
-  Cache, Metrics, and Trashable already require `recording_studio` >= 6.1.0,
-  so the Bundler gemspec prepend is unused.
+- Keep `test/support/widen_recording_studio_requirement.rb` until sibling gems
+  allow `recording_studio` >= 6.1.0 (follow-up PR). Current Accessible, Cache,
+  Metrics, and Trashable pins still require `~> 4.2` / `~> 4.7`.
 - Removed nested `test/dummy/.github/workflows/ci.yml` (it never ran on this
   repository).
 - Removed archived `docs/gem_template/` and `.github/agents/rails_architect.agent.md`.
@@ -23,8 +23,6 @@ Housekeeping. No behavior change.
 
 ### Upgrade Notes
 - Bump to `0.11.1`. No migration. No host-app changes.
-- Do not load `test/support/widen_recording_studio_requirement.rb`. That file
-  is gone.
 
 ## [0.11.0] - 2026-10-27
 

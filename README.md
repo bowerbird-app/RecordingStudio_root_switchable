@@ -21,9 +21,7 @@ This addon was derived from the Recording Studio gem template and keeps the same
 
 ## Upgrading to 0.11.1
 
-No migration and no host-app change. Bump the gem. Do not load
-`test/support/widen_recording_studio_requirement.rb`; that Bundler shim is
-gone.
+No migration and no host-app change. Bump the gem.
 
 `0.10.1` was never tagged (`v0.10.0` then `v0.11.0`). Use `0.11.0` or later.
 
@@ -550,7 +548,6 @@ import "@hotwired/turbo-rails"
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
 ### 0.11.1
-- Dropped `test/support/widen_recording_studio_requirement.rb`
 - `0.10.1` was never tagged (`v0.10.0` then `v0.11.0`)
 
 ### 0.10.1
