@@ -22,7 +22,6 @@ class RenameVerificationTest < Minitest::Test
 
   def test_no_stale_template_references_outside_archived_docs
     files = Dir.glob(File.join(ROOT, "**/*.{rb,erb,md,gemspec}"))
-    files.reject! { |path| path.include?("/docs/gem_template/") }
     files.reject! { |path| path.include?("/coverage/") }
     files.reject! { |path| path.include?("/test/dummy/coverage/") }
     files.reject! { |path| path.end_with?("/test/rename_verification_test.rb") }
@@ -31,8 +30,7 @@ class RenameVerificationTest < Minitest::Test
     stale_files = files.select do |path|
       next false unless File.file?(path)
 
-      contents = File.read(path).gsub("docs/gem_template", "")
-      contents = contents.gsub("gem_template", "")
+      contents = File.read(path).gsub("gem_template", "")
       contents.include?("GemTemplate") || contents.include?("gem_template")
     end
 

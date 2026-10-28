@@ -4,7 +4,6 @@
 
 - This repository is a Rails mountable engine for root switching on top of RecordingStudio.
 - Preserve engine namespace isolation under `RecordingStudioRootSwitchable`.
-- Treat `docs/gem_template/` as archived architectural reference material. Prefer the top-level README and dummy app for current behavior.
 - Keep changes small and scoped.
 
 ## UI Conventions

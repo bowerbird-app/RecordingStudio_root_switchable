@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-10-28
+
+Housekeeping. No behavior change.
+
+### Changed
+- Removed `test/support/widen_recording_studio_requirement.rb`. Development
+  pins Accessible `v0.23.1`, Cache `v0.6.0`, Metrics `v0.7.0`, and Trashable
+  `v0.12.0` so those gemspecs allow `recording_studio` 6.1.0 without a Bundler
+  requirement shim.
+- Removed nested `test/dummy/.github/workflows/ci.yml` (it never ran on this
+  repository).
+- Removed archived `docs/gem_template/` and `.github/agents/rails_architect.agent.md`.
+- `0.10.1` was never tagged. Tags go `v0.10.0` then `v0.11.0`; there is no
+  `v0.10.1` tag.
+
+### Upgrade Notes
+- Bump to `0.11.1`. No migration. No host-app changes.
+
 ## [0.11.0] - 2026-10-27
 
 The mounted switch page uses the Recording Studio 6.1 default layout.
@@ -512,7 +530,9 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.1...HEAD
+[0.11.1]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.0...v0.11.1
+[0.11.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.8...v0.10.0
 [0.9.8]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.7...v0.9.8
 [0.9.7]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.6...v0.9.7

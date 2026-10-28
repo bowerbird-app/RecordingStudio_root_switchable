@@ -89,10 +89,17 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     [File.join(root, "Gemfile"), File.join(root, "test/dummy/Gemfile")].each do |gemfile|
       source = File.read(gemfile)
 
+      refute_includes source, "widen_recording_studio_requirement"
       assert_includes source, %(ref: "#{flat_pack_ref}")
       assert_includes source, 'tag: "v6.1.0"'
+      assert_includes source, 'tag: "v0.23.1"'
+      assert_includes source, 'tag: "v0.6.0"'
+      assert_includes source, 'tag: "v0.7.0"'
+      assert_includes source, 'tag: "v0.12.0"'
       assert_includes source, 'gem "view_component", "4.19.0"'
     end
+
+    refute File.exist?(File.join(root, "test/support/widen_recording_studio_requirement.rb"))
 
     %w[Gemfile.lock test/dummy/Gemfile.lock].each do |relative|
       lock = File.read(File.join(root, relative))
@@ -100,6 +107,10 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
       assert_includes lock, "flat_pack (0.1.319)", relative
       assert_includes lock, "revision: #{flat_pack_ref}", relative
       assert_includes lock, "recording_studio (6.1.0)", relative
+      assert_includes lock, "recording_studio_accessible (0.23.1)", relative
+      assert_includes lock, "recording_studio_cache (0.6.0)", relative
+      assert_includes lock, "recording_studio_metrics (0.7.0)", relative
+      assert_includes lock, "recording_studio_trashable (0.12.0)", relative
       assert_includes lock, "view_component (4.19.0)", relative
       assert_includes lock, "crass (1.0.8)", relative
     end
