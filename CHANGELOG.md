@@ -12,9 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Housekeeping. No behavior change.
 
 ### Changed
-- Keep `test/support/widen_recording_studio_requirement.rb` until sibling gems
-  allow `recording_studio` >= 6.1.0 (follow-up PR). Current Accessible, Cache,
-  Metrics, and Trashable pins still require `~> 4.2` / `~> 4.7`.
+- Removed `test/support/widen_recording_studio_requirement.rb`. Development
+  pins Accessible `v0.23.1`, Cache `v0.6.0`, Metrics `v0.7.0`, and Trashable
+  `v0.12.0` so those gemspecs allow `recording_studio` 6.1.0 without a Bundler
+  requirement shim.
 - Removed nested `test/dummy/.github/workflows/ci.yml` (it never ran on this
   repository).
 - Removed archived `docs/gem_template/` and `.github/agents/rails_architect.agent.md`.
