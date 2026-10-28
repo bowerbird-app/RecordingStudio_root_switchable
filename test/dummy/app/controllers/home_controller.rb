@@ -1,8 +1,5 @@
 class HomeController < ApplicationController
   GEM_VIEWS_ROOT = RecordingStudioRootSwitchable::Engine.root.join("app/views").freeze
-  GEM_VIEW_FILES = Dir.glob(GEM_VIEWS_ROOT.join("**/*.erb")).sort.to_h do |absolute|
-    [Pathname(absolute).relative_path_from(GEM_VIEWS_ROOT).to_s, absolute.to_s]
-  end.freeze
 
   def index
     @active_scope_key = current_root_scope_key.to_s.presence || "all_workspaces"
@@ -39,12 +36,14 @@ class HomeController < ApplicationController
   end
 
   def gem_view
-    requested = gem_view_request_paths
-    relative, absolute = GEM_VIEW_FILES.find { |path, _file| requested.include?(path) }
-    raise ActionController::RoutingError, "Not Found" if absolute.blank?
+    @gem_view_path = params[:view_path].to_s
+    full_path = GEM_VIEWS_ROOT.join(@gem_view_path).cleanpath
 
-    @gem_view_path = relative
-    @gem_view_source = File.read(absolute)
+    if !full_path.to_s.start_with?("#{GEM_VIEWS_ROOT}/") || full_path.extname != ".erb" || !full_path.file?
+      raise ActionController::RoutingError, "Not Found"
+    end
+
+    @gem_view_source = File.read(full_path)
   end
 
   private
@@ -210,14 +209,10 @@ class HomeController < ApplicationController
     ]
   end
 
-  def gem_view_request_paths
-    view_path = params[:view_path].to_s
-    format = params[:format].to_s
-    [ view_path, format.present? ? "#{view_path}.#{format}" : nil ].compact
-  end
-
   def gem_view_entries
-    GEM_VIEW_FILES.keys.map do |relative_path|
+    Dir.glob(GEM_VIEWS_ROOT.join("**/*.erb")).sort.map do |view_path|
+      relative_path = Pathname(view_path).relative_path_from(GEM_VIEWS_ROOT).to_s
+
       {
         name: File.basename(relative_path),
         path: File.join("app/views", relative_path),

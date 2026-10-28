@@ -178,7 +178,6 @@ class HomeNavigationTest < Minitest::Test
     assert_includes controller, "def gem_views"
     assert_includes controller, "def gem_view"
     assert_includes controller, "GEM_VIEWS_ROOT = RecordingStudioRootSwitchable::Engine.root.join(\"app/views\").freeze"
-    assert_includes controller, "GEM_VIEW_FILES"
     assert_includes controller, "href: gem_view_path(relative_path)"
     assert_includes view, "content_for :title, \"Gem views\""
     assert_includes view, "FlatPack::List::Component.new"

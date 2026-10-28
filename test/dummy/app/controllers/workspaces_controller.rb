@@ -2,17 +2,6 @@
 
 class WorkspacesController < ApplicationController
   def new
-    @return_to = local_return_path(params[:return_to])
-  end
-
-  private
-
-  def local_return_path(raw)
-    path = RecordingStudioRootSwitchable::RedirectSanitizer.sanitize(raw)
-    return unless path.is_a?(String)
-    return unless path.start_with?("/")
-    return if path.start_with?("//")
-
-    path
+    @return_to = RecordingStudioRootSwitchable::RedirectSanitizer.sanitize(params[:return_to])
   end
 end

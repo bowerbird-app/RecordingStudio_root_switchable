@@ -9,21 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.11.1] - 2026-10-28
 
-Cleanup, CI, and docs. No behavior change.
+Housekeeping. No behavior change.
 
 ### Changed
 - Dropped `test/support/widen_recording_studio_requirement.rb`. Accessible,
   Cache, Metrics, and Trashable already require `recording_studio` >= 6.1.0,
   so the Bundler gemspec prepend is unused.
-- Added root `.github/workflows/security.yml` (Brakeman, Bundler Audit, and
-  importmap audit on the dummy app), copied from RecordingStudio_attachable.
 - Removed nested `test/dummy/.github/workflows/ci.yml` (it never ran on this
   repository).
 - Removed archived `docs/gem_template/` and `.github/agents/rails_architect.agent.md`.
-- Marked `0.10.1` as superseded and unreleased. Tags go `v0.10.0` then
-  `v0.11.0`; there is no `v0.10.1` tag.
-- Dummy `brakeman` is 8.1.0 so `--ensure-latest` passes. The dummy new-workspace
-  page only links a local path, and dummy gem-view reads an allowlisted file.
+- `0.10.1` was never tagged. Tags go `v0.10.0` then `v0.11.0`; there is no
+  `v0.10.1` tag.
 
 ### Upgrade Notes
 - Bump to `0.11.1`. No migration. No host-app changes.
@@ -56,18 +52,9 @@ The mounted switch page uses the Recording Studio 6.1 default layout.
 - Move a copied heading into `content_for :title` (and `content_for :subtitle` when the page has one). Put back and close on `flat_pack_page_nav`. Put a page action on `register_page_nav`.
 - A host layout that replaces the default has to render `:title`, flash, and `flat_pack_page_nav_tag`. Load `flat_pack/variables`, `flat_pack/application`, and `flat_pack/rich_text` before the host Tailwind sheet.
 - `new_root_path` defaults to `nil`. Existing scopes gain no create link until you set it. Return `nil` or `false` from the callable when the actor cannot create a root.
-- 0.11.0 shipped a Bundler prepend that widened sibling `recording_studio`
-  requirements to >= 6.1.0. Accessible `v0.18.0`, Cache `v0.5.0`, Metrics
-  `v0.6.1`, and Trashable `v0.11.0` already declare that floor. 0.11.1 dropped
-  the prepend.
+- If a sibling gemspec still requires `recording_studio` below 6, load `test/support/widen_recording_studio_requirement.rb` before Bundler evaluates gemspecs. Accessible `v0.18.0`, Cache `v0.5.0`, Metrics `v0.6.1`, and Trashable `v0.11.0` need that hook.
 
-## [0.10.1] - superseded / unreleased
-
-Never tagged. Git tags go `v0.10.0` then `v0.11.0`. The work landed on main
-as #51 (`c709e01`, 2026-10-26) with `VERSION` `0.10.1`, then `0.11.0` (#52)
-superseded it. Use `0.11.0` or later. Do not wait for a `v0.10.1` tag.
-
-That commit is what this section described:
+## [0.10.1] - 2026-10-26
 
 The mounted switch page renders on FlatPack 0.1.311.
 

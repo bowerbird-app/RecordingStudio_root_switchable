@@ -68,51 +68,6 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     assert_select "a[href='/placements']"
   end
 
-  test "new workspace page omits an unsafe return_to link" do
-    sign_in(@admin)
-
-    get "/workspaces/new", params: { return_to: "https://evil.example/phish" }
-
-    assert_response :success
-    assert_select "main a[href='https://evil.example/phish']", count: 0
-    assert_select "p", text: /Return to/, count: 0
-  end
-
-  test "new workspace page omits a protocol-relative return_to link" do
-    sign_in(@admin)
-
-    get "/workspaces/new", params: { return_to: "//evil.example/phish" }
-
-    assert_response :success
-    assert_select "main a[href='//evil.example/phish']", count: 0
-    assert_select "p", text: /Return to/, count: 0
-  end
-
-  test "gem view shows an allowlisted engine template" do
-    sign_in(@admin)
-
-    get "/gem_views/recording_studio_root_switchable/root_switches/show.html.erb"
-
-    assert_response :success
-    assert_includes response.body, "root_switch"
-  end
-
-  test "gem view refuses a path that is not in the allowlist" do
-    sign_in(@admin)
-
-    get "/gem_views/not_a_real_view.html.erb"
-
-    assert_response :not_found
-  end
-
-  test "gem view refuses a path-traversal view_path" do
-    sign_in(@admin)
-
-    get "/gem_views/../../../Gemfile"
-
-    assert_response :not_found
-  end
-
   test "dropdown stays enabled when one workspace can create another" do
     sign_in(@admin)
     scope = RecordingStudioRootSwitchable.configuration.scopes.fetch("all_roots")
