@@ -2,8 +2,6 @@
 
 source "https://rubygems.org"
 
-require_relative "test/support/widen_recording_studio_requirement"
-
 gemspec
 
 gem "flat_pack", github: "bowerbird-app/flatpack", ref: "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"

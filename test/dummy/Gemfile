@@ -1,7 +1,5 @@
 source "https://rubygems.org"
 
-require_relative "../support/widen_recording_studio_requirement"
-
 # Use the RecordingStudioRootSwitchable engine
 gem "recording_studio_root_switchable", path: "../.."
 
