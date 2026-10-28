@@ -4,6 +4,6 @@
 <p class="text-sm text-(--surface-muted-content-color)">
   This demo page is the host create form. It does not persist a workspace.
 </p>
-<% if @return_to.present? %>
+<% if @return_to.is_a?(String) && @return_to.start_with?("/") && !@return_to.start_with?("//") %>
   <p class="mt-4 text-sm">Return to <%= link_to @return_to, @return_to %></p>
 <% end %>

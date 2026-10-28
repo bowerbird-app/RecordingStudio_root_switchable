@@ -22,6 +22,8 @@ Cleanup, CI, and docs. No behavior change.
 - Removed archived `docs/gem_template/` and `.github/agents/rails_architect.agent.md`.
 - Marked `0.10.1` as superseded and unreleased. Tags go `v0.10.0` then
   `v0.11.0`; there is no `v0.10.1` tag.
+- Dummy `brakeman` is 8.1.0 so `--ensure-latest` passes. The dummy new-workspace
+  page only links a local path, and dummy gem-view reads an allowlisted file.
 
 ### Upgrade Notes
 - Bump to `0.11.1`. No migration. No host-app changes.
