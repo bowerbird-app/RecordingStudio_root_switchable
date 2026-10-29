@@ -19,6 +19,16 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.11.2
+
+No migration. Runtime `recording_studio_cache` is `>= 0.5, < 1`. Pin Cache
+`v0.6.0` on Recording Studio 6.x. Development pins Recording Studio `v6.3.0`
+and FlatPack `v0.1.329`.
+
+```ruby
+gem "recording_studio_root_switchable", "~> 0.11.2"
+```
+
 ## Upgrading to 0.11.1
 
 No migration and no host-app change. Bump the gem.
@@ -547,6 +557,10 @@ import "@hotwired/turbo-rails"
 
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
+### 0.11.2
+- Runtime `recording_studio_cache` is `>= 0.5, < 1`. Development pins Cache
+  `v0.6.0`, Recording Studio `v6.3.0`, and FlatPack `v0.1.329`.
+
 ### 0.11.1
 - `0.10.1` was never tagged (`v0.10.0` then `v0.11.0`)
 - Removed the Bundler `recording_studio` requirement shim. Development pins
@@ -587,15 +601,15 @@ Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 Add the gems to your host app:
 
 ```ruby
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.1.0"
-gem "flat_pack", github: "bowerbird-app/flatpack", ref: "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.3.0"
+gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.329"
 gem "view_component", "4.19.0"
 gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.23.1"
 gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable",
                                   tag: "v0.12.0", require: false
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.0"
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.0"
-gem "recording_studio_root_switchable", "~> 0.11.1"
+gem "recording_studio_root_switchable", "~> 0.11.2"
 ```
 
 Then run:
