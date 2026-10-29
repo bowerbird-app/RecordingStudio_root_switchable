@@ -77,21 +77,21 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
 
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio", ">= 6.1.0"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.18"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_cache", "~> 0.5"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_metrics", ">= 0.3.0", "< 1.0"'
     assert_includes gemspec_source, 'spec.add_dependency "flat_pack", ">= 0.1.315"'
     assert_includes gemspec_source, 'spec.add_dependency "view_component", ">= 4.14", "< 5"'
   end
 
-  def test_development_pins_flat_pack_0_1_319_and_recording_studio_6_1
+  def test_development_pins_flat_pack_0_1_329_and_recording_studio_6_3
     root = File.expand_path("..", __dir__)
-    flat_pack_ref = "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"
 
     [File.join(root, "Gemfile"), File.join(root, "test/dummy/Gemfile")].each do |gemfile|
       source = File.read(gemfile)
 
       refute_includes source, "widen_recording_studio_requirement"
-      assert_includes source, %(ref: "#{flat_pack_ref}")
-      assert_includes source, 'tag: "v6.1.0"'
+      assert_includes source, 'tag: "v0.1.329"'
+      assert_includes source, 'tag: "v6.3.0"'
       assert_includes source, 'tag: "v0.23.1"'
       assert_includes source, 'tag: "v0.6.0"'
       assert_includes source, 'tag: "v0.7.0"'
@@ -104,9 +104,8 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     %w[Gemfile.lock test/dummy/Gemfile.lock].each do |relative|
       lock = File.read(File.join(root, relative))
 
-      assert_includes lock, "flat_pack (0.1.319)", relative
-      assert_includes lock, "revision: #{flat_pack_ref}", relative
-      assert_includes lock, "recording_studio (6.1.0)", relative
+      assert_includes lock, "flat_pack (0.1.329)", relative
+      assert_includes lock, "recording_studio (6.3.0)", relative
       assert_includes lock, "recording_studio_accessible (0.23.1)", relative
       assert_includes lock, "recording_studio_cache (0.6.0)", relative
       assert_includes lock, "recording_studio_metrics (0.7.0)", relative

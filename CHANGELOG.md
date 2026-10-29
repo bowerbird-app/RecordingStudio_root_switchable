@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.2] - 2026-10-29
+
+Development and dummy pins only. The public `recording_studio_cache` requirement is still `~> 0.5` (`>= 0.5, < 1.0`).
+
+### Changed
+- Development and dummy pins Recording Studio `v6.1.0` → `v6.3.0` and FlatPack `0.1.319` → `0.1.329`.
+- Lockfiles bump `io-console` `0.9.4` → `0.9.5`.
+
+### Upgrade Notes
+- Bump to `0.11.2`. No migration. No host-app change. The published gemspec is unchanged.
+
 ## [0.11.1] - 2026-10-28
 
 Housekeeping. No behavior change.
@@ -530,7 +541,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.2...HEAD
+[0.11.2]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.1...v0.11.2
 [0.11.1]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.9.8...v0.10.0
