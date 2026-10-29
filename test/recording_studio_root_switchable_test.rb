@@ -77,7 +77,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
 
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio", ">= 6.1.0"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.18"'
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_cache", ">= 0.5", "< 1"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_cache", "~> 0.5"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_metrics", ">= 0.3.0", "< 1.0"'
     assert_includes gemspec_source, 'spec.add_dependency "flat_pack", ">= 0.1.315"'
     assert_includes gemspec_source, 'spec.add_dependency "view_component", ">= 4.14", "< 5"'

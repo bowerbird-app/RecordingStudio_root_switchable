@@ -9,7 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.11.2] - 2026-10-29
 
-- Runtime `recording_studio_cache` is `>= 0.5, < 1` so Cache `0.6.x` resolves with core 6.x hosts.
+Development and dummy pins only. The public `recording_studio_cache` requirement is still `~> 0.5` (`>= 0.5, < 1.0`).
+
+### Changed
+- Development and dummy pins Recording Studio `v6.1.0` → `v6.3.0` and FlatPack `0.1.319` → `0.1.329`.
+- Lockfiles bump `io-console` `0.9.4` → `0.9.5`.
+
+### Upgrade Notes
+- Bump to `0.11.2`. No migration. No host-app change. The published gemspec is unchanged.
 
 ## [0.11.1] - 2026-10-28
 
