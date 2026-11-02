@@ -83,14 +83,14 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes gemspec_source, 'spec.add_dependency "view_component", ">= 4.14", "< 5"'
   end
 
-  def test_development_pins_flat_pack_0_1_329_and_recording_studio_6_3
+  def test_development_pins_flat_pack_0_1_332_and_recording_studio_6_3
     root = File.expand_path("..", __dir__)
 
     [File.join(root, "Gemfile"), File.join(root, "test/dummy/Gemfile")].each do |gemfile|
       source = File.read(gemfile)
 
       refute_includes source, "widen_recording_studio_requirement"
-      assert_includes source, 'tag: "v0.1.329"'
+      assert_includes source, 'tag: "v0.1.332"'
       assert_includes source, 'tag: "v6.3.0"'
       assert_includes source, 'tag: "v0.23.1"'
       assert_includes source, 'tag: "v0.6.0"'
@@ -104,7 +104,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     %w[Gemfile.lock test/dummy/Gemfile.lock].each do |relative|
       lock = File.read(File.join(root, relative))
 
-      assert_includes lock, "flat_pack (0.1.329)", relative
+      assert_includes lock, "flat_pack (0.1.332)", relative
       assert_includes lock, "recording_studio (6.3.0)", relative
       assert_includes lock, "recording_studio_accessible (0.23.1)", relative
       assert_includes lock, "recording_studio_cache (0.6.0)", relative

@@ -19,6 +19,16 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.11.3
+
+No migration and no host-app change. The public `flat_pack` requirement is
+still `>= 0.1.315`. This release only refreshes the development and dummy
+FlatPack pin from `v0.1.329` to `v0.1.332`.
+
+```ruby
+gem "recording_studio_root_switchable", "~> 0.11.3"
+```
+
 ## Upgrading to 0.11.2
 
 No migration and no host-app change. The public `recording_studio_cache`
@@ -558,6 +568,9 @@ import "@hotwired/turbo-rails"
 
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
+### 0.11.3
+- Development and dummy pins only: FlatPack `v0.1.332`. Public `flat_pack` stays `>= 0.1.315`.
+
 ### 0.11.2
 - Development and dummy pins only: Recording Studio `v6.3.0`, FlatPack
   `v0.1.329`, `io-console` `0.9.5`. Public `recording_studio_cache` stays `~> 0.5`.
@@ -603,14 +616,14 @@ Add the gems to your host app:
 
 ```ruby
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.3.0"
-gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.329"
+gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.332"
 gem "view_component", "4.19.0"
 gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.23.1"
 gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable",
                                   tag: "v0.12.0", require: false
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.0"
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.0"
-gem "recording_studio_root_switchable", "~> 0.11.2"
+gem "recording_studio_root_switchable", "~> 0.11.3"
 ```
 
 Then run:
