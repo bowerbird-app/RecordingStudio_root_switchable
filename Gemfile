@@ -4,11 +4,11 @@ source "https://rubygems.org"
 
 gemspec
 
-gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.332"
+gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.341"
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.3.0"
-gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.23.1"
-gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.0"
-gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.0"
+gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.24.0"
+gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.2"
+gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.2"
 # Query-only trash helpers for Accessible (gemspec ~> 0.10). require: false so
 # Bundler does not auto-load the Trashable engine.
 gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable",

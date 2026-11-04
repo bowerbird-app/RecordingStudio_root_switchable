@@ -19,6 +19,21 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.11.4
+
+No migration and no host-app change. The published gemspec floors are
+unchanged. This release refreshes development and dummy pins: FlatPack
+`v0.1.332` → `v0.1.341`, Accessible `v0.23.1` → `v0.24.0`, Cache
+`v0.6.0` → `v0.6.2`, and Metrics `v0.7.0` → `v0.7.2`. Recording Studio
+stays on `v6.3.0`. Lockfiles also pick up Bundler Audit patches
+(`rack` `3.2.8`, `nokogiri` `1.19.7`, `loofah` `2.25.3`,
+`rails-html-sanitizer` `1.7.2`, `puma` `8.0.2`; dummy also `bcrypt`
+`3.1.22`, `devise` `5.0.4`, `msgpack` `1.8.7`, `net-ssh` `7.3.8`).
+
+```ruby
+gem "recording_studio_root_switchable", "~> 0.11.4"
+```
+
 ## Upgrading to 0.11.3
 
 No migration and no host-app change. The public `flat_pack` requirement is
@@ -568,6 +583,9 @@ import "@hotwired/turbo-rails"
 
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
+### 0.11.4
+- Development and dummy pins only: FlatPack `v0.1.341`, Accessible `v0.24.0`, Cache `v0.6.2`, Metrics `v0.7.2`. Recording Studio stays `v6.3.0`. Published gemspec floors are unchanged.
+
 ### 0.11.3
 - Development and dummy pins only: FlatPack `v0.1.332`. Public `flat_pack` stays `>= 0.1.315`.
 
@@ -616,14 +634,14 @@ Add the gems to your host app:
 
 ```ruby
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.3.0"
-gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.332"
+gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.341"
 gem "view_component", "4.19.0"
-gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.23.1"
+gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.24.0"
 gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable",
                                   tag: "v0.12.0", require: false
-gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.0"
-gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.0"
-gem "recording_studio_root_switchable", "~> 0.11.3"
+gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.2"
+gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.2"
+gem "recording_studio_root_switchable", "~> 0.11.4"
 ```
 
 Then run:

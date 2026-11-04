@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.4] - 2026-11-04
+
+Development and dummy pins only. The published gemspec floors are unchanged.
+
+### Changed
+- Development and dummy pins FlatPack `v0.1.332` → `v0.1.341`, Accessible `v0.23.1` → `v0.24.0`, Cache `v0.6.0` → `v0.6.2`, and Metrics `v0.7.0` → `v0.7.2`. Recording Studio stays on `v6.3.0`.
+- Lockfiles bump Bundler Audit findings: `rack` `3.2.8`, `nokogiri` `1.19.7`, `loofah` `2.25.3`, `rails-html-sanitizer` `1.7.2`, `puma` `8.0.2`; dummy also `bcrypt` `3.1.22`, `devise` `5.0.4`, `msgpack` `1.8.7`, `net-ssh` `7.3.8`.
+
+### Upgrade Notes
+- Bump to `0.11.4`. No migration. No host-app change. The published gemspec is unchanged.
+
 ## [0.11.3] - 2026-11-02
 
 Development and dummy pins only. The public `flat_pack` requirement is still `>= 0.1.315`.
@@ -551,7 +562,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.3...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.4...HEAD
+[0.11.4]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.3...v0.11.4
 [0.11.3]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.2...v0.11.3
 [0.11.2]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.1...v0.11.2
 [0.11.1]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.0...v0.11.1
