@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.5] - 2026-11-04
+
+Requires Recording Studio 6.3.0 and FlatPack 0.1.341 so sibling gems can move
+onto those floors.
+
+### Changed
+- Runtime `recording_studio` is `>= 6.3.0, < 7` (was `>= 6.1.0`). Runtime
+  `flat_pack` is `>= 0.1.341` (was `>= 0.1.315`). Development and dummy pins
+  stay on Recording Studio `v6.3.0` and FlatPack `v0.1.341`.
+- The switch page already uses `flat_pack_page_nav` (core 6 dropped
+  `recording_studio_page_nav`) and Card `background:` / `border:` / `shadow:`.
+  Button, Badge, and Alert still pass `style:`; that keyword is still on
+  FlatPack 0.1.341.
+
+### Upgrade Notes
+- Bump to `0.11.5`. No migration.
+- Pin `recording_studio` to tag `v6.3.0` (or newer 6.x) and `flat_pack` to
+  tag `v0.1.341` or newer. Hosts still on Recording Studio 6.1 or FlatPack
+  below 0.1.341 stay on `0.11.4`.
+
 ## [0.11.4] - 2026-11-04
 
 Development and dummy pins only. The published gemspec floors are unchanged.
@@ -562,7 +582,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.4...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.5...HEAD
+[0.11.5]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.4...v0.11.5
 [0.11.4]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.3...v0.11.4
 [0.11.3]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.2...v0.11.3
 [0.11.2]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.1...v0.11.2

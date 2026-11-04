@@ -19,6 +19,18 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.11.5
+
+No migration. Require `recording_studio` `>= 6.3.0, < 7` and `flat_pack`
+`>= 0.1.341`. Hosts on Recording Studio 6.1 or FlatPack below 0.1.341 stay
+on `0.11.4`. Development and dummy pins stay on Recording Studio `v6.3.0`
+and FlatPack `v0.1.341`. The switch page still uses `flat_pack_page_nav`
+and Card `background:` / `border:` / `shadow:`.
+
+```ruby
+gem "recording_studio_root_switchable", "~> 0.11.5"
+```
+
 ## Upgrading to 0.11.4
 
 No migration and no host-app change. The published gemspec floors are
@@ -583,6 +595,9 @@ import "@hotwired/turbo-rails"
 
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
+### 0.11.5
+- Runtime floors: `recording_studio` `>= 6.3.0, < 7` and `flat_pack` `>= 0.1.341`. Development pins stay on `v6.3.0` / `v0.1.341`.
+
 ### 0.11.4
 - Development and dummy pins only: FlatPack `v0.1.341`, Accessible `v0.24.0`, Cache `v0.6.2`, Metrics `v0.7.2`. Recording Studio stays `v6.3.0`. Published gemspec floors are unchanged.
 
@@ -641,7 +656,7 @@ gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashab
                                   tag: "v0.12.0", require: false
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.2"
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.2"
-gem "recording_studio_root_switchable", "~> 0.11.4"
+gem "recording_studio_root_switchable", "~> 0.11.5"
 ```
 
 Then run:
