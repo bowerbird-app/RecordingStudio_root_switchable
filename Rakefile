@@ -26,4 +26,16 @@ namespace :app do
   task test: :test
 end
 
+namespace :test do
+  desc "Run gem tests and dummy app tests"
+  task :all do
+    Rake::Task[:test].invoke
+    dummy = File.expand_path("test/dummy", __dir__)
+    gemfile = File.join(dummy, "Gemfile")
+    Dir.chdir(dummy) do
+      sh({ "BUNDLE_GEMFILE" => gemfile }, "bundle exec rails test")
+    end
+  end
+end
+
 task default: :test

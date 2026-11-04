@@ -11,12 +11,18 @@ require_relative "../app/controllers/recording_studio_root_switchable/root_switc
 
 class RecordingStudioRootSwitchableTest < Minitest::Test
   def test_version_exists
-    refute_nil RecordingStudioRootSwitchable::VERSION
+    assert_equal "0.11.5", RecordingStudioRootSwitchable::VERSION
   end
 
   def test_root_switch_controller_uses_recording_studio_layout
     assert_equal :recording_studio_resolved_layout,
                  RecordingStudioRootSwitchable::RootSwitchesController.send(:_layout)
+
+    controller_source = File.read(
+      File.expand_path("../app/controllers/recording_studio_root_switchable/application_controller.rb", __dir__)
+    )
+    assert_includes controller_source, "recording_studio_layout { RecordingStudioRootSwitchable.configuration.layout }"
+    refute_includes controller_source, 'layout "'
   end
 
   def test_engine_exists
@@ -71,15 +77,15 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes initializer_source, 'child_recordables: [ "RecordingStudio::Access" ]'
   end
 
-  def test_gemspec_targets_recording_studio_6_1_and_accessible_0_18
+  def test_gemspec_targets_recording_studio_6_3_and_flat_pack_0_1_341
     gemspec_path = File.expand_path("../recording_studio_root_switchable.gemspec", __dir__)
     gemspec_source = File.read(gemspec_path)
 
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", ">= 6.1.0"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", ">= 6.3.0", "< 7"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.18"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_cache", "~> 0.5"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_metrics", ">= 0.3.0", "< 1.0"'
-    assert_includes gemspec_source, 'spec.add_dependency "flat_pack", ">= 0.1.315"'
+    assert_includes gemspec_source, 'spec.add_dependency "flat_pack", ">= 0.1.341"'
     assert_includes gemspec_source, 'spec.add_dependency "view_component", ">= 4.14", "< 5"'
   end
 
@@ -112,6 +118,9 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
       assert_includes lock, "recording_studio_trashable (0.12.0)", relative
       assert_includes lock, "view_component (4.19.0)", relative
       assert_includes lock, "crass (1.0.8)", relative
+      assert_includes lock, "recording_studio_root_switchable (0.11.5)", relative
+      assert_includes lock, "flat_pack (>= 0.1.341)", relative
+      assert_includes lock, "recording_studio (>= 6.3.0, < 7)", relative
     end
   end
 
@@ -141,6 +150,9 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes view_source, "anchor_href: @return_anchor_url"
     assert_includes view_source, 't("recording_studio.root_switchable.navigation.close", default: "Close")'
     refute_includes view_source, "anchor_label:"
+    refute_includes view_source, "back_label:"
+    refute_includes view_source, "back_icon:"
+    refute_includes view_source, "recording_studio_page_nav"
     refute_includes view_source, "FlatPack::PageNav::Component"
     refute_includes view_source, "FlatPack::PageTitle::Component"
     refute_includes view_source, "FlatPack::Breadcrumb::Component"
@@ -229,5 +241,12 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes helper_source, "def recording_studio_root_switch_list_for"
     assert_includes helper_source, "def render_recording_studio_root_switch_list"
     assert_includes helper_source, "new_root_icon: nil"
+  end
+
+  def test_dummy_bundler_audit_has_no_ignores
+    config = File.read(File.expand_path("dummy/config/bundler-audit.yml", __dir__))
+
+    refute_match(/^\s*-\s+\S+/, config)
+    assert_match(/ignore:\s*\[\]/, config)
   end
 end
