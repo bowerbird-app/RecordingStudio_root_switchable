@@ -11,7 +11,7 @@ require_relative "../app/controllers/recording_studio_root_switchable/root_switc
 
 class RecordingStudioRootSwitchableTest < Minitest::Test
   def test_version_exists
-    assert_equal "0.11.5", RecordingStudioRootSwitchable::VERSION
+    assert_equal "0.11.6", RecordingStudioRootSwitchable::VERSION
   end
 
   def test_root_switch_controller_uses_recording_studio_layout
@@ -118,7 +118,8 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
       assert_includes lock, "recording_studio_trashable (0.12.0)", relative
       assert_includes lock, "view_component (4.19.0)", relative
       assert_includes lock, "crass (1.0.8)", relative
-      assert_includes lock, "recording_studio_root_switchable (0.11.5)", relative
+      assert_includes lock, "recording_studio_root_switchable (0.11.6)", relative
+      assert_includes lock, "rails (8.1.4.1)", relative
       assert_includes lock, "flat_pack (>= 0.1.341)", relative
       assert_includes lock, "recording_studio (>= 6.3.0, < 7)", relative
     end
