@@ -54,7 +54,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
         params: { scope: "all_workspaces", return_to: "/placements" }
 
     assert_response :success
-    assert_select "nav.flat-pack-page-nav button[aria-label='Go back']", minimum: 1
+    assert_select "nav.flat-pack-page-nav button[aria-label='Go back']", count: 0
     assert_select "nav.flat-pack-page-nav a[aria-label='Close'][href='/placements']", minimum: 1
   end
 
@@ -275,11 +275,11 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
   private
 
   # Card fill is background:/border:/shadow:, not style:. PageNav close is
-  # Spec with_close; history back is with_back.
+  # Spec with_close when return_anchor_url is present.
   def assert_flatpack_0_1_341_switch_page(body)
     assert_equal "0.1.341", FlatPack::VERSION
 
-    assert_select "nav.flat-pack-page-nav button[aria-label='Go back']", minimum: 1
+    assert_select "nav.flat-pack-page-nav button[aria-label='Go back']", count: 0
     assert_select "nav.flat-pack-page-nav a[aria-label='Close'][href='/']", minimum: 1
 
     cards = Nokogiri::HTML(body).css(".fp-card[data-background='default']")

@@ -146,7 +146,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     view_source = File.read(view_path)
 
     assert_includes view_source, "flat_pack_page_nav(round: true, style: :default) do |nav|"
-    assert_includes view_source, "nav.with_back"
+    refute_includes view_source, "nav.with_back"
     assert_includes view_source, "if @return_anchor_url.present?"
     assert_includes view_source, "nav.with_close("
     assert_includes view_source, "href: @return_anchor_url"

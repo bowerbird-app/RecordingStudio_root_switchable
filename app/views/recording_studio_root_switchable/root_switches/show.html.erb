@@ -2,7 +2,6 @@
 <% page_subtitle = @page_copy.fetch(:subtitle).presence %>
 <% content_for :subtitle, page_subtitle if page_subtitle %>
 <% flat_pack_page_nav(round: true, style: :default) do |nav| %>
-  <% nav.with_back %>
   <% if @return_anchor_url.present? %>
     <% nav.with_close(
       href: @return_anchor_url,
