@@ -81,21 +81,11 @@ message_root = MessageRoot.find_or_create_by!(name: "Studio Messages")
 RecordingStudio.root_recording_for(message_root)
 
 ensure_owner_access = lambda do |recording:|
-  previous_authorize_write = RecordingStudio.configuration.authorize_write
-  begin
-    # First owner has no Accessible role yet, so the Access :admin write gate
-    # cannot pass. Open writes only for this bootstrap, then restore the gate.
-    RecordingStudio.configuration.authorize_write = ->(actor:, **) {
-      actor.is_a?(User) && actor.persisted?
-    }
-    result = RecordingStudioAccessible.bootstrap_owner_access!(
-      recording: recording,
-      actor: admin
-    )
-    raise result.error if result.failure?
-  ensure
-    RecordingStudio.configuration.authorize_write = previous_authorize_write
-  end
+  result = RecordingStudioAccessible.bootstrap_owner_access!(
+    recording: recording,
+    actor: admin
+  )
+  raise result.error if result.failure?
 end
 
 ensure_granted_access = lambda do |actor:, role:, recording:|

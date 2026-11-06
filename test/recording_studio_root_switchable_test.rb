@@ -75,8 +75,20 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
 
     assert_includes initializer_source, "config.authorize_write"
     assert_includes initializer_source, "RecordingStudioAccessible.authorized?"
+    assert_includes initializer_source, "AccessCreationContext.allowed?"
     refute_includes initializer_source, "recordable.actor == actor"
+    refute_match(/authorize_write\s*=\s*->\(actor:, \*\*\) \{ actor\.is_a\?\(User\) && actor\.persisted\? \}/, initializer_source)
     refute_match(/authorize_write\s*=\s*->\(actor:, \*\*\) \{ actor\.present\? \}/, initializer_source)
+  end
+
+  def test_dummy_seeds_bootstrap_owner_access_without_authorize_write_swap
+    seeds_path = File.expand_path("dummy/db/seeds.rb", __dir__)
+    seeds_source = File.read(seeds_path)
+
+    assert_includes seeds_source, "bootstrap_owner_access!"
+    assert_includes seeds_source, "grant_access"
+    refute_includes seeds_source, "previous_authorize_write"
+    refute_includes seeds_source, "configuration.authorize_write ="
   end
 
   def test_dummy_accessible_initializer_registers_access_capability_for_recording_studio_v3
