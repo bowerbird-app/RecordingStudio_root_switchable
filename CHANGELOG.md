@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.7] - 2026-11-06
+
+The switch page uses the FlatPack 0.1.341 PageNav Spec (`with_close`).
+
+### Changed
+- The mounted switch page calls `flat_pack_page_nav` with a Spec block:
+  `with_back`, and `with_close(href: @return_anchor_url, tooltip:)` when the
+  return URL is present. It no longer passes `anchor_href:` /
+  `anchor_tooltip:` as helper kwargs. Card stays `background:` / `border:` /
+  `shadow:` (never `style:`).
+- Development and dummy pins stay on FlatPack tag `v0.1.341`.
+
+### Upgrade Notes
+- Bump to `0.11.7`. No migration.
+- Pin `flat_pack` to tag `v0.1.341` or newer (already required since 0.11.5).
+- Delete a copied switch page that only existed to call PageNav `with_close`.
+  The gem view does that now, so wordpress and shopify hosts can drop the
+  fork. Hosts that still pass `anchor_href:` on `flat_pack_page_nav` can keep
+  doing so; the helper still accepts it for the default arrangement.
+
 ## [0.11.6] - 2026-11-05
 
 Lockfile-only security bump. Gemspec floors are unchanged.
@@ -595,7 +615,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.6...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.7...HEAD
+[0.11.7]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.6...v0.11.7
 [0.11.6]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.5...v0.11.6
 [0.11.5]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.4...v0.11.5
 [0.11.4]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.3...v0.11.4

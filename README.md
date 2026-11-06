@@ -19,6 +19,21 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.11.7
+
+No migration. The switch page now uses FlatPack 0.1.341 PageNav Spec
+`with_close` instead of `flat_pack_page_nav` `anchor_href:` kwargs.
+Development and dummy pins stay on FlatPack tag `v0.1.341`. Card stays
+`background:` / `border:` / `shadow:`.
+
+Delete a copied switch page that only existed to call `with_close`. The gem
+view does that now. Hosts that still pass `anchor_href:` on
+`flat_pack_page_nav` can keep doing so; the helper still accepts it.
+
+```ruby
+gem "recording_studio_root_switchable", "~> 0.11.7"
+```
+
 ## Upgrading to 0.11.6
 
 No migration and no host-app change. The published gemspec floors are
@@ -35,8 +50,8 @@ gem "recording_studio_root_switchable", "~> 0.11.6"
 No migration. Require `recording_studio` `>= 6.3.0, < 7` and `flat_pack`
 `>= 0.1.341`. Hosts on Recording Studio 6.1 or FlatPack below 0.1.341 stay
 on `0.11.4`. Development and dummy pins stay on Recording Studio `v6.3.0`
-and FlatPack `v0.1.341`. The switch page still uses `flat_pack_page_nav`
-and Card `background:` / `border:` / `shadow:`.
+and FlatPack `v0.1.341`. The switch page uses `flat_pack_page_nav` and Card
+`background:` / `border:` / `shadow:`.
 
 ```ruby
 gem "recording_studio_root_switchable", "~> 0.11.6"
@@ -606,6 +621,9 @@ import "@hotwired/turbo-rails"
 
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
+### 0.11.7
+- The switch page uses FlatPack PageNav Spec `with_close` (and `with_back`) instead of `anchor_href:` kwargs. Card stays `background:` / `border:` / `shadow:`.
+
 ### 0.11.6
 - Lockfile-only: Rails `8.1.4.1`. CVE floors already met (`rack` `3.2.8`, `nokogiri` `1.19.7`, `loofah` `2.25.3`, `rails-html-sanitizer` `1.7.2`).
 
@@ -670,7 +688,7 @@ gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashab
                                   tag: "v0.12.0", require: false
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.2"
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.2"
-gem "recording_studio_root_switchable", "~> 0.11.6"
+gem "recording_studio_root_switchable", "~> 0.11.7"
 ```
 
 Then run:
@@ -919,7 +937,8 @@ Filtering rules (such as which root types are switchable) belong in scope config
 - A callable is invoked as `call(controller:)` and returns a String, `nil`, or `false`. A Symbol or a positional parameter raises `ArgumentError`.
 
 The switch page sets `content_for :title` from page copy and calls
-`flat_pack_page_nav` for close. `recording_studio/default_layout` draws one
+`flat_pack_page_nav` with a Spec block: `with_back`, and `with_close` when
+the return URL is present. `recording_studio/default_layout` draws one
 heading, the top nav, and flash. A host layout that replaces the default has
 to render those slots. Load `flat_pack/variables`, `flat_pack/application`,
 and `flat_pack/rich_text` before the host Tailwind sheet.

@@ -44,7 +44,18 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "max-w-3xl"
     assert_select "a[href^='/workspaces/new']", text: "New workspace", minimum: 1
     assert_select "a[href^='/workspaces/new'] svg[data-flat-pack--icon-name-value='plus']", minimum: 1
-    assert_flatpack_0_1_311_switch_page(response.body)
+    assert_flatpack_0_1_341_switch_page(response.body)
+  end
+
+  test "switch page close uses a safe return_to as the PageNav close href" do
+    sign_in(@admin)
+
+    get "/recording_studio_root_switchable/v1/root_switch",
+        params: { scope: "all_workspaces", return_to: "/placements" }
+
+    assert_response :success
+    assert_select "nav.flat-pack-page-nav button[aria-label='Go back']", minimum: 1
+    assert_select "nav.flat-pack-page-nav a[aria-label='Close'][href='/placements']", minimum: 1
   end
 
   test "client scope omits the new workspace action" do
@@ -263,11 +274,12 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
 
   private
 
-  # style: :default on FlatPack 0.1.290 was the default fill plus border: :default
-  # and shadow: :none. 0.1.311 names the fill background: and rejects style:.
-  def assert_flatpack_0_1_311_switch_page(body)
+  # Card fill is background:/border:/shadow:, not style:. PageNav close is
+  # Spec with_close; history back is with_back.
+  def assert_flatpack_0_1_341_switch_page(body)
     assert_equal "0.1.341", FlatPack::VERSION
 
+    assert_select "nav.flat-pack-page-nav button[aria-label='Go back']", minimum: 1
     assert_select "nav.flat-pack-page-nav a[aria-label='Close'][href='/']", minimum: 1
 
     cards = Nokogiri::HTML(body).css(".fp-card[data-background='default']")
