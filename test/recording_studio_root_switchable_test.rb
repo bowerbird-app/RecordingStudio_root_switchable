@@ -75,6 +75,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
 
     assert_includes initializer_source, "config.authorize_write"
     assert_includes initializer_source, "RecordingStudioAccessible.authorized?"
+    refute_includes initializer_source, "recordable.actor == actor"
     refute_match(/authorize_write\s*=\s*->\(actor:, \*\*\) \{ actor\.present\? \}/, initializer_source)
   end
 

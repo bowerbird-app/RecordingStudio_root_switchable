@@ -15,8 +15,6 @@ RecordingStudio.configure do |config|
     next false unless root_recording
 
     if defined?(RecordingStudio::Access) && recordable.is_a?(RecordingStudio::Access)
-      next true if recordable.actor == actor
-
       RecordingStudioAccessible.authorized?(
         actor: actor,
         recording: root_recording,
