@@ -19,6 +19,24 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.12.0
+
+No migration. The mounted switch page now requires Recording Studio
+Accessible `:view` on the current root. A signed-in actor is not enough.
+When there is no current root, Accessible must still be present so the
+empty switcher can render. The workspace list is unchanged: it stays
+scoped through Accessible `root_recordings_for` / `authorized?`.
+
+Development and dummy pins move to Recording Studio `v6.5.0`, Accessible
+`v0.24.2`, Metrics `v0.7.3`, and Trashable `v0.12.3`. Recording Studio 6.5
+fails closed without `config.authorize_write`; the dummy initializer sets
+one so seed writes work. Published gemspec floors are unchanged. This gem
+does not ship Admin.
+
+```ruby
+gem "recording_studio_root_switchable", "~> 0.12.0"
+```
+
 ## Upgrading to 0.11.7
 
 No migration. The switch page now uses FlatPack 0.1.341 PageNav Spec
@@ -621,6 +639,9 @@ import "@hotwired/turbo-rails"
 
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
+### 0.12.0
+- Switch page requires Accessible `:view` on the current root (fail closed if Accessible is missing). Workspace list stays Accessible-scoped. Development pins Recording Studio `v6.5.0`, Accessible `v0.24.2`, Metrics `v0.7.3`, Trashable `v0.12.3`.
+
 ### 0.11.7
 - The switch page uses FlatPack PageNav Spec `with_close` (and `with_back`) instead of `anchor_href:` kwargs. Card stays `background:` / `border:` / `shadow:`.
 
@@ -680,15 +701,15 @@ Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 Add the gems to your host app:
 
 ```ruby
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.3.0"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.5.0"
 gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.341"
 gem "view_component", "4.19.0"
-gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.24.0"
+gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.24.2"
 gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable",
-                                  tag: "v0.12.0", require: false
+                                  tag: "v0.12.3", require: false
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.2"
-gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.2"
-gem "recording_studio_root_switchable", "~> 0.11.7"
+gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.3"
+gem "recording_studio_root_switchable", "~> 0.12.0"
 ```
 
 Then run:
@@ -1073,6 +1094,7 @@ RecordingStudio::RootSwitchable.resolve_current_root(
 - saved selections are invalidated when they fall out of scope or fail access/validity checks
 - fallback uses the configured default root for the active scope, then the first available root
 - default access checks use `RecordingStudioAccessible.authorized?`
+- the mounted switch page requires Accessible `:view` on the current root (fail closed if Accessible is missing); a signed-in actor is not enough
 
 ## Mounted engine routes
 

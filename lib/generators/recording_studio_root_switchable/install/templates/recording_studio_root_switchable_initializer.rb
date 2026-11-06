@@ -16,6 +16,12 @@ RecordingStudioRootSwitchable.configure do |config|
   # Anonymous (actor-less) selections are disabled by default. Enable only if you need them.
   # config.allow_anonymous_selections = true
 
+  # The switch page requires Accessible `:view` on the current root. Logged-in is
+  # not enough. Hosts may tighten this hook; they cannot skip Accessible.
+  # config.mounted_page_authorizer = lambda do |actor:, root_recording:, **|
+  #   RecordingStudioAccessible.authorized?(actor: actor, recording: root_recording, role: :edit)
+  # end
+
   # Raw user-agent persistence is off by default. Derived device metadata is still stored.
   # config.store_raw_user_agent = true
 

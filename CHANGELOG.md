@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-06
+
+The mounted switch page requires Recording Studio Accessible, not merely a
+logged-in actor. Workspace lists stay Accessible-scoped.
+
+### Changed
+- Default `mounted_page_authorizer` requires Accessible `:view` on the current
+  root recording. It fails closed when Accessible is missing or the actor is
+  blank. A blank current root still requires Accessible plus an actor so the
+  empty switcher can render.
+- `RootSwitchesController#authorize_page!` applies that Accessible floor even
+  when a host tightens `mounted_page_authorizer`. Logged-in is not enough.
+- `available_roots` and `access_check` defaults are unchanged: they still use
+  Accessible `root_recordings_for` / `authorized?` with `:view`.
+- Development and dummy pins: Recording Studio `v6.5.0`, Accessible `v0.24.2`,
+  Metrics `v0.7.3`, Trashable `v0.12.3`. Cache stays `v0.6.2`. Admin is not a
+  dependency of this gem (host Admin pin 2.5.1 is untouched).
+- Dummy `recording_studio` initializer sets `authorize_write` so Recording
+  Studio 6.5 seed and page writes can run. The switcher page still uses
+  Accessible, not this write gate.
+
+### Upgrade Notes
+- Bump to `0.12.0`. No migration.
+- Hosts that opened the switch page for any signed-in actor must grant
+  Accessible `:view` on the current root (or accept the empty switcher when
+  the actor has no current root). Custom `mounted_page_authorizer` hooks may
+  still add a stricter role; they cannot skip Accessible.
+- Pin Recording Studio `v6.5.0` (or another 6.x that meets `>= 6.3.0, < 7`),
+  Accessible `v0.24.2`, Metrics `v0.7.3`, and Trashable `v0.12.3` in
+  development. Published gemspec floors are unchanged (`recording_studio`
+  `>= 6.3.0, < 7`, `recording_studio_accessible` `~> 0.18`).
+
 ## [0.11.7] - 2026-11-06
 
 The switch page uses the FlatPack 0.1.341 PageNav Spec (`with_close`).
@@ -615,7 +647,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.7...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.7...v0.12.0
 [0.11.7]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.6...v0.11.7
 [0.11.6]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.5...v0.11.6
 [0.11.5]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.4...v0.11.5

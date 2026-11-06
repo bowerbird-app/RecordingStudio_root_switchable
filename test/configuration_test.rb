@@ -118,6 +118,66 @@ class ConfigurationTest < Minitest::Test
     refute @configuration.store_raw_user_agent
   end
 
+  def test_mounted_page_authorizer_fails_closed_when_accessible_is_missing
+    @configuration.stub(:recording_studio_accessible_supports_authorization?, false) do
+      refute @configuration.default_mounted_page_authorized?(actor: Object.new, root_recording: Object.new)
+      refute @configuration.authorize_mounted_page?(
+        controller: nil,
+        actor: Object.new,
+        scope: nil,
+        current_root_recording: Object.new
+      )
+    end
+  end
+
+  def test_mounted_page_authorizer_fails_closed_without_an_actor
+    @configuration.stub(:recording_studio_accessible_supports_authorization?, true) do
+      refute @configuration.default_mounted_page_authorized?(actor: nil, root_recording: Object.new)
+      refute @configuration.default_mounted_page_authorized?(actor: "", root_recording: Object.new)
+    end
+  end
+
+  def test_mounted_page_authorizer_allows_a_blank_current_root_when_accessible_is_present
+    @configuration.stub(:recording_studio_accessible_supports_authorization?, true) do
+      assert @configuration.default_mounted_page_authorized?(actor: Object.new, root_recording: nil)
+    end
+  end
+
+  def test_mounted_page_authorizer_requires_accessible_view_on_the_current_root
+    actor = Object.new
+    recording = Object.new
+    allow_view = true
+    fake = Module.new
+    fake.define_singleton_method(:authorized?) do |**kwargs|
+      allow_view &&
+        kwargs[:actor].equal?(actor) &&
+        kwargs[:recording].equal?(recording) &&
+        kwargs[:role] == :view
+    end
+
+    replaced = !defined?(::RecordingStudioAccessible)
+    Object.const_set(:RecordingStudioAccessible, fake) if replaced
+
+    begin
+      authorized = ->(**kwargs) { fake.authorized?(**kwargs) }
+      run_checks = lambda do
+        assert @configuration.default_mounted_page_authorized?(actor: actor, root_recording: recording)
+        allow_view = false
+        refute @configuration.default_mounted_page_authorized?(actor: actor, root_recording: recording)
+      end
+
+      if replaced
+        run_checks.call
+      else
+        RecordingStudioAccessible.stub(:authorized?, authorized) do
+          run_checks.call
+        end
+      end
+    ensure
+      Object.send(:remove_const, :RecordingStudioAccessible) if replaced
+    end
+  end
+
   def test_merge_preserves_false_boolean_flags
     @configuration.allow_anonymous_selections = true
     @configuration.store_raw_user_agent = true

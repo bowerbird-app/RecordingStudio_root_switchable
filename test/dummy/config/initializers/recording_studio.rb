@@ -7,6 +7,11 @@ RecordingStudio.configure do |config|
   # Actor resolver for events when no actor is explicitly supplied
   config.actor = -> { Current.actor }
 
+  # Recording Studio 6.5 fails closed without a write authorizer. Dummy seed
+  # and page writes need an actor; Accessible still scopes who can see and
+  # switch roots.
+  config.authorize_write = ->(actor:, **) { actor.present? }
+
   # Emit ActiveSupport::Notifications events
   config.event_notifications_enabled = true
 

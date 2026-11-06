@@ -27,7 +27,10 @@ switch page, a dropdown component, and a list component for host menus. The main
 ## Host responsibilities
 
 - Authenticate before including `ControllerSupport`.
-- Customize `mounted_page_authorizer` beyond `actor.present?` when needed.
+- The mounted switch page requires Recording Studio Accessible `:view` on the
+  current root (or Accessible present plus an actor when no root is current).
+  Logged-in is not enough. Tighten `mounted_page_authorizer` if you need a
+  stronger role; do not replace the Accessible floor.
 - Serve the mounted page over HTTPS in production.
 - Skip root resolution on health/asset endpoints with `skip_recording_studio_root_resolution`.
 - Do not log or render full device keys; use `DeviceKeyPreview` if a preview is required.

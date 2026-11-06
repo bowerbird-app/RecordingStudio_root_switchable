@@ -23,6 +23,37 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     assert_raises(ActiveRecord::ReadOnlyRecord) { access.update!(role: "view") }
   end
 
+  test "viewer can open the switch page and only sees Accessible workspaces" do
+    viewer = User.find_by!(email: "viewer@admin.com")
+    sign_in(viewer)
+
+    get "/recording_studio_root_switchable/v1/root_switch",
+        params: { scope: "all_workspaces" }
+
+    assert_response :success
+    assert_includes response.body, "Studio Workspace"
+    assert_includes response.body, "Client Alpha"
+    refute_includes response.body, "Client Beta"
+    refute_includes response.body, "Hidden Workspace"
+  end
+
+  test "signed-in actor without Accessible grants sees the empty switcher" do
+    stranger = User.create!(
+      email: "stranger@admin.com",
+      password: "Password",
+      password_confirmation: "Password"
+    )
+    sign_in(stranger)
+
+    get "/recording_studio_root_switchable/v1/root_switch",
+        params: { scope: "all_workspaces" }
+
+    assert_response :success
+    assert_includes response.body, "Nothing to switch"
+    refute_includes response.body, "Studio Workspace"
+    refute_includes response.body, "Client Alpha"
+  end
+
   test "root switch page renders for seeded admin" do
     sign_in(@admin)
 

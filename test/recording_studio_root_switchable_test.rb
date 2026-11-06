@@ -11,7 +11,7 @@ require_relative "../app/controllers/recording_studio_root_switchable/root_switc
 
 class RecordingStudioRootSwitchableTest < Minitest::Test
   def test_version_exists
-    assert_equal "0.11.7", RecordingStudioRootSwitchable::VERSION
+    assert_equal "0.12.0", RecordingStudioRootSwitchable::VERSION
   end
 
   def test_root_switch_controller_uses_recording_studio_layout
@@ -69,6 +69,13 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     refute_includes initializer_source, "config.layout ="
   end
 
+  def test_dummy_recording_studio_initializer_sets_authorize_write_for_core_6_5
+    initializer_path = File.expand_path("dummy/config/initializers/recording_studio.rb", __dir__)
+    initializer_source = File.read(initializer_path)
+
+    assert_includes initializer_source, "config.authorize_write = ->(actor:, **) { actor.present? }"
+  end
+
   def test_dummy_accessible_initializer_registers_access_capability_for_recording_studio_v3
     initializer_path = File.expand_path("dummy/config/initializers/recording_studio_accessible.rb", __dir__)
     initializer_source = File.read(initializer_path)
@@ -89,7 +96,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes gemspec_source, 'spec.add_dependency "view_component", ">= 4.14", "< 5"'
   end
 
-  def test_development_pins_flat_pack_0_1_341_and_recording_studio_6_3
+  def test_development_pins_flat_pack_0_1_341_and_recording_studio_6_5
     root = File.expand_path("..", __dir__)
 
     [File.join(root, "Gemfile"), File.join(root, "test/dummy/Gemfile")].each do |gemfile|
@@ -97,11 +104,11 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
 
       refute_includes source, "widen_recording_studio_requirement"
       assert_includes source, 'tag: "v0.1.341"'
-      assert_includes source, 'tag: "v6.3.0"'
-      assert_includes source, 'tag: "v0.24.0"'
+      assert_includes source, 'tag: "v6.5.0"'
+      assert_includes source, 'tag: "v0.24.2"'
       assert_includes source, 'tag: "v0.6.2"'
-      assert_includes source, 'tag: "v0.7.2"'
-      assert_includes source, 'tag: "v0.12.0"'
+      assert_includes source, 'tag: "v0.7.3"'
+      assert_includes source, 'tag: "v0.12.3"'
       assert_includes source, 'gem "view_component", "4.19.0"'
     end
 
@@ -111,14 +118,14 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
       lock = File.read(File.join(root, relative))
 
       assert_includes lock, "flat_pack (0.1.341)", relative
-      assert_includes lock, "recording_studio (6.3.0)", relative
-      assert_includes lock, "recording_studio_accessible (0.24.0)", relative
+      assert_includes lock, "recording_studio (6.5.0)", relative
+      assert_includes lock, "recording_studio_accessible (0.24.2)", relative
       assert_includes lock, "recording_studio_cache (0.6.2)", relative
-      assert_includes lock, "recording_studio_metrics (0.7.2)", relative
-      assert_includes lock, "recording_studio_trashable (0.12.0)", relative
+      assert_includes lock, "recording_studio_metrics (0.7.3)", relative
+      assert_includes lock, "recording_studio_trashable (0.12.3)", relative
       assert_includes lock, "view_component (4.19.0)", relative
       assert_includes lock, "crass (1.0.8)", relative
-      assert_includes lock, "recording_studio_root_switchable (0.11.7)", relative
+      assert_includes lock, "recording_studio_root_switchable (0.12.0)", relative
       assert_includes lock, "rails (8.1.4.1)", relative
       assert_includes lock, "flat_pack (>= 0.1.341)", relative
       assert_includes lock, "recording_studio (>= 6.3.0, < 7)", relative
