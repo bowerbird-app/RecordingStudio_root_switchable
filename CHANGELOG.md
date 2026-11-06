@@ -24,9 +24,10 @@ logged-in actor. Workspace lists stay Accessible-scoped.
 - Development and dummy pins: Recording Studio `v6.5.0`, Accessible `v0.24.2`,
   Metrics `v0.7.3`, Trashable `v0.12.3`. Cache stays `v0.6.2`. Admin is not a
   dependency of this gem (host Admin pin 2.5.1 is untouched).
-- Dummy `recording_studio` initializer sets `authorize_write` so Recording
-  Studio 6.5 seed and page writes can run. The switcher page still uses
-  Accessible, not this write gate.
+- Dummy `recording_studio` initializer sets `authorize_write` through
+  Accessible (`:edit` on the root, `:admin` for Access rows). `actor.present?`
+  is not a write policy. The switcher page still uses Accessible `:view`.
+  Dummy seed skips Hidden Workspace pages because that root has no grants.
 
 ### Upgrade Notes
 - Bump to `0.12.0`. No migration.

@@ -54,6 +54,54 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Client Alpha"
   end
 
+  test "inaccessible current root is dropped before the switcher gate" do
+    viewer = User.find_by!(email: "viewer@admin.com")
+    sign_in(viewer)
+    alpha = root_recording_for("Client Alpha")
+    hidden = root_recording_for("Hidden Workspace")
+    browser = {
+      "HTTP_USER_AGENT" => "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    }
+
+    patch "/recording_studio_root_switchable/v1/root_switch",
+          params: {
+            scope: "all_workspaces",
+            root_switch: { root_recording_id: alpha.id, return_to: "/" }
+          },
+          headers: browser
+
+    assert_redirected_to "/"
+    selection = RecordingStudio::RootSwitchable::Selection.find_by!(
+      actor: viewer,
+      scope_key: "all_workspaces"
+    )
+    selection.update_columns(root_recording_id: hidden.id)
+
+    get "/recording_studio_root_switchable/v1/root_switch",
+        params: { scope: "all_workspaces" },
+        headers: browser
+
+    assert_response :success
+    assert_nil RecordingStudio::RootSwitchable::Selection.find_by(id: selection.id)
+    assert_includes response.body, "Studio Workspace"
+    assert_includes response.body, "Client Alpha"
+    refute_includes response.body, "Hidden Workspace"
+    refute_includes response.body, "Client Beta"
+  end
+
+  test "host mounted_page_authorizer can still forbid the switcher" do
+    sign_in(@admin)
+    original_authorizer = RecordingStudioRootSwitchable.configuration.mounted_page_authorizer
+    RecordingStudioRootSwitchable.configuration.mounted_page_authorizer = ->(**) { false }
+
+    get "/recording_studio_root_switchable/v1/root_switch",
+        params: { scope: "all_workspaces" }
+
+    assert_response :forbidden
+  ensure
+    RecordingStudioRootSwitchable.configuration.mounted_page_authorizer = original_authorizer
+  end
+
   test "root switch page renders for seeded admin" do
     sign_in(@admin)
 

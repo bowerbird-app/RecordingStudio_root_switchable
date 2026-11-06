@@ -117,6 +117,10 @@ owned_root_recordings.each { |recording| ensure_owner_access.call(recording: rec
 end
 
 pages_by_workspace.each do |workspace_name, page_definitions|
+  # Hidden Workspace stays without Accessible grants, so core writes cannot
+  # record pages there under the Accessible authorize_write policy.
+  next if workspace_name == "Hidden Workspace"
+
   root_recording = root_recordings.fetch(workspace_name)
   existing_page_recordings = root_recording.recordings_query(type: Page).includes(:recordable).to_a
 

@@ -73,7 +73,9 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     initializer_path = File.expand_path("dummy/config/initializers/recording_studio.rb", __dir__)
     initializer_source = File.read(initializer_path)
 
-    assert_includes initializer_source, "config.authorize_write = ->(actor:, **) { actor.present? }"
+    assert_includes initializer_source, "config.authorize_write"
+    assert_includes initializer_source, "RecordingStudioAccessible.authorized?"
+    refute_match(/authorize_write\s*=\s*->\(actor:, \*\*\) \{ actor\.present\? \}/, initializer_source)
   end
 
   def test_dummy_accessible_initializer_registers_access_capability_for_recording_studio_v3

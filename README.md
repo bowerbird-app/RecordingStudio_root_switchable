@@ -30,7 +30,8 @@ scoped through Accessible `root_recordings_for` / `authorized?`.
 Development and dummy pins move to Recording Studio `v6.5.0`, Accessible
 `v0.24.2`, Metrics `v0.7.3`, and Trashable `v0.12.3`. Recording Studio 6.5
 fails closed without `config.authorize_write`; the dummy initializer sets
-one so seed writes work. Published gemspec floors are unchanged. This gem
+an Accessible write policy (`:edit` on the root), not `actor.present?`.
+Published gemspec floors are unchanged. This gem
 does not ship Admin.
 
 ```ruby

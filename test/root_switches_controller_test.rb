@@ -183,44 +183,6 @@ class RootSwitchesControllerTest < Minitest::Test
     assert_equal :too_many_requests, headed
   end
 
-  def test_authorize_page_forbids_when_accessible_denies_the_current_root
-    headed = nil
-    @controller.define_singleton_method(:head) { |status| headed = status }
-    @controller.define_singleton_method(:current_root_recording) { Object.new }
-
-    RecordingStudioRootSwitchable.configuration.stub(:default_mounted_page_authorized?, false) do
-      @controller.send(:authorize_page!)
-    end
-
-    assert_equal :forbidden, headed
-  end
-
-  def test_authorize_page_forbids_when_host_authorizer_denies_after_accessible_passes
-    headed = nil
-    @controller.define_singleton_method(:head) { |status| headed = status }
-    @controller.define_singleton_method(:current_root_recording) { nil }
-    RecordingStudioRootSwitchable.configuration.mounted_page_authorizer = ->(**) { false }
-
-    RecordingStudioRootSwitchable.configuration.stub(:default_mounted_page_authorized?, true) do
-      @controller.send(:authorize_page!)
-    end
-
-    assert_equal :forbidden, headed
-  end
-
-  def test_authorize_page_allows_when_accessible_and_host_authorizer_pass
-    headed = :unset
-    @controller.define_singleton_method(:head) { |status| headed = status }
-    @controller.define_singleton_method(:current_root_recording) { nil }
-    RecordingStudioRootSwitchable.configuration.mounted_page_authorizer = ->(**) { true }
-
-    RecordingStudioRootSwitchable.configuration.stub(:default_mounted_page_authorized?, true) do
-      assert_nil @controller.send(:authorize_page!)
-    end
-
-    assert_equal :unset, headed
-  end
-
   def test_enforce_switch_rate_limit_allows_when_under_limit
     headed = :unset
     @controller.define_singleton_method(:head) { |status| headed = status }
