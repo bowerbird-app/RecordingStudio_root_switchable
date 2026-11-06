@@ -11,7 +11,7 @@ require_relative "../app/controllers/recording_studio_root_switchable/root_switc
 
 class RecordingStudioRootSwitchableTest < Minitest::Test
   def test_version_exists
-    assert_equal "0.11.6", RecordingStudioRootSwitchable::VERSION
+    assert_equal "0.11.7", RecordingStudioRootSwitchable::VERSION
   end
 
   def test_root_switch_controller_uses_recording_studio_layout
@@ -118,7 +118,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
       assert_includes lock, "recording_studio_trashable (0.12.0)", relative
       assert_includes lock, "view_component (4.19.0)", relative
       assert_includes lock, "crass (1.0.8)", relative
-      assert_includes lock, "recording_studio_root_switchable (0.11.6)", relative
+      assert_includes lock, "recording_studio_root_switchable (0.11.7)", relative
       assert_includes lock, "rails (8.1.4.1)", relative
       assert_includes lock, "flat_pack (>= 0.1.341)", relative
       assert_includes lock, "recording_studio (>= 6.3.0, < 7)", relative
@@ -145,11 +145,14 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     view_path = File.expand_path("../app/views/recording_studio_root_switchable/root_switches/show.html.erb", __dir__)
     view_source = File.read(view_path)
 
-    assert_includes view_source, "flat_pack_page_nav("
-    assert_includes view_source, "round: true"
-    assert_includes view_source, "style: :default"
-    assert_includes view_source, "anchor_href: @return_anchor_url"
-    assert_includes view_source, 't("recording_studio.root_switchable.navigation.close", default: "Close")'
+    assert_includes view_source, "flat_pack_page_nav(round: true, style: :default) do |nav|"
+    refute_includes view_source, "nav.with_back"
+    assert_includes view_source, "if @return_anchor_url.present?"
+    assert_includes view_source, "nav.with_close("
+    assert_includes view_source, "href: @return_anchor_url"
+    assert_includes view_source, "tooltip: t(\"recording_studio.root_switchable.navigation.close\", default: \"Close\")"
+    refute_includes view_source, "anchor_href:"
+    refute_includes view_source, "anchor_tooltip:"
     refute_includes view_source, "anchor_label:"
     refute_includes view_source, "back_label:"
     refute_includes view_source, "back_icon:"

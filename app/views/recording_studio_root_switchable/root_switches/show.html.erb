@@ -1,12 +1,14 @@
 <% content_for :title, @page_copy.fetch(:title) %>
 <% page_subtitle = @page_copy.fetch(:subtitle).presence %>
 <% content_for :subtitle, page_subtitle if page_subtitle %>
-<% flat_pack_page_nav(
-  round: true,
-  style: :default,
-  anchor_href: @return_anchor_url,
-  anchor_tooltip: t("recording_studio.root_switchable.navigation.close", default: "Close")
-) %>
+<% flat_pack_page_nav(round: true, style: :default) do |nav| %>
+  <% if @return_anchor_url.present? %>
+    <% nav.with_close(
+      href: @return_anchor_url,
+      tooltip: t("recording_studio.root_switchable.navigation.close", default: "Close")
+    ) %>
+  <% end %>
+<% end %>
 <% if @new_root_path.present? %>
   <% register_page_nav(@new_root_label, @new_root_path, role: :primary, icon: @new_root_icon) %>
 <% end %>
