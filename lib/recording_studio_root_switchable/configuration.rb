@@ -85,7 +85,7 @@ module RecordingStudioRootSwitchable
       @current_actor_resolver = default_current_actor_resolver
       @default_scope_key_resolver = ->(scopes:, **) { scopes.first&.key }
       @layout = nil
-      @mounted_page_authorizer = ->(actor:, **) { actor.present? }
+      @mounted_page_authorizer = method(:default_mounted_page_authorized?)
       @after_switch_redirect = nil
       @allow_anonymous_selections = false
       @store_raw_user_agent = false
@@ -153,6 +153,18 @@ module RecordingStudioRootSwitchable
     rescue StandardError => e
       log_configuration_rescue("mounted_page_authorizer", e)
       false
+    end
+
+    # Default mounted-page gate: Accessible `:view` on the current root.
+    # Fails closed when Accessible is missing or the actor is blank. A blank
+    # current root still requires Accessible plus an actor so the empty
+    # switcher can render; the workspace list stays Accessible-scoped.
+    def default_mounted_page_authorized?(actor:, root_recording: nil, **)
+      return false unless recording_studio_accessible_supports_authorization?
+      return false if actor.blank?
+      return true if root_recording.blank?
+
+      !!::RecordingStudioAccessible.authorized?(actor: actor, recording: root_recording, role: :view)
     end
 
     def after_switch_redirect_for(**context)
@@ -494,6 +506,10 @@ module RecordingStudioRootSwitchable
         "#{PAGE_COPY_I18N_PREFIX}.#{key}",
         default: DEFAULT_PAGE_COPY.fetch(key)
       )
+    end
+
+    def recording_studio_accessible_supports_authorization?
+      defined?(::RecordingStudioAccessible) && ::RecordingStudioAccessible.respond_to?(:authorized?)
     end
 
     def log_configuration_rescue(hook_name, error)

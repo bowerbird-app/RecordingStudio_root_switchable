@@ -42,11 +42,24 @@ module RecordingStudioRootSwitchable
     end
 
     def authorize_page!
+      actor = RecordingStudio::RootSwitchable::Current.actor
+      recording = current_root_recording
+
+      # Floor: Accessible `:view` on the current root (fail closed). Hosts may
+      # tighten `mounted_page_authorizer`; they cannot skip Accessible.
+      unless RecordingStudioRootSwitchable.configuration.default_mounted_page_authorized?(
+        actor: actor,
+        root_recording: recording
+      )
+        head :forbidden
+        return
+      end
+
       return if RecordingStudioRootSwitchable.configuration.authorize_mounted_page?(
         controller: self,
-        actor: RecordingStudio::RootSwitchable::Current.actor,
+        actor: actor,
         scope: @scope,
-        current_root_recording: current_root_recording
+        current_root_recording: recording
       )
 
       head :forbidden
