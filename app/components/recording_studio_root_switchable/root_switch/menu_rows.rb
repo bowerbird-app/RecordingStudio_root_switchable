@@ -90,6 +90,10 @@ module RecordingStudioRootSwitchable
         none_selected_label
       end
 
+      def none_selected?
+        rows.none?(&:current?) && selected_label.blank?
+      end
+
       def switch_rows
         rows.reject(&:current?)
       end

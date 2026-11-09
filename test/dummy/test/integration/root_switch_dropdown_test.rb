@@ -25,6 +25,9 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
 
     assert_select "[data-controller='flat-pack--button-dropdown']" do
       assert_select "[data-flat-pack--button-dropdown-target='trigger']", text: /Studio Workspace/
+      assert_select "[data-flat-pack--button-dropdown-target='trigger'][aria-label='Studio Workspace'][title='Studio Workspace']"
+      assert_select "[data-flat-pack--button-dropdown-target='trigger'] span.hidden.md\\:inline-block.max-w-\\[9rem\\]", text: "Studio Workspace"
+      assert_select "[data-flat-pack--button-dropdown-target='trigger'] span.md\\:hidden", text: "SW"
       assert_select "button[role='menuitem']", text: /Client Alpha/
     end
 

@@ -19,6 +19,16 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.13.0
+
+No migration. Pass `compact: :below_md` when the switcher sits in a narrow
+top nav. The default (`compact:` omitted or `nil`) still shows the full
+workspace name. Bump the pin.
+
+```ruby
+gem "recording_studio_root_switchable", "~> 0.13.0"
+```
+
 ## Upgrading to 0.12.0
 
 No migration. The mounted switch page now requires Recording Studio
@@ -643,6 +653,9 @@ import "@hotwired/turbo-rails"
 
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
+### 0.13.0
+- Root switch dropdown accepts `compact: :below_md` or `:always`. Narrow navs get a round initials badge. The full name stays in `aria-label` and `title`, and truncates from md up. Default `compact:` is unchanged aside from that truncation.
+
 ### 0.12.0
 - Switch page requires Accessible `:view` on the current root (fail closed if Accessible is missing). Workspace list stays Accessible-scoped. Development pins Recording Studio `v6.5.0`, Accessible `v0.24.2`, Metrics `v0.7.3`, Trashable `v0.12.3`.
 
@@ -713,7 +726,7 @@ gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashab
                                   tag: "v0.12.3", require: false
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.2"
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.3"
-gem "recording_studio_root_switchable", "~> 0.12.0"
+gem "recording_studio_root_switchable", "~> 0.13.0"
 ```
 
 Then run:
@@ -1133,8 +1146,18 @@ or with none. `new_root_icon:` overrides the icon for that placement.
 
 ```erb
 <%= recording_studio_root_switch_dropdown(style: :ghost, size: :md, placement: :bottom_right) %>
+<%= recording_studio_root_switch_dropdown(style: :ghost, size: :sm, compact: :below_md) %>
 <%= recording_studio_new_root_path(return_to: request.fullpath) %>
 ```
+
+`compact:` is `nil` by default (full name, truncated to a max width so a long
+workspace cannot crowd the rest of the nav). `:below_md` shows a round badge
+of up to two initials below the md breakpoint, and the truncated name from md
+up. `:always` keeps the badge at every width. The trigger `aria-label` and
+`title` stay the full current name. A blank or emoji-only name, or the
+none-selected state, uses a workspace icon instead of initials. Any other
+`compact:` value raises `ArgumentError`. Phone `menu_row` output does not
+change.
 
 Inside a host dropdown, render the list. The gem wraps the rows in
 `FlatPack::Menu::Collapse`. The header is the current root, and the rows switch
@@ -1183,6 +1206,7 @@ The dummy app in `test/dummy/` demonstrates:
 - multiple accessible workspace roots
 - two scopes (`all_workspaces` and `client_workspaces`)
 - `/placements` shows the dropdown, the host-menu list, and a collapsing button group
+- the dummy top nav uses `compact: :below_md` with `style: :ghost` and `size: :sm`
 - per-device persistence through the encrypted cookie-backed device key
 - fallback behavior when a persisted selection is no longer valid
 - Accessible `v0.11.1` wiring: 0.8–0.11 migrations (string `role`,
