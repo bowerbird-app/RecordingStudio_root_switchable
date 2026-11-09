@@ -29,7 +29,9 @@ Compact trigger for the root switch dropdown so it fits a narrow top nav.
   existing `dropdown.none_selected` copy when nothing is selected.
 - Compact mode has no chevron. `:always` passes `show_chevron: false`.
   `:below_md` hides the chevron below md with a gem-owned Tailwind class on
-  the trigger. Hosts add no CSS.
+  the trigger. In the compact state the trigger also drops horizontal padding,
+  flex gap, min-width, and trailing-slot space so its box is the avatar.
+  Hosts add no CSS.
 - Default and md+ name labels truncate (`max-w-[9rem]`) and keep the full name
   in `title`. Menu rows, destinations, switching, the new-root row, and the
   phone `menu_row` are unchanged.

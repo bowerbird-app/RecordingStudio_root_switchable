@@ -34,7 +34,12 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
     assert_includes wrap["class"].split, "md:hidden"
     assert_includes avatar_size_classes(badge), "h-8"
     assert_includes avatar_size_classes(badge), "w-8"
-    assert trigger["class"].to_s.include?("max-md:[&_[data-flat-pack--button-dropdown-target=chevron]]:hidden")
+    classes = dropdown_wrapper["class"].to_s
+    assert_includes classes, "max-md:[&_button]:px-0"
+    assert_includes classes, "max-md:[&_button]:gap-0"
+    assert_includes classes, "max-md:[&_button]:min-w-0"
+    assert_includes classes, "max-md:[&_[data-flat-pack--button-dropdown-target=chevron]]:hidden"
+    assert_includes classes, "max-md:[&_button>span.shrink-0]:hidden"
     assert trigger.at_css("[data-flat-pack--button-dropdown-target='chevron']")
     assert_includes rendered_content, "Client Alpha"
   end
@@ -51,6 +56,11 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
     assert_equal "SW", badge.text.strip
     refute_includes compact_avatar_wrap(trigger)["class"].split, "md:hidden"
     assert_includes avatar_size_classes(badge), "h-8"
+    classes = dropdown_wrapper["class"].to_s
+    assert_includes classes, "[&_button]:px-0"
+    assert_includes classes, "[&_button]:gap-0"
+    assert_includes classes, "[&_button]:min-w-0"
+    refute_includes classes, "max-md:[&_button]:px-0"
     assert_nil trigger.at_css("[data-flat-pack--button-dropdown-target='chevron']")
   end
 
@@ -72,8 +82,11 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
     render_inline(dropdown(compact: nil))
     trigger = trigger_element
 
+    classes = dropdown_wrapper["class"].to_s
     assert trigger.at_css("[data-flat-pack--button-dropdown-target='chevron']")
-    refute_includes trigger["class"].to_s, "max-md:[&_[data-flat-pack--button-dropdown-target=chevron]]:hidden"
+    refute_includes classes, "max-md:[&_button]:px-0"
+    refute_includes classes, "[&_button]:px-0"
+    refute_includes classes, "max-md:[&_[data-flat-pack--button-dropdown-target=chevron]]:hidden"
   end
 
   test "none selected compact trigger falls back to an icon" do
@@ -133,6 +146,10 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
 
   def trigger_element
     Nokogiri::HTML5.fragment(rendered_content).at_css("[data-flat-pack--button-dropdown-target='trigger']")
+  end
+
+  def dropdown_wrapper
+    Nokogiri::HTML5.fragment(rendered_content).at_css(".fp-button-dropdown")
   end
 
   def dropdown(compact:, badge_size: nil)

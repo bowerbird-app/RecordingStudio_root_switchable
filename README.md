@@ -655,7 +655,7 @@ import "@hotwired/turbo-rails"
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
 ### 0.13.0
-- Root switch dropdown accepts `compact: :below_md` or `:always`. Narrow navs get a FlatPack Avatar initials badge (`badge_size:` default `:sm`). Compact has no chevron (`:always` hides it; `:below_md` hides it below md). The full name stays in `aria-label` and `title`, and truncates from md up. Default `compact:` is unchanged aside from that truncation.
+- Root switch dropdown accepts `compact: :below_md` or `:always`. Narrow navs get a FlatPack Avatar initials badge (`badge_size:` default `:sm`). Compact has no chevron and no extra trigger padding/gap, so the badge sits `gap-3` from the account avatar. The full name stays in `aria-label` and `title`, and truncates from md up. Default `compact:` is unchanged aside from that truncation.
 
 ### 0.12.0
 - Switch page requires Accessible `:view` on the current root (fail closed if Accessible is missing). Workspace list stays Accessible-scoped. Development pins Recording Studio `v6.5.0`, Accessible `v0.24.2`, Metrics `v0.7.3`, Trashable `v0.12.3`.
@@ -1158,8 +1158,10 @@ from md up. `:always` keeps the badge at every width. `badge_size:` is a
 FlatPack Avatar size (`:xs`, `:sm`, `:md`, `:lg`, `:xl`, `:"2xl"`). The
 default is `:sm`, the same size as the dummy TopNav account avatar. Invalid
 sizes raise `ArgumentError`. Compact mode has no chevron: `:always` passes
-`show_chevron: false`, and `:below_md` hides the chevron below md. The trigger
-`aria-label` and `title` stay the full current name. A blank or emoji-only
+`show_chevron: false`, and `:below_md` hides the chevron below md. The compact
+trigger has no horizontal padding, gap, or min-width so its box is the avatar;
+from md up `:below_md` keeps the usual padded name-and-chevron trigger. The
+trigger `aria-label` and `title` stay the full current name. A blank or emoji-only
 name, or the none-selected state, uses a workspace icon instead of initials.
 Any other `compact:` value raises `ArgumentError`. Phone `menu_row` output
 does not change. Hosts add no CSS.

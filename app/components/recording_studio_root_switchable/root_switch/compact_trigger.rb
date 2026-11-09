@@ -8,6 +8,31 @@ module RecordingStudioRootSwitchable
       FALLBACK_ICON = "building-office-2"
       DEFAULT_BADGE_SIZE = :sm
 
+      # Applied on the dropdown wrapper so FlatPack's Tailwind merge cannot
+      # drop padding/gap against later button size classes. String literals
+      # so the dummy/host Tailwind scan emits them.
+      ALWAYS_WRAPPER_CLASS = [
+        "[&_button]:px-0",
+        "[&_button]:py-0",
+        "[&_button]:gap-0",
+        "[&_button]:min-w-0",
+        "[&_button]:w-fit",
+        "[&_button]:rounded-full",
+        "[&_button]:border-0"
+      ].join(" ")
+
+      BELOW_MD_WRAPPER_CLASS = [
+        "max-md:[&_button]:px-0",
+        "max-md:[&_button]:py-0",
+        "max-md:[&_button]:gap-0",
+        "max-md:[&_button]:min-w-0",
+        "max-md:[&_button]:w-fit",
+        "max-md:[&_button]:rounded-full",
+        "max-md:[&_button]:border-0",
+        "max-md:[&_[data-flat-pack--button-dropdown-target=chevron]]:hidden",
+        "max-md:[&_button>span.shrink-0]:hidden"
+      ].join(" ")
+
       def self.normalize!(value)
         return nil if value.nil?
 

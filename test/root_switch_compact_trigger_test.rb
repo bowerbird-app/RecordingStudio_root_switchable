@@ -19,6 +19,18 @@ class RootSwitchCompactTriggerTest < Minitest::Test
     assert_equal :sm, RecordingStudioRootSwitchable::RootSwitch::CompactTrigger::DEFAULT_BADGE_SIZE
   end
 
+  def test_compact_wrapper_classes_zero_padding_and_gap
+    always = RecordingStudioRootSwitchable::RootSwitch::CompactTrigger::ALWAYS_WRAPPER_CLASS
+    below = RecordingStudioRootSwitchable::RootSwitch::CompactTrigger::BELOW_MD_WRAPPER_CLASS
+
+    assert_includes always, "[&_button]:px-0"
+    assert_includes always, "[&_button]:gap-0"
+    assert_includes always, "[&_button]:min-w-0"
+    assert_includes below, "max-md:[&_button]:px-0"
+    assert_includes below, "max-md:[&_button]:gap-0"
+    assert_includes below, "max-md:[&_button]:min-w-0"
+  end
+
   def test_invalid_compact_raises
     error = assert_raises(ArgumentError) do
       RecordingStudioRootSwitchable::RootSwitch::CompactTrigger.normalize!(:phone)

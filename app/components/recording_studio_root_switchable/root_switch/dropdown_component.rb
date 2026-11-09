@@ -17,11 +17,6 @@ module RecordingStudioRootSwitchable
         always: "inline-flex items-center"
       }.freeze
 
-      # Hide FlatPack's trailing chevron below md. Scanned as a string literal.
-      # "max-md:[&_[data-flat-pack--button-dropdown-target=chevron]]:hidden"
-      BELOW_MD_CHEVRON_CLASS =
-        "max-md:[&_[data-flat-pack--button-dropdown-target=chevron]]:hidden"
-
       def initialize(menu_rows:, compact: nil, badge_size: nil, **system_arguments)
         @menu_rows = menu_rows
         @compact = CompactTrigger.normalize!(compact)
@@ -54,11 +49,15 @@ module RecordingStudioRootSwitchable
         }
       end
 
+      def wrapper_classes
+        extra = compact_wrapper_class
+        extra ? "#{super} #{extra}" : super
+      end
+
       def with_trigger_attributes(system_arguments)
         attrs = (system_arguments[:trigger_attributes] || {}).dup
         attrs[:title] = menu_rows.current_label if attrs[:title].blank?
         apply_compact_aria(attrs) if compact?
-        apply_below_md_chevron_class(attrs) if compact == :below_md
         system_arguments.merge(trigger_attributes: attrs)
       end
 
@@ -68,8 +67,11 @@ module RecordingStudioRootSwitchable
         attrs[:aria] = aria
       end
 
-      def apply_below_md_chevron_class(attrs)
-        attrs[:class] = [attrs[:class], BELOW_MD_CHEVRON_CLASS].compact.join(" ")
+      def compact_wrapper_class
+        return if compact.nil?
+        return CompactTrigger::ALWAYS_WRAPPER_CLASS if compact == :always
+
+        CompactTrigger::BELOW_MD_WRAPPER_CLASS
       end
 
       def compact?
