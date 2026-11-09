@@ -14,19 +14,15 @@ module RecordingStudioRootSwitchable
         return mode if MODES.include?(mode)
 
         raise ArgumentError,
-          "Invalid compact: #{value.inspect}. Must be nil, :below_md, or :always."
+              "Invalid compact: #{value.inspect}. Must be nil, :below_md, or :always."
       end
 
       def self.initials(name)
         words = name.to_s.scan(/[[:alpha:][:digit:]]+/)
         return if words.empty?
+        return words.first.chars.first(2).join.upcase if words.one?
 
-        letters = if words.one?
-          words.first.chars.first(2)
-        else
-          words.first(2).map { |word| word[0] }
-        end
-        letters.join.upcase
+        words.first(2).map { |word| word[0] }.join.upcase
       end
     end
   end

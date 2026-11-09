@@ -17,9 +17,9 @@ module RecordingStudioRootSwitchable
       new_root_path: nil,
       new_root_label: nil,
       new_root_icon: nil,
-      compact: nil,
       **system_arguments
     )
+      compact = system_arguments.delete(:compact)
       menu_rows = recording_studio_root_switch_menu_rows(
         return_to: return_to,
         new_root_path: new_root_path,
@@ -36,7 +36,6 @@ module RecordingStudioRootSwitchable
       new_root_path: nil,
       new_root_label: nil,
       new_root_icon: nil,
-      compact: nil,
       **system_arguments
     )
       component = recording_studio_root_switch_for(
@@ -44,7 +43,6 @@ module RecordingStudioRootSwitchable
         new_root_path: new_root_path,
         new_root_label: new_root_label,
         new_root_icon: new_root_icon,
-        compact: compact,
         **system_arguments
       )
       render(component) if component

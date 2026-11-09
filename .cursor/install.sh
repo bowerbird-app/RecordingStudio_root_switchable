@@ -2,6 +2,7 @@
 # Cloud Agent install hook for Recording Studio Root Switchable.
 #
 # Cold image: provision Ruby, PostgreSQL 16, gems, the dummy database, and CSS.
+# Tailwind build runs after gem_sources:link so vendor/flat_pack is scanned.
 # Warm snapshot: skip apt, ruby-build, db:prepare, and tailwind when Ruby, bundle,
 # and Postgres are already usable. Always fetch skills last. A skippable
 # provision failure must not fail the Build.
@@ -86,6 +87,7 @@ install_gems_and_dummy() {
   ( cd test/dummy && bundle install )
   log "Preparing dummy app database and assets"
   ( cd test/dummy && bundle exec rails db:prepare )
+  ( cd test/dummy && bundle exec rails gem_sources:link )
   ( cd test/dummy && bundle exec rails tailwindcss:build )
 }
 

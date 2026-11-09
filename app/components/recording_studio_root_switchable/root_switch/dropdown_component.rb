@@ -12,9 +12,12 @@ module RecordingStudioRootSwitchable
         always: "hidden"
       }.freeze
 
+      BADGE_BASE = "inline-flex h-6 w-6 shrink-0 items-center justify-center " \
+                   "rounded-full bg-[var(--avatar-background-color)] text-[10px] " \
+                   "font-semibold uppercase leading-none text-[var(--avatar-text-color)]"
       BADGE_CLASSES = {
-        below_md: "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--avatar-background-color)] text-[10px] font-semibold uppercase leading-none text-[var(--avatar-text-color)] md:hidden",
-        always: "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--avatar-background-color)] text-[10px] font-semibold uppercase leading-none text-[var(--avatar-text-color)]"
+        below_md: "#{BADGE_BASE} md:hidden",
+        always: BADGE_BASE
       }.freeze
 
       def initialize(menu_rows:, compact: nil, **system_arguments)
@@ -46,12 +49,14 @@ module RecordingStudioRootSwitchable
       def with_trigger_attributes(system_arguments)
         attrs = (system_arguments[:trigger_attributes] || {}).dup
         attrs[:title] = menu_rows.current_label if attrs[:title].blank?
-        if compact?
-          aria = (attrs[:aria] || {}).dup
-          aria[:label] = menu_rows.current_label if aria[:label].blank?
-          attrs[:aria] = aria
-        end
+        apply_compact_aria(attrs) if compact?
         system_arguments.merge(trigger_attributes: attrs)
+      end
+
+      def apply_compact_aria(attrs)
+        aria = (attrs[:aria] || {}).dup
+        aria[:label] = menu_rows.current_label if aria[:label].blank?
+        attrs[:aria] = aria
       end
 
       def compact?
@@ -65,7 +70,7 @@ module RecordingStudioRootSwitchable
       end
 
       def compact_badge
-        content_tag(:span, class: BADGE_CLASSES.fetch(compact), aria: {hidden: true}) do
+        content_tag(:span, class: BADGE_CLASSES.fetch(compact), aria: { hidden: true }) do
           initials = compact_initials
           if initials.present?
             initials

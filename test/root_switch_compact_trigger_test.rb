@@ -42,7 +42,7 @@ class RootSwitchCompactTriggerTest < Minitest::Test
 
   def test_none_selected_rows_are_detected
     rows = RecordingStudioRootSwitchable::RootSwitch::MenuRows.build(
-      entries: [{id: "alpha", label: "Client Alpha"}],
+      entries: [{ id: "alpha", label: "Client Alpha" }],
       selected: nil,
       form_action: "/switch",
       return_to: "/placements",
@@ -60,8 +60,8 @@ class RootSwitchCompactTriggerTest < Minitest::Test
 
   def test_selected_rows_are_not_none_selected
     rows = RecordingStudioRootSwitchable::RootSwitch::MenuRows.build(
-      entries: [{id: "studio", label: "Studio"}],
-      selected: {id: "studio", label: "Studio"},
+      entries: [{ id: "studio", label: "Studio" }],
+      selected: { id: "studio", label: "Studio" },
       form_action: "/switch",
       return_to: "/placements",
       options: RecordingStudioRootSwitchable::RootSwitch::MenuRows::Options.new(

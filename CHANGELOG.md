@@ -25,6 +25,9 @@ Compact trigger for the root switch dropdown so it fits a narrow top nav.
 - Default and md+ name labels truncate (`max-w-[9rem]`) and keep the full name
   in `title`. Menu rows, destinations, switching, the new-root row, and the
   phone `menu_row` are unchanged.
+- Dummy compact TopNav shots at `docs/screenshots/root-switch-compact-390.png`
+  and `docs/screenshots/root-switch-compact-desktop.png`. Capture them after
+  `gem_sources:link` and `tailwindcss:build` so FlatPack layout CSS is present.
 
 ### Upgrade Notes
 - Pass `compact: :below_md` on a tight top nav (ghost, size `:sm`).

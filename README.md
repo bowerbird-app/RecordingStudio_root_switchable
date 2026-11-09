@@ -1207,6 +1207,8 @@ The dummy app in `test/dummy/` demonstrates:
 - two scopes (`all_workspaces` and `client_workspaces`)
 - `/placements` shows the dropdown, the host-menu list, and a collapsing button group
 - the dummy top nav uses `compact: :below_md` with `style: :ghost` and `size: :sm`
+  (see `docs/screenshots/root-switch-compact-390.png` and
+  `docs/screenshots/root-switch-compact-desktop.png`)
 - per-device persistence through the encrypted cookie-backed device key
 - fallback behavior when a persisted selection is no longer valid
 - Accessible `v0.11.1` wiring: 0.8–0.11 migrations (string `role`,
@@ -1222,6 +1224,10 @@ Login:
 - Password: `Password`
 
 These dummy credentials are for local demonstration only and should never be deployed as-is.
+
+Styled dummy screenshots need FlatPack on Tailwind’s `@source` path. From
+`test/dummy`, run `bin/rails gem_sources:link` then `bin/rails tailwindcss:build`
+(or `bin/dev`) before capturing. `.cursor/install.sh` does the same on a cold image.
 
 ## Cloud Agent boot
 
