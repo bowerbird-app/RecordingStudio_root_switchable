@@ -15,6 +15,10 @@ class RootSwitchCompactTriggerTest < Minitest::Test
     assert_equal :below_md, RecordingStudioRootSwitchable::RootSwitch::CompactTrigger.normalize!("below_md")
   end
 
+  def test_default_badge_size_matches_dummy_account_avatar
+    assert_equal :sm, RecordingStudioRootSwitchable::RootSwitch::CompactTrigger::DEFAULT_BADGE_SIZE
+  end
+
   def test_invalid_compact_raises
     error = assert_raises(ArgumentError) do
       RecordingStudioRootSwitchable::RootSwitch::CompactTrigger.normalize!(:phone)

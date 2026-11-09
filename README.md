@@ -22,8 +22,9 @@ This addon was derived from the Recording Studio gem template and keeps the same
 ## Upgrading to 0.13.0
 
 No migration. Pass `compact: :below_md` when the switcher sits in a narrow
-top nav. The default (`compact:` omitted or `nil`) still shows the full
-workspace name. Bump the pin.
+top nav. The compact badge is a FlatPack Avatar, default `badge_size: :sm`
+to match a TopNav account avatar. Compact mode has no chevron. The default
+(`compact:` omitted or `nil`) still shows the full workspace name. Bump the pin.
 
 ```ruby
 gem "recording_studio_root_switchable", "~> 0.13.0"
@@ -654,7 +655,7 @@ import "@hotwired/turbo-rails"
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
 ### 0.13.0
-- Root switch dropdown accepts `compact: :below_md` or `:always`. Narrow navs get a round initials badge. The full name stays in `aria-label` and `title`, and truncates from md up. Default `compact:` is unchanged aside from that truncation.
+- Root switch dropdown accepts `compact: :below_md` or `:always`. Narrow navs get a FlatPack Avatar initials badge (`badge_size:` default `:sm`). Compact has no chevron (`:always` hides it; `:below_md` hides it below md). The full name stays in `aria-label` and `title`, and truncates from md up. Default `compact:` is unchanged aside from that truncation.
 
 ### 0.12.0
 - Switch page requires Accessible `:view` on the current root (fail closed if Accessible is missing). Workspace list stays Accessible-scoped. Development pins Recording Studio `v6.5.0`, Accessible `v0.24.2`, Metrics `v0.7.3`, Trashable `v0.12.3`.
@@ -1151,13 +1152,17 @@ or with none. `new_root_icon:` overrides the icon for that placement.
 ```
 
 `compact:` is `nil` by default (full name, truncated to a max width so a long
-workspace cannot crowd the rest of the nav). `:below_md` shows a round badge
-of up to two initials below the md breakpoint, and the truncated name from md
-up. `:always` keeps the badge at every width. The trigger `aria-label` and
-`title` stay the full current name. A blank or emoji-only name, or the
-none-selected state, uses a workspace icon instead of initials. Any other
-`compact:` value raises `ArgumentError`. Phone `menu_row` output does not
-change.
+workspace cannot crowd the rest of the nav). `:below_md` shows a FlatPack
+Avatar of up to two initials below the md breakpoint, and the truncated name
+from md up. `:always` keeps the badge at every width. `badge_size:` is a
+FlatPack Avatar size (`:xs`, `:sm`, `:md`, `:lg`, `:xl`, `:"2xl"`). The
+default is `:sm`, the same size as the dummy TopNav account avatar. Invalid
+sizes raise `ArgumentError`. Compact mode has no chevron: `:always` passes
+`show_chevron: false`, and `:below_md` hides the chevron below md. The trigger
+`aria-label` and `title` stay the full current name. A blank or emoji-only
+name, or the none-selected state, uses a workspace icon instead of initials.
+Any other `compact:` value raises `ArgumentError`. Phone `menu_row` output
+does not change. Hosts add no CSS.
 
 Inside a host dropdown, render the list. The gem wraps the rows in
 `FlatPack::Menu::Collapse`. The header is the current root, and the rows switch

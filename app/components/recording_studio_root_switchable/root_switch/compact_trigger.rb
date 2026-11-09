@@ -6,6 +6,7 @@ module RecordingStudioRootSwitchable
     class CompactTrigger
       MODES = [nil, :below_md, :always].freeze
       FALLBACK_ICON = "building-office-2"
+      DEFAULT_BADGE_SIZE = :sm
 
       def self.normalize!(value)
         return nil if value.nil?
@@ -24,6 +25,20 @@ module RecordingStudioRootSwitchable
 
         words.first(2).map { |word| word[0] }.join.upcase
       end
+
+      def self.normalize_badge_size!(value)
+        size = value.nil? ? DEFAULT_BADGE_SIZE : coerce_size(value)
+        FlatPack::Avatar::Component.new(size: size, show_tooltip: false)
+        size
+      rescue ArgumentError
+        keys = FlatPack::Avatar::Component::SIZES.keys.map(&:inspect).join(", ")
+        raise ArgumentError, "Invalid badge_size: #{value.inspect}. Must be one of: #{keys}"
+      end
+
+      def self.coerce_size(value)
+        value.is_a?(String) ? value.to_sym : value
+      end
+      private_class_method :coerce_size
     end
   end
 end

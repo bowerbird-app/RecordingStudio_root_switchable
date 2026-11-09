@@ -265,6 +265,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes helper_source, "def recording_studio_new_root_path"
     assert_includes helper_source, "def recording_studio_root_switch_for"
     assert_includes helper_source, "compact: nil"
+    assert_includes helper_source, "badge_size: nil"
     assert_includes helper_source, "def recording_studio_root_switch_list_for"
     assert_includes helper_source, "def render_recording_studio_root_switch_list"
     assert_includes helper_source, "new_root_icon: nil"

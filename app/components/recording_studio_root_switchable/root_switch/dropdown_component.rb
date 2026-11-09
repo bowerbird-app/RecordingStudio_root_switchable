@@ -12,27 +12,24 @@ module RecordingStudioRootSwitchable
         always: "hidden"
       }.freeze
 
-      BADGE_BASE = "inline-flex h-6 w-6 shrink-0 items-center justify-center " \
-                   "rounded-full bg-[var(--avatar-background-color)] text-[10px] " \
-                   "font-semibold uppercase leading-none text-[var(--avatar-text-color)]"
-      BADGE_CLASSES = {
-        below_md: "#{BADGE_BASE} md:hidden",
-        always: BADGE_BASE
+      BADGE_WRAP_CLASSES = {
+        below_md: "inline-flex items-center md:hidden",
+        always: "inline-flex items-center"
       }.freeze
 
-      def initialize(menu_rows:, compact: nil, **system_arguments)
+      # Hide FlatPack's trailing chevron below md. Scanned as a string literal.
+      # "max-md:[&_[data-flat-pack--button-dropdown-target=chevron]]:hidden"
+      BELOW_MD_CHEVRON_CLASS =
+        "max-md:[&_[data-flat-pack--button-dropdown-target=chevron]]:hidden"
+
+      def initialize(menu_rows:, compact: nil, badge_size: nil, **system_arguments)
         @menu_rows = menu_rows
         @compact = CompactTrigger.normalize!(compact)
-        system_arguments.delete(:text)
-        system_arguments.delete(:disabled)
-        super(
-          text: menu_rows.current_label,
-          disabled: menu_rows.switch_rows.empty? && menu_rows.new_root_path.blank?,
-          **with_trigger_attributes(system_arguments)
-        )
+        @badge_size = CompactTrigger.normalize_badge_size!(badge_size)
+        super(**parent_dropdown_arguments(system_arguments))
       end
 
-      attr_reader :menu_rows, :compact
+      attr_reader :menu_rows, :compact, :badge_size
 
       def before_render
         with_trigger_label { trigger_label_content }
@@ -46,10 +43,22 @@ module RecordingStudioRootSwitchable
 
       private
 
+      def parent_dropdown_arguments(system_arguments)
+        system_arguments.delete(:text)
+        system_arguments.delete(:disabled)
+        system_arguments[:show_chevron] = false if @compact == :always
+        {
+          text: menu_rows.current_label,
+          disabled: menu_rows.switch_rows.empty? && menu_rows.new_root_path.blank?,
+          **with_trigger_attributes(system_arguments)
+        }
+      end
+
       def with_trigger_attributes(system_arguments)
         attrs = (system_arguments[:trigger_attributes] || {}).dup
         attrs[:title] = menu_rows.current_label if attrs[:title].blank?
         apply_compact_aria(attrs) if compact?
+        apply_below_md_chevron_class(attrs) if compact == :below_md
         system_arguments.merge(trigger_attributes: attrs)
       end
 
@@ -57,6 +66,10 @@ module RecordingStudioRootSwitchable
         aria = (attrs[:aria] || {}).dup
         aria[:label] = menu_rows.current_label if aria[:label].blank?
         attrs[:aria] = aria
+      end
+
+      def apply_below_md_chevron_class(attrs)
+        attrs[:class] = [attrs[:class], BELOW_MD_CHEVRON_CLASS].compact.join(" ")
       end
 
       def compact?
@@ -70,13 +83,25 @@ module RecordingStudioRootSwitchable
       end
 
       def compact_badge
-        content_tag(:span, class: BADGE_CLASSES.fetch(compact), aria: { hidden: true }) do
-          initials = compact_initials
-          if initials.present?
-            initials
-          else
-            render(FlatPack::Shared::IconComponent.new(name: CompactTrigger::FALLBACK_ICON, size: :sm))
-          end
+        content_tag(:span, class: BADGE_WRAP_CLASSES.fetch(compact), aria: { hidden: true }) do
+          render(FlatPack::Avatar::Component.new(**compact_avatar_arguments))
+        end
+      end
+
+      def compact_avatar_arguments
+        initials = compact_initials
+        {
+          size: badge_size,
+          show_tooltip: false,
+          **compact_avatar_identity(initials)
+        }
+      end
+
+      def compact_avatar_identity(initials)
+        if initials.present?
+          { initials: initials }
+        else
+          { icon: CompactTrigger::FALLBACK_ICON }
         end
       end
 

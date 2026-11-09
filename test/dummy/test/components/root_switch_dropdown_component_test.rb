@@ -21,7 +21,8 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
     render_inline(dropdown(compact: :below_md))
     trigger = trigger_element
     name = trigger.at_css("span[class*='max-w-[9rem]']")
-    badge = trigger.at_css("span[class*='md:hidden']")
+    wrap = trigger.at_css("span[class*='md:hidden']")
+    badge = compact_avatar(trigger)
 
     assert_equal "Studio Workspace", trigger["aria-label"]
     assert_equal "Studio Workspace", trigger["title"]
@@ -29,7 +30,12 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
     assert_includes name["class"].split, "hidden"
     refute_includes name["class"].split, "inline-block"
     assert_includes name["class"].split, "md:inline-block"
-    assert_equal "SW", badge.text.strip
+    assert_equal "SW", wrap.text.strip
+    assert_includes wrap["class"].split, "md:hidden"
+    assert_includes avatar_size_classes(badge), "h-8"
+    assert_includes avatar_size_classes(badge), "w-8"
+    assert trigger["class"].to_s.include?("max-md:[&_[data-flat-pack--button-dropdown-target=chevron]]:hidden")
+    assert trigger.at_css("[data-flat-pack--button-dropdown-target='chevron']")
     assert_includes rendered_content, "Client Alpha"
   end
 
@@ -37,13 +43,37 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
     render_inline(dropdown(compact: :always))
     trigger = trigger_element
     name = trigger.at_css("span.hidden")
-    badge = trigger.at_css("span.rounded-full")
+    badge = compact_avatar(trigger)
 
     assert_equal "Studio Workspace", trigger["aria-label"]
     assert_equal "Studio Workspace", name.text.strip
     refute_includes name["class"].split, "md:inline-block"
     assert_equal "SW", badge.text.strip
-    refute badge["class"].split.include?("md:hidden")
+    refute_includes compact_avatar_wrap(trigger)["class"].split, "md:hidden"
+    assert_includes avatar_size_classes(badge), "h-8"
+    assert_nil trigger.at_css("[data-flat-pack--button-dropdown-target='chevron']")
+  end
+
+  test "badge_size override uses FlatPack Avatar size classes" do
+    render_inline(dropdown(compact: :always, badge_size: :md))
+    badge = compact_avatar(trigger_element)
+
+    assert_includes avatar_size_classes(badge), "h-10"
+    assert_includes avatar_size_classes(badge), "w-10"
+  end
+
+  test "invalid badge_size raises through FlatPack Avatar" do
+    error = assert_raises(ArgumentError) { dropdown(compact: :always, badge_size: :phone) }
+
+    assert_match(/Invalid badge_size: :phone/, error.message)
+  end
+
+  test "default compact keeps the chevron" do
+    render_inline(dropdown(compact: nil))
+    trigger = trigger_element
+
+    assert trigger.at_css("[data-flat-pack--button-dropdown-target='chevron']")
+    refute_includes trigger["class"].to_s, "max-md:[&_[data-flat-pack--button-dropdown-target=chevron]]:hidden"
   end
 
   test "none selected compact trigger falls back to an icon" do
@@ -66,7 +96,7 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
     trigger = trigger_element
 
     assert_equal "None selected", trigger["aria-label"]
-    refute_equal "NS", trigger.at_css("span.rounded-full")&.text&.strip
+    refute_equal "NS", compact_avatar(trigger)&.text&.strip
     assert trigger.at_css("svg[data-flat-pack--icon-name-value='building-office-2']")
   end
 
@@ -105,13 +135,26 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
     Nokogiri::HTML5.fragment(rendered_content).at_css("[data-flat-pack--button-dropdown-target='trigger']")
   end
 
-  def dropdown(compact:)
+  def dropdown(compact:, badge_size: nil)
     RecordingStudioRootSwitchable::RootSwitch::DropdownComponent.new(
       menu_rows: selected_rows,
       compact: compact,
+      badge_size: badge_size,
       style: :ghost,
       size: :sm
     )
+  end
+
+  def avatar_size_classes(node)
+    node["class"].to_s.split
+  end
+
+  def compact_avatar(root)
+    root.at_css("span[class*='aspect-square']")
+  end
+
+  def compact_avatar_wrap(root)
+    compact_avatar(root).parent
   end
 
   def selected_rows

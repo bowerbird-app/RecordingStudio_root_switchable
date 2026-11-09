@@ -36,7 +36,7 @@ These seeded credentials are for local demo use only.
 - `/recording_studio` - mounted Recording Studio engine
 - `/recording_studio_accessible` - mounted Recording Studio Accessible engine
 - `/placements` - standalone switcher, the same list inside a host menu, and a collapsing button group
-- Signed-in top nav uses `recording_studio_root_switch_dropdown(style: :ghost, size: :sm, compact: :below_md)` so a phone-width nav shows initials instead of a truncated workspace name
+- Signed-in top nav uses `recording_studio_root_switch_dropdown(style: :ghost, size: :sm, compact: :below_md)` so a phone-width nav shows a FlatPack Avatar (`badge_size: :sm`, no chevron) instead of a truncated workspace name
 - `/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces` - root switch page for all accessible workspace roots
 - `/recording_studio_root_switchable/v1/root_switch?scope=client_workspaces` - root switch page filtered to client workspaces
 - `/users/sign_in` - Devise sign-in page

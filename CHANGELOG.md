@@ -14,14 +14,22 @@ Compact trigger for the root switch dropdown so it fits a narrow top nav.
 ### Added
 - `compact:` on `recording_studio_root_switch_dropdown`,
   `recording_studio_root_switch_for`, and `RootSwitch::DropdownComponent`.
-  `nil` is today's full-name trigger. `:below_md` shows a round initials badge
-  below the md breakpoint and the truncated name from md up. `:always` keeps
-  the badge at every width. Any other value raises `ArgumentError`.
+  `nil` is today's full-name trigger. `:below_md` shows a FlatPack Avatar
+  initials badge below the md breakpoint and the truncated name from md up.
+  `:always` keeps the badge at every width. Any other value raises
+  `ArgumentError`.
+- `badge_size:` on the same helpers and component. Values are FlatPack Avatar
+  sizes, validated by constructing `FlatPack::Avatar::Component`. Default is
+  `:sm` so the badge matches a TopNav account avatar. Invalid sizes raise
+  `ArgumentError`.
 - Compact badge initials come from the current workspace name (one word uses
   up to two letters, two or more words use the first letter of the first two).
   A blank name, an emoji-only name, or the none-selected state falls back to a
   FlatPack icon. The trigger `aria-label` is the full current name, using the
   existing `dropdown.none_selected` copy when nothing is selected.
+- Compact mode has no chevron. `:always` passes `show_chevron: false`.
+  `:below_md` hides the chevron below md with a gem-owned Tailwind class on
+  the trigger. Hosts add no CSS.
 - Default and md+ name labels truncate (`max-w-[9rem]`) and keep the full name
   in `title`. Menu rows, destinations, switching, the new-root row, and the
   phone `menu_row` are unchanged.
@@ -31,6 +39,7 @@ Compact trigger for the root switch dropdown so it fits a narrow top nav.
 
 ### Upgrade Notes
 - Pass `compact: :below_md` on a tight top nav (ghost, size `:sm`).
+  Optional `badge_size:` if the account avatar is not `:sm`.
 - Bump the pin to `0.13.0`. No migration.
 
 ```ruby

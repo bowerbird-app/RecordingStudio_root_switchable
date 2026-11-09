@@ -19,17 +19,18 @@ module RecordingStudioRootSwitchable
       new_root_label: nil,
       new_root_icon: nil,
       compact: nil,
+      badge_size: nil,
       **system_arguments
     )
-      menu_rows = recording_studio_root_switch_menu_rows(
+      rows = recording_studio_root_switch_menu_rows(
         return_to: return_to,
         new_root_path: new_root_path,
         new_root_label: new_root_label,
         new_root_icon: new_root_icon
       )
-      return if menu_rows.blank?
+      return if rows.blank?
 
-      RootSwitch::DropdownComponent.new(menu_rows: menu_rows, compact: compact, **system_arguments)
+      RootSwitch::DropdownComponent.new(menu_rows: rows, compact: compact, badge_size: badge_size, **system_arguments)
     end
 
     def recording_studio_root_switch_dropdown(
@@ -38,6 +39,7 @@ module RecordingStudioRootSwitchable
       new_root_label: nil,
       new_root_icon: nil,
       compact: nil,
+      badge_size: nil,
       **system_arguments
     )
       component = recording_studio_root_switch_for(
@@ -46,6 +48,7 @@ module RecordingStudioRootSwitchable
         new_root_label: new_root_label,
         new_root_icon: new_root_icon,
         compact: compact,
+        badge_size: badge_size,
         **system_arguments
       )
       render(component) if component
