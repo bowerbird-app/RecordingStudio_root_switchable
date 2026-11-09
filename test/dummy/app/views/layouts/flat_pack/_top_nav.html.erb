@@ -22,7 +22,7 @@
   <% nav.right do %>
     <% if user_signed_in? %>
       <div class="flex items-center gap-3">
-        <%= recording_studio_root_switch_dropdown(style: :ghost, size: :md) %>
+        <%= recording_studio_root_switch_dropdown(style: :ghost, size: :sm, compact: :below_md) %>
 
         <%= render FlatPack::Avatar::Component.new(
           name: current_user.try(:name).presence || current_user.email,

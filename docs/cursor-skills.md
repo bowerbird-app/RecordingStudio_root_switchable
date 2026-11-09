@@ -7,7 +7,9 @@ The repository tracks four boot files:
 
 - `.cursor/environment.json` defines the Build hooks, terminals, and port.
 - `.cursor/install.sh` provisions Ruby, PostgreSQL, dependencies, the dummy
-  database, and CSS on a cold image. On a warm snapshot it skips that
+  database, and CSS on a cold image. It links `vendor/flat_pack` (and related
+  gems) before `tailwindcss:build` so FlatPack layout classes are in the CSS.
+  On a warm snapshot it skips that
   provision when Ruby, bundle, and Postgres are already usable. A skippable
   provision failure does not fail the Build. It always runs
   `.cursor/fetch-skills.sh` last.

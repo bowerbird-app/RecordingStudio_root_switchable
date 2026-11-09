@@ -34,6 +34,16 @@ class CloudAgentBootTest < Minitest::Test
     assert_includes install, "skipping apt, ruby-build, db:prepare, and tailwind"
   end
 
+  def test_install_sh_links_gem_sources_before_tailwind_build
+    install = File.read(File.join(ROOT, ".cursor/install.sh"))
+    link = install.index("bundle exec rails gem_sources:link")
+    build = install.index("bundle exec rails tailwindcss:build")
+
+    refute_nil link
+    refute_nil build
+    assert_operator link, :<, build
+  end
+
   def test_fetch_skills_writes_repo_cursor_dirs_not_home
     fetch = File.read(File.join(ROOT, ".cursor/fetch-skills.sh"))
 

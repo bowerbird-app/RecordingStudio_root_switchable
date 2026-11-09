@@ -11,7 +11,7 @@ require_relative "../app/controllers/recording_studio_root_switchable/root_switc
 
 class RecordingStudioRootSwitchableTest < Minitest::Test
   def test_version_exists
-    assert_equal "0.12.0", RecordingStudioRootSwitchable::VERSION
+    assert_equal "0.13.0", RecordingStudioRootSwitchable::VERSION
   end
 
   def test_root_switch_controller_uses_recording_studio_layout
@@ -140,7 +140,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
       assert_includes lock, "recording_studio_trashable (0.12.3)", relative
       assert_includes lock, "view_component (4.19.0)", relative
       assert_includes lock, "crass (1.0.8)", relative
-      assert_includes lock, "recording_studio_root_switchable (0.12.0)", relative
+      assert_includes lock, "recording_studio_root_switchable (0.13.0)", relative
       assert_includes lock, "rails (8.1.4.1)", relative
       assert_includes lock, "flat_pack (>= 0.1.341)", relative
       assert_includes lock, "recording_studio (>= 6.3.0, < 7)", relative
@@ -264,6 +264,8 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     refute_includes helper_source, '"None selected"'
     assert_includes helper_source, "def recording_studio_new_root_path"
     assert_includes helper_source, "def recording_studio_root_switch_for"
+    assert_includes helper_source, "compact: nil"
+    assert_includes helper_source, "badge_size: nil"
     assert_includes helper_source, "def recording_studio_root_switch_list_for"
     assert_includes helper_source, "def render_recording_studio_root_switch_list"
     assert_includes helper_source, "new_root_icon: nil"

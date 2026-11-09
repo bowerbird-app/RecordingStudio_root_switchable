@@ -27,6 +27,10 @@ class RootSwitchPlacementsTest < ActionDispatch::IntegrationTest
 
     assert_select "#root-switch-standalone" do
       assert_select "[data-flat-pack--button-dropdown-target='trigger']", text: /Studio Workspace/
+      assert_select "[data-flat-pack--button-dropdown-target='trigger'][title='Studio Workspace']"
+      assert_select "[data-flat-pack--button-dropdown-target='trigger'][aria-label]", count: 0
+      assert_select "[data-flat-pack--button-dropdown-target='trigger'] span.max-w-\\[9rem\\].truncate", text: "Studio Workspace"
+      assert_select "[data-flat-pack--button-dropdown-target='trigger'] span.md\\:hidden", count: 0
       assert_select ".fp-menu-collapse", count: 0
       assert_switch_form "Client Alpha"
       assert_switch_form "Client Beta"

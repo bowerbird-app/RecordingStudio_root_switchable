@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-11-09
+
+Compact trigger for the root switch dropdown so it fits a narrow top nav.
+
+### Added
+- `compact:` on `recording_studio_root_switch_dropdown`,
+  `recording_studio_root_switch_for`, and `RootSwitch::DropdownComponent`.
+  `nil` is today's full-name trigger. `:below_md` shows a FlatPack Avatar
+  initials badge below the md breakpoint and the truncated name from md up.
+  `:always` keeps the badge at every width. Any other value raises
+  `ArgumentError`.
+- `badge_size:` on the same helpers and component. Values are FlatPack Avatar
+  sizes, validated by constructing `FlatPack::Avatar::Component`. Default is
+  `:sm` so the badge matches a TopNav account avatar. Invalid sizes raise
+  `ArgumentError`.
+- Compact badge initials come from the current workspace name (one word uses
+  up to two letters, two or more words use the first letter of the first two).
+  A blank name, an emoji-only name, or the none-selected state falls back to a
+  FlatPack icon. The trigger `aria-label` is the full current name, using the
+  existing `dropdown.none_selected` copy when nothing is selected.
+- Compact mode has no chevron. `:always` passes `show_chevron: false`.
+  `:below_md` hides the chevron below md with a gem-owned Tailwind class on
+  the trigger. In the compact state the trigger also drops horizontal padding,
+  flex gap, min-width, and trailing-slot space so its box is the avatar.
+  Hosts add no CSS.
+- Default and md+ name labels truncate (`max-w-[9rem]`) and keep the full name
+  in `title`. Menu rows, destinations, switching, the new-root row, and the
+  phone `menu_row` are unchanged.
+- Dummy compact TopNav shots at `docs/screenshots/root-switch-compact-390.png`
+  and `docs/screenshots/root-switch-compact-desktop.png`. Capture them after
+  `gem_sources:link` and `tailwindcss:build` so FlatPack layout CSS is present.
+
+### Upgrade Notes
+- Pass `compact: :below_md` on a tight top nav (ghost, size `:sm`).
+  Optional `badge_size:` if the account avatar is not `:sm`.
+- Bump the pin to `0.13.0`. No migration.
+
+```ruby
+gem "recording_studio_root_switchable", "~> 0.13.0"
+```
+
 ## [0.12.0] - 2026-11-06
 
 The mounted switch page requires Recording Studio Accessible, not merely a
@@ -651,7 +692,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.7...v0.12.0
 [0.11.7]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.6...v0.11.7
 [0.11.6]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.5...v0.11.6
