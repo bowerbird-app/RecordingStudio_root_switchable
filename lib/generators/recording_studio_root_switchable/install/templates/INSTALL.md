@@ -9,6 +9,10 @@ Next steps:
    - Ensure app/assets/tailwind/application.css includes the injected @source lines (or add them manually).
    - Run bin/rails recording_studio_root_switchable:link_tailwind_sources so vendor/flat_pack and vendor/recording_studio_root_switchable point at the installed gems.
    - Run bin/rails tailwindcss:build.
+   - After the Tailwind sheet, add
+     `stylesheet_link_tag "recording_studio_root_switchable"`. Compact trigger
+     rules (including max-md chrome) live in that gem stylesheet. You do not
+     need to scan the gem for those utilities.
 5. The switcher uses FlatPack's dropdown and menu collapse. No gem Stimulus controller is required.
    Prefer loading `@hotwired/turbo-rails` so a switch uses Turbo Drive instead of a full page reload.
    If you are upgrading from a version that pinned `controllers/recording_studio_root_switchable`, remove that pin and its eager load.

@@ -22,7 +22,21 @@
   <% nav.right do %>
     <% if user_signed_in? %>
       <div class="flex items-center gap-3">
-        <%= recording_studio_root_switch_dropdown(style: :ghost, size: :sm, compact: :below_md) %>
+        <%= recording_studio_root_switch_dropdown(
+          style: :default,
+          size: :md,
+          compact: :below_md,
+          compact_chrome: :button
+        ) %>
+
+        <%= render FlatPack::Button::Component.new(
+          icon: "bell",
+          icon_only: true,
+          style: :default,
+          size: :md,
+          round: true,
+          aria: {label: "Alerts"}
+        ) %>
 
         <%= render FlatPack::Avatar::Component.new(
           name: current_user.try(:name).presence || current_user.email,

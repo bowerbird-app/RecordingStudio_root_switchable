@@ -37,7 +37,12 @@ class HomeNavigationTest < Minitest::Test
   def test_top_nav_uses_root_switch_dropdown_before_avatar
     top_nav = read_dummy_file("app/views/layouts/flat_pack/_top_nav.html.erb")
 
-    assert_includes top_nav, "recording_studio_root_switch_dropdown(style: :ghost, size: :sm, compact: :below_md)"
+    assert_includes top_nav, "compact: :below_md"
+    assert_includes top_nav, "compact_chrome: :button"
+    assert_includes top_nav, "style: :default"
+    assert_includes top_nav, "size: :md"
+    assert_includes top_nav, 'icon: "bell"'
+    assert_includes top_nav, "icon_only: true"
     refute_includes top_nav, "FlatPack::Chip::Component.new"
 
     dropdown_index = top_nav.index("recording_studio_root_switch_dropdown")
@@ -159,7 +164,8 @@ class HomeNavigationTest < Minitest::Test
     assert_includes sidebar, "text: \"Placements\""
     assert_includes sidebar, "href: \"/placements\""
     assert_includes view, "recording_studio_root_switch_dropdown(style: :secondary, size: :md)"
-    refute_includes view, "compact:"
+    assert_includes view, "id=\"root-switch-compact-bare\""
+    assert_includes view, "compact: :always, compact_chrome: :bare"
     assert_includes view, "render_recording_studio_root_switch_list"
     assert_includes view, "recording_studio_root_switch_for(style: :secondary, size: :md)"
     assert_includes view, "FlatPack::ButtonGroup::Component.new(collapse: :menu, menu_label: \"More\")"

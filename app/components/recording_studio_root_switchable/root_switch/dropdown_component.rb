@@ -17,14 +17,20 @@ module RecordingStudioRootSwitchable
         always: "inline-flex items-center"
       }.freeze
 
-      def initialize(menu_rows:, compact: nil, badge_size: nil, **system_arguments)
+      def initialize(menu_rows:, compact: nil, compact_chrome: nil, badge_size: nil, **system_arguments)
         @menu_rows = menu_rows
         @compact = CompactTrigger.normalize!(compact)
-        @badge_size = CompactTrigger.normalize_badge_size!(badge_size)
+        @compact_chrome = CompactTrigger.normalize_chrome!(compact_chrome)
+        @button_size = CompactTrigger.resolved_button_size(system_arguments[:size])
+        @badge_size = CompactTrigger.resolve_badge_size!(
+          badge_size: badge_size,
+          compact_chrome: @compact_chrome,
+          button_size: @button_size
+        )
         super(**parent_dropdown_arguments(system_arguments))
       end
 
-      attr_reader :menu_rows, :compact, :badge_size
+      attr_reader :menu_rows, :compact, :compact_chrome, :badge_size
 
       def before_render
         with_trigger_label { trigger_label_content }
@@ -68,10 +74,7 @@ module RecordingStudioRootSwitchable
       end
 
       def compact_wrapper_class
-        return if compact.nil?
-        return CompactTrigger::ALWAYS_WRAPPER_CLASS if compact == :always
-
-        CompactTrigger::BELOW_MD_WRAPPER_CLASS
+        CompactTrigger.wrapper_class(compact: compact, chrome: compact_chrome, size: @button_size)
       end
 
       def compact?
@@ -79,15 +82,25 @@ module RecordingStudioRootSwitchable
       end
 
       def trigger_label_content
-        parts = [content_tag(:span, menu_rows.current_label, class: NAME_CLASSES.fetch(compact))]
+        parts = [content_tag(:span, menu_rows.current_label, class: compact_name_class)]
         parts << compact_badge if compact?
         safe_join(parts)
       end
 
+      def compact_name_class
+        return NAME_CLASSES.fetch(compact) if compact.nil?
+
+        "#{NAME_CLASSES.fetch(compact)} rs-root-switch-compact-name"
+      end
+
       def compact_badge
-        content_tag(:span, class: BADGE_WRAP_CLASSES.fetch(compact), aria: { hidden: true }) do
+        content_tag(:span, class: compact_badge_wrap_class, aria: { hidden: true }) do
           render(FlatPack::Avatar::Component.new(**compact_avatar_arguments))
         end
+      end
+
+      def compact_badge_wrap_class
+        "#{BADGE_WRAP_CLASSES.fetch(compact)} rs-root-switch-compact-badge"
       end
 
       def compact_avatar_arguments

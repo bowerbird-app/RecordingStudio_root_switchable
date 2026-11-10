@@ -19,6 +19,18 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.14.0
+
+No migration. `compact_chrome:` defaults to `:bare`, which is the 0.13.0
+compact badge. Pass `compact_chrome: :button` when the compact trigger should
+keep the caller's FlatPack button chrome and match an icon-only button of
+the same `size:`. Load `recording_studio_root_switchable` after Tailwind.
+Bump the pin.
+
+```ruby
+gem "recording_studio_root_switchable", "~> 0.14.0"
+```
+
 ## Upgrading to 0.13.0
 
 No migration. Pass `compact: :below_md` when the switcher sits in a narrow
@@ -654,6 +666,9 @@ import "@hotwired/turbo-rails"
 
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
+### 0.14.0
+- `compact_chrome: :bare` (default) or `:button` on the root switch dropdown helpers. `:button` keeps FlatPack button chrome in compact mode. Compact CSS ships in `recording_studio_root_switchable.css`. Load it after Tailwind.
+
 ### 0.13.0
 - Root switch dropdown accepts `compact: :below_md` or `:always`. Narrow navs get a FlatPack Avatar initials badge (`badge_size:` default `:sm`). Compact has no chevron and no extra trigger padding/gap, so the badge sits `gap-3` from the account avatar. The full name stays in `aria-label` and `title`, and truncates from md up. Default `compact:` is unchanged aside from that truncation.
 
@@ -1148,23 +1163,37 @@ or with none. `new_root_icon:` overrides the icon for that placement.
 ```erb
 <%= recording_studio_root_switch_dropdown(style: :ghost, size: :md, placement: :bottom_right) %>
 <%= recording_studio_root_switch_dropdown(style: :ghost, size: :sm, compact: :below_md) %>
+<%= recording_studio_root_switch_dropdown(style: :default, size: :md, compact: :below_md, compact_chrome: :button) %>
 <%= recording_studio_new_root_path(return_to: request.fullpath) %>
 ```
 
 `compact:` is `nil` by default (full name, truncated to a max width so a long
 workspace cannot crowd the rest of the nav). `:below_md` shows a FlatPack
 Avatar of up to two initials below the md breakpoint, and the truncated name
-from md up. `:always` keeps the badge at every width. `badge_size:` is a
-FlatPack Avatar size (`:xs`, `:sm`, `:md`, `:lg`, `:xl`, `:"2xl"`). The
-default is `:sm`, the same size as the dummy TopNav account avatar. Invalid
-sizes raise `ArgumentError`. Compact mode has no chevron: `:always` passes
-`show_chevron: false`, and `:below_md` hides the chevron below md. The compact
-trigger has no horizontal padding, gap, or min-width so its box is the avatar;
-from md up `:below_md` keeps the usual padded name-and-chevron trigger. The
-trigger `aria-label` and `title` stay the full current name. A blank or emoji-only
-name, or the none-selected state, uses a workspace icon instead of initials.
-Any other `compact:` value raises `ArgumentError`. Phone `menu_row` output
-does not change. Hosts add no CSS.
+from md up. `:always` keeps the badge at every width. `compact_chrome:` is
+`:bare` by default. That is the 0.13.0 compact trigger: no border, no extra
+padding, box is the avatar. `:button` keeps the caller's `style:`, `size:`,
+border, padding, and radius. Only the label becomes the initials badge, like
+an icon-only FlatPack button. The compact box matches an icon-only button of
+the same `size:`. Any other `compact_chrome:` value raises `ArgumentError`.
+`badge_size:` is a FlatPack Avatar size (`:xs`, `:sm`, `:md`, `:lg`, `:xl`,
+`:"2xl"`). The default is `:sm`, unless `compact_chrome: :button` is set and
+you omit `badge_size:`, in which case the badge follows `size:`. An explicit
+`badge_size:` still wins. Invalid sizes raise `ArgumentError`. Compact mode
+has no chevron: `:always` passes `show_chevron: false`, and `:below_md` hides
+the chevron below md. From md up, `:below_md` keeps the usual padded
+name-and-chevron trigger. The trigger `aria-label` and `title` stay the full
+current name. A blank or emoji-only name, or the none-selected state, uses a
+workspace icon instead of initials. Any other `compact:` value raises
+`ArgumentError`. Phone `menu_row` output does not change.
+
+Load the gem stylesheet after Tailwind. Compact rules live there, including
+the `max-md` chrome. Hosts do not need to scan the gem for those utilities.
+
+```erb
+<%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+<%= stylesheet_link_tag "recording_studio_root_switchable", "data-turbo-track": "reload" %>
+```
 
 Inside a host dropdown, render the list. The gem wraps the rows in
 `FlatPack::Menu::Collapse`. The header is the current root, and the rows switch
@@ -1213,9 +1242,11 @@ The dummy app in `test/dummy/` demonstrates:
 - multiple accessible workspace roots
 - two scopes (`all_workspaces` and `client_workspaces`)
 - `/placements` shows the dropdown, the host-menu list, and a collapsing button group
-- the dummy top nav uses `compact: :below_md` with `style: :ghost` and `size: :sm`
+- the dummy top nav uses `compact: :below_md`, `compact_chrome: :button`,
+  `style: :default`, and `size: :md` next to a default md round icon button
   (see `docs/screenshots/root-switch-compact-390.png` and
-  `docs/screenshots/root-switch-compact-desktop.png`)
+  `docs/screenshots/root-switch-compact-desktop.png`). Placements also shows
+  `compact_chrome: :bare` (`docs/screenshots/root-switch-compact-bare-390.png`)
 - per-device persistence through the encrypted cookie-backed device key
 - fallback behavior when a persisted selection is no longer valid
 - Accessible `v0.11.1` wiring: 0.8–0.11 migrations (string `role`,
