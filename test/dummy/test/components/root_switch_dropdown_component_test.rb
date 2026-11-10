@@ -30,6 +30,7 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
     assert_includes name["class"].split, "hidden"
     refute_includes name["class"].split, "inline-block"
     assert_includes name["class"].split, "md:inline-block"
+    assert_includes name["class"].split, "rs-root-switch-compact-name"
     assert_equal "SW", wrap.text.strip
     assert_includes wrap["class"].split, "md:hidden"
     assert_includes avatar_size_classes(badge), "h-8"
@@ -186,9 +187,24 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
   test "bare chrome output stays the default compact badge wrap" do
     render_inline(dropdown(compact: :below_md, compact_chrome: :bare))
     wrap = trigger_element.at_css("span[class*='md:hidden']")
+    classes = dropdown_wrapper["class"].to_s
 
-    refute_includes wrap["class"].split, "rs-root-switch-compact-badge"
+    assert_includes wrap["class"].split, "rs-root-switch-compact-badge"
     assert_includes avatar_size_classes(compact_avatar(trigger_element)), "h-8"
+    assert_includes classes, "rs-root-switch-compact--bare"
+    refute_includes classes, "rs-root-switch-compact--button"
+  end
+
+  test "button chrome names the label and badge so compact CSS can drop leftover slots" do
+    render_inline(dropdown(compact: :below_md, compact_chrome: :button, size: :md, style: :default))
+    trigger = trigger_element
+    name = trigger.at_css(".rs-root-switch-compact-name")
+    wrap = trigger.at_css(".rs-root-switch-compact-badge")
+
+    assert_equal "Studio Workspace", name.text.strip
+    assert_equal "SW", wrap.text.strip
+    assert trigger.at_css("[data-flat-pack--button-dropdown-target='chevron']")
+    assert trigger.at_css("span.min-w-0")
   end
 
   test "invalid compact_chrome raises" do

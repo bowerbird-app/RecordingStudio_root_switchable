@@ -82,9 +82,15 @@ module RecordingStudioRootSwitchable
       end
 
       def trigger_label_content
-        parts = [content_tag(:span, menu_rows.current_label, class: NAME_CLASSES.fetch(compact))]
+        parts = [content_tag(:span, menu_rows.current_label, class: compact_name_class)]
         parts << compact_badge if compact?
         safe_join(parts)
+      end
+
+      def compact_name_class
+        return NAME_CLASSES.fetch(compact) if compact.nil?
+
+        "#{NAME_CLASSES.fetch(compact)} rs-root-switch-compact-name"
       end
 
       def compact_badge
@@ -94,9 +100,7 @@ module RecordingStudioRootSwitchable
       end
 
       def compact_badge_wrap_class
-        classes = [BADGE_WRAP_CLASSES.fetch(compact)]
-        classes << "rs-root-switch-compact-badge" if compact_chrome == :button
-        classes.join(" ")
+        "#{BADGE_WRAP_CLASSES.fetch(compact)} rs-root-switch-compact-badge"
       end
 
       def compact_avatar_arguments

@@ -25,7 +25,11 @@ Compact trigger can keep FlatPack button chrome.
   icon fallback is unchanged.
 - Gem stylesheet `recording_studio_root_switchable.css` owns compact
   `max-md` and always rules for both chromes. Hosts do not need to scan the
-  gem for those utilities. Load the sheet after Tailwind.
+  gem for those utilities. Load the sheet after Tailwind. Compact `:button`
+  hides the name and trailing chevron, collapses FlatPack's truncated label
+  slot, and paints the initials at the icon size so they sit in the centre
+  of the round box. Avatar `size:` still sets inline fallback width, which
+  the sheet overrides.
 
 ### Upgrade Notes
 - Opt-in. No migration. Omit `compact_chrome:` to keep `:bare`.

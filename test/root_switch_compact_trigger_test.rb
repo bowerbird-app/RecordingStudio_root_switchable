@@ -92,6 +92,12 @@ class RootSwitchCompactTriggerTest < Minitest::Test
     assert_includes css, "width: var(--rs-root-switch-compact-box)"
     assert_includes css, "@media (width < 48rem)"
     assert_includes css, ".rs-root-switch-compact--button.rs-root-switch-compact--below-md .fp-button-dropdown__trigger"
+    assert_includes css, ".rs-root-switch-compact--always .rs-root-switch-compact-name"
+    assert_includes css, ".rs-root-switch-compact--below-md .rs-root-switch-compact-name"
+    assert_includes css, ".fp-button-dropdown__trigger > span.min-w-0"
+    assert_includes css, "flex: 0 0 auto"
+    assert_includes css, "overflow: visible"
+    assert_includes css, "width: var(--rs-root-switch-compact-icon) !important"
   end
 
   def test_invalid_compact_raises

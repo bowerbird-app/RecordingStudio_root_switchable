@@ -1245,7 +1245,8 @@ The dummy app in `test/dummy/` demonstrates:
 - the dummy top nav uses `compact: :below_md`, `compact_chrome: :button`,
   `style: :default`, and `size: :md` next to a default md round icon button
   (see `docs/screenshots/root-switch-compact-390.png` and
-  `docs/screenshots/root-switch-compact-desktop.png`)
+  `docs/screenshots/root-switch-compact-desktop.png`). Placements also shows
+  `compact_chrome: :bare` (`docs/screenshots/root-switch-compact-bare-390.png`)
 - per-device persistence through the encrypted cookie-backed device key
 - fallback behavior when a persisted selection is no longer valid
 - Accessible `v0.11.1` wiring: 0.8–0.11 migrations (string `role`,
