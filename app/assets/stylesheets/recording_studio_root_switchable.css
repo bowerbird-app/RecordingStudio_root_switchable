@@ -1,0 +1,84 @@
+/* Compact trigger rules. Hosts load this sheet after Tailwind so they do not
+   need to scan the gem for compact-mode utilities. Tailwind max-md is
+   width < 48rem. */
+
+.rs-root-switch-compact--xs {
+  --rs-root-switch-compact-pad: var(--button-icon-only-padding-xs);
+  --rs-root-switch-compact-box: var(--button-round-size-xs);
+  --rs-root-switch-compact-icon: 1rem;
+}
+
+.rs-root-switch-compact--sm {
+  --rs-root-switch-compact-pad: var(--button-icon-only-padding-sm);
+  --rs-root-switch-compact-box: var(--button-round-size-sm);
+  --rs-root-switch-compact-icon: 1rem;
+}
+
+.rs-root-switch-compact--md {
+  --rs-root-switch-compact-pad: var(--button-icon-only-padding-md);
+  --rs-root-switch-compact-box: var(--button-round-size-md);
+  --rs-root-switch-compact-icon: 1.25rem;
+}
+
+.rs-root-switch-compact--lg {
+  --rs-root-switch-compact-pad: var(--button-icon-only-padding-lg);
+  --rs-root-switch-compact-box: var(--button-round-size-lg);
+  --rs-root-switch-compact-icon: 1.5rem;
+}
+
+.rs-root-switch-compact--bare.rs-root-switch-compact--always .fp-button-dropdown__trigger {
+  padding: 0;
+  gap: 0;
+  min-width: 0;
+  width: fit-content;
+  border-radius: 9999px;
+  border-width: 0;
+}
+
+.rs-root-switch-compact--button.rs-root-switch-compact--always .fp-button-dropdown__trigger {
+  box-sizing: border-box;
+  padding: var(--rs-root-switch-compact-pad);
+  gap: 0;
+  justify-content: center;
+  width: var(--rs-root-switch-compact-box);
+  height: var(--rs-root-switch-compact-box);
+  min-width: var(--rs-root-switch-compact-box);
+  min-height: var(--rs-root-switch-compact-box);
+}
+
+.rs-root-switch-compact--button.rs-root-switch-compact--always .rs-root-switch-compact-badge > span {
+  width: var(--rs-root-switch-compact-icon);
+  height: var(--rs-root-switch-compact-icon);
+}
+
+@media (width < 48rem) {
+  .rs-root-switch-compact--below-md [data-flat-pack--button-dropdown-target="chevron"],
+  .rs-root-switch-compact--below-md .fp-button-dropdown__trigger > span.shrink-0 {
+    display: none;
+  }
+
+  .rs-root-switch-compact--bare.rs-root-switch-compact--below-md .fp-button-dropdown__trigger {
+    padding: 0;
+    gap: 0;
+    min-width: 0;
+    width: fit-content;
+    border-radius: 9999px;
+    border-width: 0;
+  }
+
+  .rs-root-switch-compact--button.rs-root-switch-compact--below-md .fp-button-dropdown__trigger {
+    box-sizing: border-box;
+    padding: var(--rs-root-switch-compact-pad);
+    gap: 0;
+    justify-content: center;
+    width: var(--rs-root-switch-compact-box);
+    height: var(--rs-root-switch-compact-box);
+    min-width: var(--rs-root-switch-compact-box);
+    min-height: var(--rs-root-switch-compact-box);
+  }
+
+  .rs-root-switch-compact--button.rs-root-switch-compact--below-md .rs-root-switch-compact-badge > span {
+    width: var(--rs-root-switch-compact-icon);
+    height: var(--rs-root-switch-compact-icon);
+  }
+}

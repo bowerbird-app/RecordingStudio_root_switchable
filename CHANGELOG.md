@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-11-10
+
+Compact trigger can keep FlatPack button chrome.
+
+### Added
+- `compact_chrome:` on `recording_studio_root_switch_dropdown`,
+  `recording_studio_root_switch_for`, and `RootSwitch::DropdownComponent`.
+  `:bare` is the default and matches 0.13.0: the compact trigger is a
+  borderless initials badge. `:button` keeps the caller's `style:`, `size:`,
+  border, padding, and radius, and only swaps the label for the initials
+  badge. The compact box matches an icon-only FlatPack button of the same
+  `size:`. Any other value raises `ArgumentError`.
+- When `compact_chrome: :button` is set and `badge_size:` is omitted, the
+  badge uses `size:`. An explicit `badge_size:` still wins. Compact mode
+  still has no chevron. `aria-label` and `title` stay the full name. The
+  icon fallback is unchanged.
+- Gem stylesheet `recording_studio_root_switchable.css` owns compact
+  `max-md` and always rules for both chromes. Hosts do not need to scan the
+  gem for those utilities. Load the sheet after Tailwind.
+
+### Upgrade Notes
+- Opt-in. No migration. Omit `compact_chrome:` to keep `:bare`.
+- Pass `compact_chrome: :button` when the switcher sits next to icon-only
+  FlatPack buttons (`style: :default, size: :md` matches a default md
+  round icon button).
+- Add `stylesheet_link_tag "recording_studio_root_switchable"` after the
+  host Tailwind sheet. Featured In can drop the inlined compact utilities
+  from its Tailwind prepare task.
+- Bump the pin to `0.14.0`.
+
+```ruby
+gem "recording_studio_root_switchable", "~> 0.14.0"
+```
+
 ## [0.13.0] - 2026-11-09
 
 Compact trigger for the root switch dropdown so it fits a narrow top nav.
@@ -692,7 +726,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.7...v0.12.0
 [0.11.7]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.6...v0.11.7

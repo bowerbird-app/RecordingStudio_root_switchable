@@ -30,6 +30,8 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
       assert_select "[data-flat-pack--button-dropdown-target='trigger'] span.md\\:hidden", text: "SW"
       assert_select "button[role='menuitem']", text: /Client Alpha/
     end
+    assert_select ".rs-root-switch-compact--button.rs-root-switch-compact--below-md"
+    assert_select "button[aria-label='Alerts']"
 
     assert_select "form[action*='root_switch'] input[name='root_switch[root_recording_id]']", minimum: 1
     assert_select "form[action*='root_switch'] input[name='root_switch[return_to]'][value='/config']", minimum: 1

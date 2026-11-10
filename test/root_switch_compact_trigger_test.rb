@@ -15,20 +15,83 @@ class RootSwitchCompactTriggerTest < Minitest::Test
     assert_equal :below_md, RecordingStudioRootSwitchable::RootSwitch::CompactTrigger.normalize!("below_md")
   end
 
+  def test_default_compact_chrome_is_bare
+    assert_equal :bare, RecordingStudioRootSwitchable::RootSwitch::CompactTrigger.normalize_chrome!(nil)
+  end
+
+  def test_bare_and_button_chrome_are_accepted
+    assert_equal :bare, RecordingStudioRootSwitchable::RootSwitch::CompactTrigger.normalize_chrome!(:bare)
+    assert_equal :button, RecordingStudioRootSwitchable::RootSwitch::CompactTrigger.normalize_chrome!(:button)
+    assert_equal :button, RecordingStudioRootSwitchable::RootSwitch::CompactTrigger.normalize_chrome!("button")
+  end
+
+  def test_invalid_compact_chrome_raises
+    error = assert_raises(ArgumentError) do
+      RecordingStudioRootSwitchable::RootSwitch::CompactTrigger.normalize_chrome!(:ghost)
+    end
+
+    assert_match(/Invalid compact_chrome: :ghost/, error.message)
+    assert_match(/:bare or :button/, error.message)
+  end
+
   def test_default_badge_size_matches_dummy_account_avatar
     assert_equal :sm, RecordingStudioRootSwitchable::RootSwitch::CompactTrigger::DEFAULT_BADGE_SIZE
   end
 
-  def test_compact_wrapper_classes_zero_padding_and_gap
-    always = RecordingStudioRootSwitchable::RootSwitch::CompactTrigger::ALWAYS_WRAPPER_CLASS
-    below = RecordingStudioRootSwitchable::RootSwitch::CompactTrigger::BELOW_MD_WRAPPER_CLASS
+  def test_bare_chrome_keeps_default_badge_size
+    size = RecordingStudioRootSwitchable::RootSwitch::CompactTrigger.resolve_badge_size!(
+      badge_size: nil,
+      compact_chrome: :bare,
+      button_size: :md
+    )
 
-    assert_includes always, "[&_button]:px-0"
-    assert_includes always, "[&_button]:gap-0"
-    assert_includes always, "[&_button]:min-w-0"
-    assert_includes below, "max-md:[&_button]:px-0"
-    assert_includes below, "max-md:[&_button]:gap-0"
-    assert_includes below, "max-md:[&_button]:min-w-0"
+    assert_equal :sm, size
+  end
+
+  def test_compact_wrapper_classes_are_static
+    always = RecordingStudioRootSwitchable::RootSwitch::CompactTrigger.wrapper_class(
+      compact: :always,
+      chrome: :bare,
+      size: :sm
+    )
+    below = RecordingStudioRootSwitchable::RootSwitch::CompactTrigger.wrapper_class(
+      compact: :below_md,
+      chrome: :bare,
+      size: :sm
+    )
+    button = RecordingStudioRootSwitchable::RootSwitch::CompactTrigger.wrapper_class(
+      compact: :below_md,
+      chrome: :button,
+      size: :md
+    )
+
+    assert_includes always, "rs-root-switch-compact--bare"
+    assert_includes always, "rs-root-switch-compact--always"
+    refute_includes always, "[&_button]:px-0"
+    assert_includes below, "rs-root-switch-compact--below-md"
+    refute_includes below, "max-md:[&_button]:px-0"
+    assert_includes button, "rs-root-switch-compact--button"
+    assert_includes button, "rs-root-switch-compact--md"
+    refute_includes button, "rs-root-switch-compact--bare"
+  end
+
+  def test_compact_stylesheet_owns_bare_and_button_rules
+    css = File.read(
+      File.expand_path(
+        "../app/assets/stylesheets/recording_studio_root_switchable.css",
+        __dir__
+      )
+    )
+
+    refute_includes css, "max-md:["
+    assert_includes css, ".rs-root-switch-compact--bare.rs-root-switch-compact--always .fp-button-dropdown__trigger"
+    assert_includes css, "border-width: 0"
+    assert_includes css, "padding: 0"
+    assert_includes css, ".rs-root-switch-compact--button.rs-root-switch-compact--always .fp-button-dropdown__trigger"
+    assert_includes css, "padding: var(--rs-root-switch-compact-pad)"
+    assert_includes css, "width: var(--rs-root-switch-compact-box)"
+    assert_includes css, "@media (width < 48rem)"
+    assert_includes css, ".rs-root-switch-compact--button.rs-root-switch-compact--below-md .fp-button-dropdown__trigger"
   end
 
   def test_invalid_compact_raises

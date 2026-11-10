@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module RecordingStudioRootSwitchable
+  # rubocop:disable Metrics/ModuleLength
   module RootSwitchHelper
     def recording_studio_new_root_path(scope: nil, return_to: nil)
       resolved_scope = scope || recording_studio_root_switch_scope
@@ -12,13 +13,14 @@ module RecordingStudioRootSwitchable
       )
     end
 
-    # rubocop:disable Metrics/ParameterLists
+    # rubocop:disable Metrics/ParameterLists, Metrics/MethodLength
     def recording_studio_root_switch_for(
       return_to: nil,
       new_root_path: nil,
       new_root_label: nil,
       new_root_icon: nil,
       compact: nil,
+      compact_chrome: nil,
       badge_size: nil,
       **system_arguments
     )
@@ -30,7 +32,13 @@ module RecordingStudioRootSwitchable
       )
       return if rows.blank?
 
-      RootSwitch::DropdownComponent.new(menu_rows: rows, compact: compact, badge_size: badge_size, **system_arguments)
+      RootSwitch::DropdownComponent.new(
+        menu_rows: rows,
+        compact: compact,
+        compact_chrome: compact_chrome,
+        badge_size: badge_size,
+        **system_arguments
+      )
     end
 
     def recording_studio_root_switch_dropdown(
@@ -39,6 +47,7 @@ module RecordingStudioRootSwitchable
       new_root_label: nil,
       new_root_icon: nil,
       compact: nil,
+      compact_chrome: nil,
       badge_size: nil,
       **system_arguments
     )
@@ -48,12 +57,13 @@ module RecordingStudioRootSwitchable
         new_root_label: new_root_label,
         new_root_icon: new_root_icon,
         compact: compact,
+        compact_chrome: compact_chrome,
         badge_size: badge_size,
         **system_arguments
       )
       render(component) if component
     end
-    # rubocop:enable Metrics/ParameterLists
+    # rubocop:enable Metrics/ParameterLists, Metrics/MethodLength
 
     def recording_studio_root_switch_list_for(return_to: nil, **new_root)
       menu_rows = recording_studio_root_switch_menu_rows(return_to: return_to, **new_root)
@@ -118,4 +128,5 @@ module RecordingStudioRootSwitchable
       controller.current_root_device_key
     end
   end
+  # rubocop:enable Metrics/ModuleLength
 end

@@ -35,11 +35,14 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
     assert_includes avatar_size_classes(badge), "h-8"
     assert_includes avatar_size_classes(badge), "w-8"
     classes = dropdown_wrapper["class"].to_s
-    assert_includes classes, "max-md:[&_button]:px-0"
-    assert_includes classes, "max-md:[&_button]:gap-0"
-    assert_includes classes, "max-md:[&_button]:min-w-0"
-    assert_includes classes, "max-md:[&_[data-flat-pack--button-dropdown-target=chevron]]:hidden"
-    assert_includes classes, "max-md:[&_button>span.shrink-0]:hidden"
+    assert_includes classes, "rs-root-switch-compact--below-md"
+    assert_includes classes, "rs-root-switch-compact--bare"
+    refute_includes classes, "rs-root-switch-compact--button"
+    refute_includes classes, "max-md:[&_button]:px-0"
+    refute_includes classes, "max-md:[&_button]:gap-0"
+    refute_includes classes, "max-md:[&_button]:min-w-0"
+    refute_includes classes, "max-md:[&_[data-flat-pack--button-dropdown-target=chevron]]:hidden"
+    refute_includes classes, "max-md:[&_button>span.shrink-0]:hidden"
     assert trigger.at_css("[data-flat-pack--button-dropdown-target='chevron']")
     assert_includes rendered_content, "Client Alpha"
   end
@@ -57,9 +60,11 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
     refute_includes compact_avatar_wrap(trigger)["class"].split, "md:hidden"
     assert_includes avatar_size_classes(badge), "h-8"
     classes = dropdown_wrapper["class"].to_s
-    assert_includes classes, "[&_button]:px-0"
-    assert_includes classes, "[&_button]:gap-0"
-    assert_includes classes, "[&_button]:min-w-0"
+    assert_includes classes, "rs-root-switch-compact--always"
+    assert_includes classes, "rs-root-switch-compact--bare"
+    refute_includes classes, "[&_button]:px-0"
+    refute_includes classes, "[&_button]:gap-0"
+    refute_includes classes, "[&_button]:min-w-0"
     refute_includes classes, "max-md:[&_button]:px-0"
     assert_nil trigger.at_css("[data-flat-pack--button-dropdown-target='chevron']")
   end
@@ -84,6 +89,8 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
 
     classes = dropdown_wrapper["class"].to_s
     assert trigger.at_css("[data-flat-pack--button-dropdown-target='chevron']")
+    refute_includes classes, "rs-root-switch-compact--below-md"
+    refute_includes classes, "rs-root-switch-compact--always"
     refute_includes classes, "max-md:[&_button]:px-0"
     refute_includes classes, "[&_button]:px-0"
     refute_includes classes, "max-md:[&_[data-flat-pack--button-dropdown-target=chevron]]:hidden"
@@ -142,6 +149,54 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
     assert_match(/Invalid compact: :phone/, error.message)
   end
 
+  test "button chrome keeps caller style classes and uses a static compact class" do
+    render_inline(dropdown(compact: :below_md, compact_chrome: :button, size: :md, style: :default))
+    trigger = trigger_element
+    wrap = trigger.at_css("span[class*='md:hidden']")
+    badge = compact_avatar(trigger)
+    classes = dropdown_wrapper["class"].to_s
+
+    assert_equal "Studio Workspace", trigger["aria-label"]
+    assert_equal "Studio Workspace", trigger["title"]
+    assert_equal "SW", wrap.text.strip
+    assert_includes wrap["class"].split, "rs-root-switch-compact-badge"
+    assert_includes avatar_size_classes(badge), "h-10"
+    assert_includes avatar_size_classes(badge), "w-10"
+    assert_includes classes, "rs-root-switch-compact--button"
+    assert_includes classes, "rs-root-switch-compact--md"
+    refute_includes classes, "rs-root-switch-compact--bare"
+    refute_includes classes, "max-md:[&_button]:border-0"
+    assert trigger.at_css("[data-flat-pack--button-dropdown-target='chevron']")
+    assert_includes trigger["class"].to_s, "border"
+  end
+
+  test "button chrome derives badge size from size and badge_size wins" do
+    render_inline(dropdown(compact: :always, compact_chrome: :button, size: :md, style: :default))
+
+    assert_includes avatar_size_classes(compact_avatar(trigger_element)), "h-10"
+
+    render_inline(
+      dropdown(compact: :always, compact_chrome: :button, size: :md, style: :default, badge_size: :xs)
+    )
+
+    assert_includes avatar_size_classes(compact_avatar(trigger_element)), "h-6"
+    refute_includes avatar_size_classes(compact_avatar(trigger_element)), "h-10"
+  end
+
+  test "bare chrome output stays the default compact badge wrap" do
+    render_inline(dropdown(compact: :below_md, compact_chrome: :bare))
+    wrap = trigger_element.at_css("span[class*='md:hidden']")
+
+    refute_includes wrap["class"].split, "rs-root-switch-compact-badge"
+    assert_includes avatar_size_classes(compact_avatar(trigger_element)), "h-8"
+  end
+
+  test "invalid compact_chrome raises" do
+    error = assert_raises(ArgumentError) { dropdown(compact: :always, compact_chrome: :ghost) }
+
+    assert_match(/Invalid compact_chrome: :ghost/, error.message)
+  end
+
   private
 
   def trigger_element
@@ -152,13 +207,14 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
     Nokogiri::HTML5.fragment(rendered_content).at_css(".fp-button-dropdown")
   end
 
-  def dropdown(compact:, badge_size: nil)
+  def dropdown(compact:, compact_chrome: nil, badge_size: nil, style: :ghost, size: :sm)
     RecordingStudioRootSwitchable::RootSwitch::DropdownComponent.new(
       menu_rows: selected_rows,
       compact: compact,
+      compact_chrome: compact_chrome,
       badge_size: badge_size,
-      style: :ghost,
-      size: :sm
+      style: style,
+      size: size
     )
   end
 
