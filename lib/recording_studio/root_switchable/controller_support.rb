@@ -48,6 +48,19 @@ module RecordingStudio
         DeviceKeyPreview.format(current_root_device_key)
       end
 
+      def recording_studio_switch_to_root!(root_recording, scope:)
+        scope_key = scope.respond_to?(:key) ? scope.key : scope.to_s
+        return recording_studio_switch_rate_limited(scope_key) unless recording_studio_switch_allowed?
+
+        RecordingStudio::RootSwitchable.switch_root(
+          controller: self,
+          actor: RecordingStudio::RootSwitchable::Current.actor,
+          device_key: RecordingStudio::RootSwitchable::Current.device_key,
+          root_recording_id: root_recording&.id,
+          scope_key: scope_key
+        )
+      end
+
       def current_root_resolution
         @current_root_resolution ||= RecordingStudio::RootSwitchable::Services::ResolveCurrentRoot.call(
           controller: self,
@@ -58,6 +71,24 @@ module RecordingStudio
       end
 
       private
+
+      def recording_studio_switch_allowed?
+        RecordingStudioRootSwitchable::SwitchRateLimiter.allowed?(
+          actor: RecordingStudio::RootSwitchable::Current.actor,
+          device_key: RecordingStudio::RootSwitchable::Current.device_key
+        )
+      end
+
+      def recording_studio_switch_rate_limited(scope_key)
+        Services::Result.new(
+          available_roots: [],
+          errors: ["Too many switches. Wait a minute and try again."],
+          root_recording: Current.root_recording,
+          scope: RecordingStudioRootSwitchable.configuration.scopes[scope_key],
+          selected_via: :none,
+          selection: Current.selection
+        )
+      end
 
       def resolve_recording_studio_root_switchable_current
         RecordingStudio::RootSwitchable::Current.actor =

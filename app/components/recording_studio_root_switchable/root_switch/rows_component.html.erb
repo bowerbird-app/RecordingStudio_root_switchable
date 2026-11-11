@@ -8,14 +8,32 @@
     <span class="flex-1"><%= row.label %></span>
   <% end %>
 <% end %>
-<% if menu_rows.new_root_path.present? %>
+<% offer = menu_rows.new_root_offer %>
+<% if offer&.visible? || menu_rows.new_root_path.present? %>
   <% if menu_rows.switch_rows.any? %>
     <div class="my-1 border-t border-(--surface-border-color)" role="separator"></div>
   <% end %>
-  <%= link_to menu_rows.new_root_path, class: item_classes, role: "menuitem" do %>
-    <% if menu_rows.new_root_icon.present? %>
-      <%= render FlatPack::Shared::IconComponent.new(name: menu_rows.new_root_icon.to_s, size: :sm) %>
+  <% if offer&.modal? %>
+    <noscript>
+      <style>.rs-new-root-button { display: none !important; }</style>
+      <%= link_to offer.picker_path, class: item_classes, role: "menuitem" do %>
+        <%= render RecordingStudioRootSwitchable::RootSwitch::NewRootLabelComponent.new(label: offer.label, icon: offer.icon) %>
+      <% end %>
+    </noscript>
+    <button type="button" class="<%= item_classes %> rs-new-root-button" data-modal-id="<%= offer.modal_id %>" role="menuitem">
+      <%= render RecordingStudioRootSwitchable::RootSwitch::NewRootLabelComponent.new(label: offer.label, icon: offer.icon) %>
+    </button>
+  <% elsif offer&.disabled? %>
+    <div class="<%= item_classes %> cursor-not-allowed opacity-60" role="menuitem" aria-disabled="true">
+      <%= render RecordingStudioRootSwitchable::RootSwitch::NewRootLabelComponent.new(label: offer.label, icon: offer.icon) %>
+      <span class="text-xs text-(--surface-muted-content-color)"><%= offer.disabled_reason %></span>
+    </div>
+  <% elsif menu_rows.new_root_path.present? %>
+    <%= link_to menu_rows.new_root_path, class: item_classes, role: "menuitem" do %>
+      <%= render RecordingStudioRootSwitchable::RootSwitch::NewRootLabelComponent.new(
+        label: menu_rows.new_root_label,
+        icon: menu_rows.new_root_icon
+      ) %>
     <% end %>
-    <span class="flex-1"><%= menu_rows.new_root_label %></span>
   <% end %>
 <% end %>

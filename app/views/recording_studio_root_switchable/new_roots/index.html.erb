@@ -1,0 +1,20 @@
+<% content_for :title, @picker_title %>
+<% content_for :subtitle, @picker_body if @picker_body %>
+<% flat_pack_page_nav(round: true, style: :default) do |nav| %>
+  <% if @safe_return_to.present? %>
+    <% nav.with_close(
+      href: @safe_return_to,
+      tooltip: t("recording_studio.root_switchable.navigation.close", default: "Close")
+    ) %>
+  <% end %>
+<% end %>
+
+<% if @choices.empty? %>
+  <%= render FlatPack::Alert::Component.new(
+    style: :info,
+    title: @page_copy.fetch(:empty_state_title),
+    description: @page_copy.fetch(:empty_state_body)
+  ) %>
+<% else %>
+  <%= render RecordingStudioRootSwitchable::RootSwitch::NewRootChoicesComponent.new(choices: @choices) %>
+<% end %>

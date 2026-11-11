@@ -10,6 +10,10 @@ en:
         none_selected: "None selected"
         new_root: "New workspace"
         new_root_icon: "plus"
+        new_root_menu: "New…"
+      new_root:
+        type_label: "New %{type}"
+        disabled_reason: "Not available on this plan."
       page_copy:
         title: "Switch"
         subtitle: ""
@@ -22,5 +26,8 @@ en:
         switch_action_label: "Switch"
         new_root_action_label: "New workspace"
         new_root_action_icon: "plus"
+        new_root_picker_title: "Start something new"
+        new_root_picker_body: "Pick one. The form comes next."
+        new_root_disabled_reason: "Not available on this plan."
         empty_state_title: "Nothing to switch"
         empty_state_body: "There are no options available right now."

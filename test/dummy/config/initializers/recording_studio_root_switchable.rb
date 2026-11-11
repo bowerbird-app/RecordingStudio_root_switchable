@@ -77,4 +77,37 @@ RecordingStudioRootSwitchable.configure do |config|
     scope.new_root_path = new_workspace_path
     scope.new_root_label = "New workspace"
   end
+
+  config.scope :studio do |scope|
+    scope.label = "Studio"
+    scope.description = "Workspaces and teams you can start from the switcher."
+    scope.switchable_root_types = [ "Workspace", "Team" ]
+    scope.available_roots = lambda do |actor:, **|
+      RecordingStudioAccessible.root_recordings_for(actor: actor, minimum_role: :view)
+    end
+    scope.default_root = ->(roots:, **) { roots.first }
+    scope.creatable_root(
+      "Workspace",
+      label: "New workspace",
+      icon: "plus",
+      description: "A place for one client's work.",
+      path: new_workspace_path
+    )
+    scope.creatable_root(
+      "Team",
+      label: "New team",
+      icon: "users",
+      description: "People who share the work.",
+      path: ->(controller:, **) { controller.main_app.new_team_path }
+    )
+    scope.before_root_create do |ctx|
+      next unless ctx.root_type == "Team"
+      next if Team.count < 1
+
+      RecordingStudio::RootSwitchable::CreateDecision.refuse(
+        redirect_to: "/upgrade",
+        reason: "Teams are full on this plan. Upgrade to add another."
+      )
+    end
+  end
 end

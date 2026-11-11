@@ -81,9 +81,24 @@ module RecordingStudioRootSwitchable
       @page_copy = page_copy
       @safe_return_to = safe_return_to_param
       @return_anchor_url = return_anchor_url
-      @new_root_path = new_root_path_for_page
-      @new_root_label = new_root_label_for_page
-      @new_root_icon = new_root_icon_for_page
+      assign_new_root
+    end
+
+    def assign_new_root
+      @new_root_offer = RecordingStudio::RootSwitchable::NewRootMenu.build(
+        scope: @scope,
+        arguments: new_root_hook_arguments,
+        controller: self
+      )
+      if @new_root_offer
+        @new_root_path = @new_root_offer.href || @new_root_offer.picker_path
+        @new_root_label = @new_root_offer.label
+        @new_root_icon = @new_root_offer.icon
+      else
+        @new_root_path = new_root_path_for_page
+        @new_root_label = new_root_label_for_page
+        @new_root_icon = new_root_icon_for_page
+      end
     end
 
     def new_root_path_for_page

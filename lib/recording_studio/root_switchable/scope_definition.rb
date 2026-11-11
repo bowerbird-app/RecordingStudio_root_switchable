@@ -157,6 +157,24 @@ module RecordingStudio
         default_new_root_icon
       end
 
+      def creatable_root(type, path:, label: nil, icon: nil, description: nil)
+        creatable_catalog.add(type, label: label, icon: icon, path: path, description: description)
+      end
+
+      def before_root_create(&block)
+        return creatable_catalog.before_hook unless block
+
+        creatable_catalog.before_hook = block
+      end
+
+      def validate_creatable_roots!
+        creatable_catalog.validate!
+      end
+
+      def creatable_catalog
+        @creatable_catalog ||= CreatableCatalog.new(self)
+      end
+
       def new_root_label_for(fallback: nil, **)
         text = label_text(resolve_callable(new_root_label, **))
         return text if text

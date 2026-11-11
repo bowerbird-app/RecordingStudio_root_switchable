@@ -1,0 +1,6 @@
+<% content_for :title, "Upgrade" %>
+<% content_for :subtitle, "Teams need a paid plan." %>
+
+<% if flash[:alert].present? %>
+  <%= render FlatPack::Alert::Component.new(style: :warning, title: flash[:alert]) %>
+<% end %>

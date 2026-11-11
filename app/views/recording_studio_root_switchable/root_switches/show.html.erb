@@ -9,7 +9,19 @@
     ) %>
   <% end %>
 <% end %>
-<% if @new_root_path.present? %>
+<% if @new_root_offer&.modal? %>
+  <% register_page_nav(
+    component: FlatPack::Button::Component.new(
+      text: @new_root_offer.label,
+      icon: @new_root_offer.icon.presence,
+      type: "button",
+      data: { modal_id: @new_root_offer.modal_id }
+    ),
+    role: :primary
+  ) %>
+  <%= render RecordingStudioRootSwitchable::RootSwitch::NewRootModalComponent.new(offer: @new_root_offer) %>
+  <noscript><%= link_to @new_root_offer.label, @new_root_offer.picker_path %></noscript>
+<% elsif @new_root_path.present? %>
   <% register_page_nav(@new_root_label, @new_root_path, role: :primary, icon: @new_root_icon) %>
 <% end %>
 

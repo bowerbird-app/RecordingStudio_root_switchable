@@ -35,6 +35,7 @@ module RecordingStudioRootSwitchable
       def before_render
         with_trigger_label { trigger_label_content }
         menu_html(render(RowsComponent.new(menu_rows: menu_rows)))
+        helpers.recording_studio_capture_new_root_modal(menu_rows)
         super
       end
 
@@ -50,7 +51,7 @@ module RecordingStudioRootSwitchable
         system_arguments[:show_chevron] = false if @compact == :always
         {
           text: menu_rows.current_label,
-          disabled: menu_rows.switch_rows.empty? && menu_rows.new_root_path.blank?,
+          disabled: menu_rows.switch_rows.empty? && !menu_rows.new_root_offered?,
           **with_trigger_attributes(system_arguments)
         }
       end

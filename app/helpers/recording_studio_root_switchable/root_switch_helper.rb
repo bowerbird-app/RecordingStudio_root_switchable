@@ -7,10 +7,28 @@ module RecordingStudioRootSwitchable
       resolved_scope = scope || recording_studio_root_switch_scope
       return if resolved_scope.blank?
 
-      resolved_scope.new_root_path_for(
-        **recording_studio_new_root_context(return_to: return_to),
-        scope: resolved_scope
+      arguments = recording_studio_new_root_context(return_to: return_to).merge(scope: resolved_scope)
+      offer = RecordingStudio::RootSwitchable::NewRootMenu.build(
+        scope: resolved_scope,
+        arguments: arguments,
+        controller: controller
       )
+      return offer.href || offer.picker_path if offer&.visible?
+
+      resolved_scope.new_root_path_for(**arguments)
+    end
+
+    def recording_studio_capture_new_root_modal(menu_rows)
+      offer = menu_rows&.new_root_offer
+      return unless offer&.modal?
+
+      seen = @recording_studio_new_root_modal_ids ||= []
+      return if seen.include?(offer.modal_id)
+
+      seen << offer.modal_id
+      content_for(:recording_studio_new_root_modal) do
+        render(RecordingStudioRootSwitchable::RootSwitch::NewRootModalComponent.new(offer: offer))
+      end
     end
 
     # rubocop:disable Metrics/ParameterLists, Metrics/MethodLength

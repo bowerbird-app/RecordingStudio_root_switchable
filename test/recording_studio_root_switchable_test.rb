@@ -11,7 +11,7 @@ require_relative "../app/controllers/recording_studio_root_switchable/root_switc
 
 class RecordingStudioRootSwitchableTest < Minitest::Test
   def test_version_exists
-    assert_equal "0.14.0", RecordingStudioRootSwitchable::VERSION
+    assert_equal "0.15.0", RecordingStudioRootSwitchable::VERSION
   end
 
   def test_root_switch_controller_uses_recording_studio_layout
@@ -140,7 +140,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
       assert_includes lock, "recording_studio_trashable (0.12.3)", relative
       assert_includes lock, "view_component (4.19.0)", relative
       assert_includes lock, "crass (1.0.8)", relative
-      assert_includes lock, "recording_studio_root_switchable (0.14.0)", relative
+      assert_includes lock, "recording_studio_root_switchable (0.15.0)", relative
       assert_includes lock, "rails (8.1.4.1)", relative
       assert_includes lock, "flat_pack (>= 0.1.341)", relative
       assert_includes lock, "recording_studio (>= 6.3.0, < 7)", relative
@@ -194,8 +194,15 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
         __dir__
       )
     )
-    assert_includes rows_source, "FlatPack::Shared::IconComponent.new(name: menu_rows.new_root_icon.to_s, size: :sm)"
-    assert_includes rows_source, "if menu_rows.new_root_icon.present?"
+    assert_includes rows_source, "NewRootLabelComponent.new("
+    label_source = File.read(
+      File.expand_path(
+        "../app/components/recording_studio_root_switchable/root_switch/new_root_label_component.rb",
+        __dir__
+      )
+    )
+    assert_includes label_source, "FlatPack::Shared::IconComponent.new(name: icon.to_s, size: :sm)"
+    assert_includes label_source, "return if icon.blank?"
     refute_includes rows_source, 'aria-hidden="true">+</span>'
     assert_includes view_source, "content_for :title, @page_copy.fetch(:title)"
     assert_includes view_source, "content_for :subtitle, page_subtitle if page_subtitle"

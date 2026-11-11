@@ -121,8 +121,8 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Client Alpha"
     assert_operator response.body.index("Studio Workspace"), :<, response.body.index("Client Alpha")
     refute_includes response.body, "max-w-3xl"
-    assert_select "a[href^='/workspaces/new']", text: "New workspace", minimum: 1
-    assert_select "a[href^='/workspaces/new'] svg[data-flat-pack--icon-name-value='plus']", minimum: 1
+    assert_select "a[href*='/v1/new_root'][href*='type=Workspace']", text: "New workspace", minimum: 1
+    assert_select "a[href*='/v1/new_root'][href*='type=Workspace'] svg[data-flat-pack--icon-name-value='plus']", minimum: 1
     assert_flatpack_0_1_341_switch_page(response.body)
   end
 
@@ -196,7 +196,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     get "/recording_studio_root_switchable/v1/root_switch", params: { scope: "all_workspaces" }
 
     assert_response :success
-    assert_select "a[href^='/workspaces/new'] svg[data-flat-pack--icon-name-value='folder']", minimum: 1
+    assert_select "a[href*='/v1/new_root'][href*='type=Workspace'] svg[data-flat-pack--icon-name-value='folder']", minimum: 1
   ensure
     scope.new_root_icon = original_icon if scope
   end
@@ -210,7 +210,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     get "/recording_studio_root_switchable/v1/root_switch", params: { scope: "all_workspaces" }
 
     assert_response :success
-    assert_select "a[href^='/workspaces/new'] svg[data-flat-pack--icon-name-value='sparkles']", minimum: 1
+    assert_select "a[href*='/v1/new_root'][href*='type=Workspace'] svg[data-flat-pack--icon-name-value='sparkles']", minimum: 1
   ensure
     scope.new_root_icon = original_icon if scope
   end
@@ -224,8 +224,8 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     get "/recording_studio_root_switchable/v1/root_switch", params: { scope: "all_workspaces" }
 
     assert_response :success
-    assert_select "a[href^='/workspaces/new']", text: "New workspace", minimum: 1
-    assert_select "a[href^='/workspaces/new'] svg", count: 0
+    assert_select "a[href*='/v1/new_root'][href*='type=Workspace']", text: "New workspace", minimum: 1
+    assert_select "a[href*='/v1/new_root'][href*='type=Workspace'] svg", count: 0
   ensure
     scope.new_root_icon = original_icon if scope
   end

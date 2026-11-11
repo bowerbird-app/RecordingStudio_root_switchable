@@ -2,6 +2,7 @@
 
 require "test_helper"
 require_relative "../app/components/recording_studio_root_switchable/root_switch/menu_rows"
+require_relative "../app/components/recording_studio_root_switchable/root_switch/new_root_source"
 require_relative "../app/components/recording_studio_root_switchable/root_switch/context"
 
 class RootSwitchContextTest < Minitest::Test
@@ -30,6 +31,13 @@ class RootSwitchContextTest < Minitest::Test
 
     def page_copy
       {}
+    end
+
+    def creatable_catalog
+      catalog = Object.new
+      catalog.define_singleton_method(:direct_legacy?) { false }
+      catalog.define_singleton_method(:presented) { |*, **| [] }
+      catalog
     end
   end
 

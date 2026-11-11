@@ -10,7 +10,31 @@ module RecordingStudioRootSwitchable
         end
       end
 
-      Options = Data.define(:none_selected_label, :new_root_path, :new_root_label, :new_root_icon)
+      class Options
+        attr_reader :none_selected_label, :new_root_path, :new_root_label, :new_root_icon, :offer
+
+        def initialize(none_selected_label:, new_root_path:, new_root_label:, new_root_icon:, offer: nil)
+          @none_selected_label = none_selected_label
+          @new_root_path = new_root_path
+          @new_root_label = new_root_label
+          @new_root_icon = new_root_icon
+          @offer = offer
+        end
+
+        def with(**replacements)
+          self.class.new(**to_h, **replacements)
+        end
+
+        def to_h
+          {
+            none_selected_label: none_selected_label,
+            new_root_path: new_root_path,
+            new_root_label: new_root_label,
+            new_root_icon: new_root_icon,
+            offer: offer
+          }
+        end
+      end
       Override = Data.define(:path, :label, :icon) do
         def self.from(path, label, icon = nil)
           return if path.nil? && label.nil? && icon.nil?
@@ -22,13 +46,13 @@ module RecordingStudioRootSwitchable
       def self.build(entries:, selected:, form_action:, return_to:, options:)
         rows = build_rows(entries, selected&.fetch(:id))
         safe_new_root_path = RecordingStudioRootSwitchable::RedirectSanitizer.sanitize(options.new_root_path)
-        return if nothing_to_show?(selected, rows, safe_new_root_path)
+        return if nothing_to_show?(selected, rows, safe_new_root_path, options.offer)
 
         compose(rows, selected, form_action, return_to, options.with(new_root_path: safe_new_root_path))
       end
 
-      def self.nothing_to_show?(selected, rows, new_root_path = nil)
-        return false if new_root_path.present?
+      def self.nothing_to_show?(selected, rows, new_root_path = nil, offer = nil)
+        return false if new_root_path.present? || offer&.visible?
 
         selected&.fetch(:id).blank? && selected&.fetch(:label).blank? && rows.empty?
       end
@@ -74,13 +98,10 @@ module RecordingStudioRootSwitchable
         @selected_label = selected_label
         @form_action = form_action
         @return_to = return_to
-        @none_selected_label = options.none_selected_label
-        @new_root_path = options.new_root_path
-        @new_root_label = options.new_root_label
-        @new_root_icon = options.new_root_icon
+        assign_options(options)
       end
 
-      attr_reader :rows, :form_action, :return_to, :new_root_path, :new_root_icon
+      attr_reader :rows, :form_action, :return_to, :new_root_path, :new_root_icon, :new_root_offer
 
       def current_label
         current = rows.find(&:current?)
@@ -96,6 +117,10 @@ module RecordingStudioRootSwitchable
 
       def switch_rows
         rows.reject(&:current?)
+      end
+
+      def new_root_offered?
+        new_root_path.present? || new_root_offer&.visible?
       end
 
       def new_root_label
@@ -114,6 +139,14 @@ module RecordingStudioRootSwitchable
       private
 
       attr_reader :selected_label, :none_selected_label
+
+      def assign_options(options)
+        @none_selected_label = options.none_selected_label
+        @new_root_path = options.new_root_path
+        @new_root_label = options.new_root_label
+        @new_root_icon = options.new_root_icon
+        @new_root_offer = options.offer
+      end
     end
   end
 end
