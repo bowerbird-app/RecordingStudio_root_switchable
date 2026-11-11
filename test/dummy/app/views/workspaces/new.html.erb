@@ -4,6 +4,12 @@
 <p class="text-sm text-(--surface-muted-content-color)">
   This demo page is the host create form. It does not persist a workspace.
 </p>
+<%= form_with url: workspaces_path, method: :post, class: "mt-6" do %>
+  <% if @return_to.present? %>
+    <%= hidden_field_tag :return_to, @return_to %>
+  <% end %>
+  <%= render FlatPack::Button::Component.new(text: "Create workspace", type: "submit") %>
+<% end %>
 <% if @return_to.present? %>
   <p class="mt-4 text-sm">Return to <%= link_to @return_to, @return_to %></p>
 <% end %>

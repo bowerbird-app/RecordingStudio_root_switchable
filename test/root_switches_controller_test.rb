@@ -22,6 +22,13 @@ class RootSwitchesControllerTest < Minitest::Test
     def new_root_icon_for(**)
       "plus"
     end
+
+    def creatable_catalog
+      catalog = Object.new
+      catalog.define_singleton_method(:direct_legacy?) { false }
+      catalog.define_singleton_method(:presented) { |*, **| [] }
+      catalog
+    end
   end
   Result = Struct.new(:root_recording)
 

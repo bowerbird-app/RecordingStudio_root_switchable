@@ -10,6 +10,10 @@ module RecordingStudioRootSwitchable
       end
 
       attr_reader :menu_rows
+
+      def before_render
+        helpers.recording_studio_capture_new_root_modal(menu_rows)
+      end
     end
   end
 end

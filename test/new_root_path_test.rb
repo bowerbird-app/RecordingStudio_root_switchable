@@ -2,6 +2,7 @@
 
 require "test_helper"
 require_relative "../app/components/recording_studio_root_switchable/root_switch/menu_rows"
+require_relative "../app/components/recording_studio_root_switchable/root_switch/new_root_source"
 require_relative "../app/components/recording_studio_root_switchable/root_switch/context"
 require_relative "../app/helpers/recording_studio_root_switchable/root_switch_helper"
 

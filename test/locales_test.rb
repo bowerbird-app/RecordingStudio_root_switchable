@@ -12,6 +12,9 @@ class LocalesTest < Minitest::Test
     "dropdown.none_selected" => "None selected",
     "dropdown.new_root" => "New workspace",
     "dropdown.new_root_icon" => "plus",
+    "dropdown.new_root_menu" => "New…",
+    "new_root.type_label" => ["New ", "%", "{type}"].join,
+    "new_root.disabled_reason" => "Not available on this plan.",
     "page_copy.title" => "Switch",
     "page_copy.subtitle" => "",
     "page_copy.scope_heading" => "Scopes",
@@ -23,6 +26,9 @@ class LocalesTest < Minitest::Test
     "page_copy.switch_action_label" => "Switch",
     "page_copy.new_root_action_label" => "New workspace",
     "page_copy.new_root_action_icon" => "plus",
+    "page_copy.new_root_picker_title" => "Start something new",
+    "page_copy.new_root_picker_body" => "Pick one. The form comes next.",
+    "page_copy.new_root_disabled_reason" => "Not available on this plan.",
     "page_copy.empty_state_title" => "Nothing to switch",
     "page_copy.empty_state_body" => "There are no options available right now."
   }.freeze

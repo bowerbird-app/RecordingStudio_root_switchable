@@ -47,6 +47,9 @@ module RecordingStudioRootSwitchable
       switch_action_label: "Switch",
       new_root_action_label: "New workspace",
       new_root_action_icon: "plus",
+      new_root_picker_title: "Start something new",
+      new_root_picker_body: "Pick one. The form comes next.",
+      new_root_disabled_reason: "Not available on this plan.",
       empty_state_title: "Nothing to switch",
       empty_state_body: "There are no options available right now."
     }.freeze
@@ -113,6 +116,7 @@ module RecordingStudioRootSwitchable
       definition.assign!(options)
       yield(definition) if block_given?
       validate_page_copy!(normalize_hash(definition.page_copy), source: "scope #{definition.key}")
+      definition.validate_creatable_roots!
       definition
     end
 
@@ -182,6 +186,14 @@ module RecordingStudioRootSwitchable
 
     def page_copy=(value)
       apply_page_copy(value, source: "runtime configuration")
+    end
+
+    attr_writer :before_root_create
+
+    def before_root_create(&block)
+      return @before_root_create unless block
+
+      @before_root_create = block
     end
 
     # Resolve mounted-page copy for the current request / I18n.locale.

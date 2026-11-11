@@ -20,6 +20,10 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   get "workspaces/new", to: "workspaces#new", as: :new_workspace
+  post "workspaces", to: "workspaces#create", as: :workspaces
+  get "teams/new", to: "teams#new", as: :new_team
+  post "teams", to: "teams#create", as: :teams
+  get "upgrade", to: "upgrades#show", as: :upgrade
   get "setup", to: "home#setup"
   get "config", to: "home#configuration"
   get "usage", to: "home#usage"

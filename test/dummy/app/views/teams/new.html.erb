@@ -1,0 +1,9 @@
+<% content_for :title, "New team" %>
+<% content_for :subtitle, "Host form for a new team" %>
+
+<p class="text-sm text-(--surface-muted-content-color)">
+  This demo page is the host create form. It does not persist a team.
+</p>
+<%= form_with url: teams_path, method: :post, class: "mt-6" do %>
+  <%= render FlatPack::Button::Component.new(text: "Create team", type: "submit") %>
+<% end %>
