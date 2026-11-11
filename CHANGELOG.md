@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-11-11
+
+The switcher can start a new root. The host still owns the form.
+
+### Added
+- `scope.creatable_root` declares a type the switcher can start. Repeat it
+  for each type. `path` is the host create form (String or callable).
+  `label`, `icon`, and `description` are optional.
+- A "New…" item at the bottom of the dropdown, the collapsed list, and the
+  switch page top nav. One creatable type links to the gate. Several types
+  open a FlatPack modal. `GET v1/new_roots` is the same list without
+  JavaScript.
+- `GET v1/new_root` resolves the scope and type, runs `before_root_create`,
+  and redirects to the host form. An undeclared type is a 404.
+- `scope.before_root_create` and `config.before_root_create`. The block
+  returns allow, `:hide`, or `CreateDecision.refuse(redirect_to:, reason:)`.
+  Hide drops the type. Refuse disables it in the menu and redirects on the
+  gate. A raise refuses, is logged, and does not crash.
+- `RecordingStudio::RootSwitchable::GuardsRootCreation` and
+  `guard_root_creation!` run that hook before the host `new` and `create`.
+- `recording_studio_switch_to_root!` switches into a root the host just
+  created. It uses the existing switch service, including access checks,
+  shared-root exclusion, and the rate limit.
+- Page copy `new_root_picker_title`, `new_root_picker_body`, and
+  `new_root_disabled_reason`. Menu copy `dropdown.new_root_menu` and
+  `new_root.type_label`.
+
+### Changed
+- `new_root_path` with exactly one `switchable_root_types` entry is the
+  shorthand for one creatable type. The menu links to the gate, then the
+  host path. With zero or several switchable types, `new_root_path` stays a
+  direct host link.
+- A creatable type outside `switchable_root_types`, a shared root, a
+  duplicate type, or `creatable_root` together with `new_root_path` raises
+  `ArgumentError` at configure.
+
+### Upgrade Notes
+- Additive. No migration. Existing `new_root_path`, `new_root_label`, and
+  `new_root_icon` hosts keep working.
+- A scope with one switchable type and `new_root_path` now lands on the gate
+  before the host form. The host form should call `guard_root_creation!` if
+  it should enforce the same hook.
+- Yield `content_for :recording_studio_new_root_modal` at the end of the
+  layout when a scope has several creatable types. The modal has to sit
+  outside the dropdown menu.
+- The gem does not create the root and does not switch into it. Call
+  `recording_studio_switch_to_root!` from the host create action when that
+  is what you want.
+
 ## [0.14.0] - 2026-11-10
 
 Compact trigger can keep FlatPack button chrome.
@@ -730,7 +779,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.11.7...v0.12.0

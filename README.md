@@ -13,11 +13,37 @@ It lets a host app resolve and persist a current root recording per actor, per d
 - helper APIs for `current_root`, `current_root_recording`, `current_root_recordable`, and `current_root_scope_key`
 - a dedicated FlatPack-powered root-switch page
 - a FlatPack dropdown, a host-menu list, and a button-group `menu_row` for the same accessible roots
-- an optional host link for creating a root, from `new_root_path` on a scope
+- a create-root entry in the switcher, from `creatable_root` or the `new_root_path` shorthand
 - default access integration through `RecordingStudioAccessible`
 - site-wide last-used selection metrics on the operations API (`:root_selections`)
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
+
+## Upgrading to 0.15.0
+
+No migration. The switcher can start a new root. The host still owns the
+create form. The gem never writes a recording, a recordable, or an event.
+
+`new_root_path`, `new_root_label`, and `new_root_icon` still work. When that
+path is set and the scope has exactly one `switchable_root_types` entry, it
+becomes one creatable type and the menu links to the gem gate for that type.
+When the scope has zero or several switchable types, `new_root_path` stays a
+direct link to the host form. Setting `creatable_root` and `new_root_path` on
+the same scope raises `ArgumentError`. A creatable type must be in
+`switchable_root_types` and must not be a shared root. That raises at
+configure.
+
+Yield `:recording_studio_new_root_modal` at the end of the host layout. The
+several-type picker is a FlatPack modal, and the menu closes if the modal
+stays inside it. One creatable type does not need the yield.
+
+```erb
+<%= yield :recording_studio_new_root_modal %>
+```
+
+```ruby
+gem "recording_studio_root_switchable", "~> 0.15.0"
+```
 
 ## Upgrading to 0.14.0
 
@@ -666,6 +692,9 @@ import "@hotwired/turbo-rails"
 
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
+### 0.15.0
+- The switcher can start a new root. `creatable_root` lists the types. One type goes to the gate. Several types open a FlatPack modal, with a no-JS page at `new_roots`. `before_root_create` allows, hides, or refuses. The host keeps the form. `new_root_path` stays the one-type shorthand.
+
 ### 0.14.0
 - `compact_chrome: :bare` (default) or `:button` on the root switch dropdown helpers. `:button` keeps FlatPack button chrome in compact mode. Compact CSS ships in `recording_studio_root_switchable.css`. Load it after Tailwind.
 
@@ -742,7 +771,7 @@ gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashab
                                   tag: "v0.12.3", require: false
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.2"
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.3"
-gem "recording_studio_root_switchable", "~> 0.13.0"
+gem "recording_studio_root_switchable", "~> 0.15.0"
 ```
 
 Then run:
@@ -818,8 +847,59 @@ RecordingStudioRootSwitchable.configure do |config|
     # scope.new_root_icon = "folder"
     # scope.new_root_icon = false
   end
+
+  # Several creatable types. path is the host form. The gem does not create
+  # the recording. A type must be in switchable_root_types and must not be shared.
+  # config.scope :studio do |scope|
+  #   scope.switchable_root_types = ["Workspace", "Team"]
+  #   scope.creatable_root "Workspace", label: "New workspace", icon: "plus", path: "/workspaces/new"
+  #   scope.creatable_root "Team", label: "New team", icon: "users", path: "/teams/new",
+  #     description: "People who share the work."
+  #   scope.before_root_create do |ctx|
+  #     next unless ctx.root_type == "Team"
+  #     RecordingStudio::RootSwitchable::CreateDecision.refuse(
+  #       redirect_to: "/upgrade",
+  #       reason: "Teams are full on this plan. Upgrade to add another."
+  #     )
+  #   end
+  # end
 end
 ```
+
+`creatable_root` is repeatable. `path` is a String or a callable. The callable
+receives the same keywords as `new_root_path`, plus `root_type:`. `label`,
+`icon`, and `description` may be strings or callables. One creatable type
+sends the menu straight to the gate. Several types open a FlatPack modal, and
+a no-JS page lists the same types at `new_roots_path`.
+
+`before_root_create` is per scope. `config.before_root_create` is the default
+when a scope sets none. The block receives a context with `actor`,
+`scope_key`, `root_type`, `current_root_recording`, `controller`, `return_to`,
+and `mode` (`:display` or `:gate`). Return `nil`, `true`, or `:allow` to
+continue. Return `:hide` to drop the type. Return
+`CreateDecision.refuse(redirect_to:, reason:)` to stop. On the menu, a refused
+type stays visible and disabled, with the reason. On the gate, refuse
+redirects to a sanitized `redirect_to` and flashes the reason. A raise refuses
+and is logged. It does not crash the page.
+
+Include `RecordingStudio::RootSwitchable::GuardsRootCreation` on the host
+controller that renders the form. `guard_root_creation!` runs the same hook
+before `new` and `create`.
+
+```ruby
+class WorkspacesController < ApplicationController
+  include RecordingStudio::RootSwitchable::GuardsRootCreation
+
+  guard_root_creation! scope: :all_workspaces, type: "Workspace", only: %i[new create]
+end
+```
+
+After the host creates the root, switch into it with
+`recording_studio_switch_to_root!(root_recording, scope:)`. That uses the
+existing switch service, so access checks, shared-root exclusion, and the
+rate limit still apply. The gem does not switch on its own.
+
+See `docs/new_root.md`.
 
 `switchable_root_types` defaults to no filtering, preserving existing host app
 behavior when it is unset or blank. When configured, it is applied after root
@@ -1143,6 +1223,13 @@ The gem exposes a dedicated root-switch page at:
 /recording_studio_root_switchable/v1/root_switch?scope=all_workspaces
 ```
 
+The create gate and the no-JS type list:
+
+```text
+/recording_studio_root_switchable/v1/new_root?scope=all_workspaces&type=Workspace&return_to=/
+/recording_studio_root_switchable/v1/new_roots?scope=studio&return_to=/
+```
+
 From a mounted host app, you can link to it with the engine route helper:
 
 ```ruby
@@ -1155,9 +1242,12 @@ switch update (`PATCH` `root_switch` with `root_recording_id` and a sanitized
 decide which roots are allowed.
 
 On its own, a FlatPack dropdown labelled with the current root. The menu items
-switch to the other accessible roots. When the scope allows a new root, the
-menu also links to that path, and the trigger stays enabled with one workspace
-or with none. `new_root_icon:` overrides the icon for that placement.
+switch to the other accessible roots. When the scope has a creatable type, the
+menu adds New… at the bottom. One type links to the gate. Several types open
+the picker. The trigger stays enabled with one workspace or with none.
+`new_root_path:`, `new_root_label:`, and `new_root_icon:` on a helper skip
+that menu and keep the older one-link override. `new_root_icon:` overrides
+the icon for that placement.
 `new_root_icon: false` or `new_root_icon: ""` leaves the label and drops the icon.
 
 ```erb
