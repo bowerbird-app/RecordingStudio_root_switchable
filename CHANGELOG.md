@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Development and dummy pins: FlatPack `v0.1.356`, Recording Studio `v6.7.0`,
+  Accessible `v0.32.0`, Cache `v0.6.3`, Metrics `v0.8.0`, and Trashable
+  `v0.14.0`. Published gemspec floors are unchanged. Trashable stays
+  `require: false`, so the dummy does not install the `purge_at` migration.
+
 ## [0.15.0] - 2026-11-11
 
 The switcher can start a new root. The host still owns the form.
