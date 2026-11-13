@@ -111,19 +111,19 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes gemspec_source, 'spec.add_dependency "view_component", ">= 4.14", "< 5"'
   end
 
-  def test_development_pins_flat_pack_0_1_341_and_recording_studio_6_5
+  def test_development_pins_flat_pack_0_1_356_and_recording_studio_6_7
     root = File.expand_path("..", __dir__)
 
     [File.join(root, "Gemfile"), File.join(root, "test/dummy/Gemfile")].each do |gemfile|
       source = File.read(gemfile)
 
       refute_includes source, "widen_recording_studio_requirement"
-      assert_includes source, 'tag: "v0.1.341"'
-      assert_includes source, 'tag: "v6.5.0"'
-      assert_includes source, 'tag: "v0.24.2"'
-      assert_includes source, 'tag: "v0.6.2"'
-      assert_includes source, 'tag: "v0.7.3"'
-      assert_includes source, 'tag: "v0.12.3"'
+      assert_includes source, 'tag: "v0.1.356"'
+      assert_includes source, 'tag: "v6.7.0"'
+      assert_includes source, 'tag: "v0.32.0"'
+      assert_includes source, 'tag: "v0.6.3"'
+      assert_includes source, 'tag: "v0.8.0"'
+      assert_includes source, 'tag: "v0.14.0"'
       assert_includes source, 'gem "view_component", "4.19.0"'
     end
 
@@ -132,12 +132,12 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     %w[Gemfile.lock test/dummy/Gemfile.lock].each do |relative|
       lock = File.read(File.join(root, relative))
 
-      assert_includes lock, "flat_pack (0.1.341)", relative
-      assert_includes lock, "recording_studio (6.5.0)", relative
-      assert_includes lock, "recording_studio_accessible (0.24.2)", relative
-      assert_includes lock, "recording_studio_cache (0.6.2)", relative
-      assert_includes lock, "recording_studio_metrics (0.7.3)", relative
-      assert_includes lock, "recording_studio_trashable (0.12.3)", relative
+      assert_includes lock, "flat_pack (0.1.356)", relative
+      assert_includes lock, "recording_studio (6.7.0)", relative
+      assert_includes lock, "recording_studio_accessible (0.32.0)", relative
+      assert_includes lock, "recording_studio_cache (0.6.3)", relative
+      assert_includes lock, "recording_studio_metrics (0.8.0)", relative
+      assert_includes lock, "recording_studio_trashable (0.14.0)", relative
       assert_includes lock, "view_component (4.19.0)", relative
       assert_includes lock, "crass (1.0.8)", relative
       assert_includes lock, "recording_studio_root_switchable (0.15.0)", relative

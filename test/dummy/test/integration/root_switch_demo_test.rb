@@ -123,7 +123,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "max-w-3xl"
     assert_select "a[href*='/v1/new_root'][href*='type=Workspace']", text: "New workspace", minimum: 1
     assert_select "a[href*='/v1/new_root'][href*='type=Workspace'] svg[data-flat-pack--icon-name-value='plus']", minimum: 1
-    assert_flatpack_0_1_341_switch_page(response.body)
+    assert_flatpack_switch_page(response.body)
   end
 
   test "switch page close uses a safe return_to as the PageNav close href" do
@@ -355,8 +355,8 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
 
   # Card fill is background:/border:/shadow:, not style:. PageNav close is
   # Spec with_close when return_anchor_url is present.
-  def assert_flatpack_0_1_341_switch_page(body)
-    assert_equal "0.1.341", FlatPack::VERSION
+  def assert_flatpack_switch_page(body)
+    assert_equal "0.1.356", FlatPack::VERSION
 
     assert_select "nav.flat-pack-page-nav button[aria-label='Go back']", count: 0
     assert_select "nav.flat-pack-page-nav a[aria-label='Close'][href='/']", minimum: 1
