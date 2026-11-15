@@ -13,6 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `v0.14.0`. Published gemspec floors are unchanged. Trashable stays
   `require: false`, so the dummy does not install the `purge_at` migration.
 
+## [0.15.1] - 2026-11-15
+
+### Changed
+- Allow recording_studio < 8.0 (core 7 phase 1)
+
+### Upgrade Notes
+- No migration. Runtime `recording_studio` is `>= 6.3.0, < 8.0` (was `< 7`).
+  The floor stays `6.3.0`. Hosts on 6.3 through 7.x can use `0.15.1`.
+  Development pins stay on Recording Studio `v6.7.0`.
+
 ## [0.15.0] - 2026-11-11
 
 The switcher can start a new root. The host still owns the form.
@@ -785,7 +795,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.15.1...HEAD
+[0.15.1]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.15.0...v0.15.1
 [0.15.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.12.0...v0.13.0

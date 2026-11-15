@@ -19,6 +19,15 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.15.1
+
+No migration. Require `recording_studio` `>= 6.3.0, < 8.0` (was `< 7`).
+The floor stays `6.3.0`. Development pins stay on `v6.7.0`.
+
+```ruby
+gem "recording_studio_root_switchable", "~> 0.15.1"
+```
+
 ## Upgrading to 0.15.0
 
 No migration. The switcher can start a new root. The host still owns the
@@ -692,6 +701,9 @@ import "@hotwired/turbo-rails"
 
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
+### 0.15.1
+- Runtime `recording_studio` is `>= 6.3.0, < 8.0` (was `< 7`). Development pins stay on `v6.7.0`.
+
 ### 0.15.0
 - The switcher can start a new root. `creatable_root` lists the types. One type goes to the gate. Several types open a FlatPack modal, with a no-JS page at `new_roots`. `before_root_create` allows, hides, or refuses. The host keeps the form. `new_root_path` stays the one-type shorthand.
 
@@ -771,7 +783,7 @@ gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashab
                                   tag: "v0.14.0", require: false
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.3"
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.8.0"
-gem "recording_studio_root_switchable", "~> 0.15.0"
+gem "recording_studio_root_switchable", "~> 0.15.1"
 ```
 
 Then run:
