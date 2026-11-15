@@ -11,7 +11,7 @@ require_relative "../app/controllers/recording_studio_root_switchable/root_switc
 
 class RecordingStudioRootSwitchableTest < Minitest::Test
   def test_version_exists
-    assert_equal "0.15.0", RecordingStudioRootSwitchable::VERSION
+    assert_equal "0.15.1", RecordingStudioRootSwitchable::VERSION
   end
 
   def test_root_switch_controller_uses_recording_studio_layout
@@ -99,11 +99,11 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes initializer_source, 'child_recordables: [ "RecordingStudio::Access" ]'
   end
 
-  def test_gemspec_targets_recording_studio_6_3_and_flat_pack_0_1_341
+  def test_gemspec_allows_recording_studio_through_7_and_flat_pack_0_1_341
     gemspec_path = File.expand_path("../recording_studio_root_switchable.gemspec", __dir__)
     gemspec_source = File.read(gemspec_path)
 
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", ">= 6.3.0", "< 7"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", ">= 6.3.0", "< 8.0"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.18"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_cache", "~> 0.5"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_metrics", ">= 0.3.0", "< 1.0"'
@@ -140,10 +140,10 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
       assert_includes lock, "recording_studio_trashable (0.14.0)", relative
       assert_includes lock, "view_component (4.19.0)", relative
       assert_includes lock, "crass (1.0.8)", relative
-      assert_includes lock, "recording_studio_root_switchable (0.15.0)", relative
+      assert_includes lock, "recording_studio_root_switchable (0.15.1)", relative
       assert_includes lock, "rails (8.1.4.1)", relative
       assert_includes lock, "flat_pack (>= 0.1.341)", relative
-      assert_includes lock, "recording_studio (>= 6.3.0, < 7)", relative
+      assert_includes lock, "recording_studio (>= 6.3.0, < 8.0)", relative
     end
   end
 
