@@ -7,11 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-11-15
+
 ### Changed
-- Development and dummy pins: FlatPack `v0.1.356`, Recording Studio `v6.7.0`,
-  Accessible `v0.32.0`, Cache `v0.6.3`, Metrics `v0.8.0`, and Trashable
-  `v0.14.0`. Published gemspec floors are unchanged. Trashable stays
-  `require: false`, so the dummy does not install the `purge_at` migration.
+- Require `recording_studio` `>= 7.0`, `< 8.0`. Development and dummy Gemfiles
+  pin tag `v7.0.0`.
+- Open the other `0.x` Recording Studio runtime deps:
+  `recording_studio_accessible` `>= 0.44.0`, `< 1.0` and
+  `recording_studio_metrics` `>= 0.9.0`, `< 1.0`. Cache stays
+  `>= 0.5`, `< 1.0` (pin `v0.6.3`). That release does not reject core 7, and
+  there is no Cache `v0.9.0` tag.
+- Dummy pins that cannot resolve with core 7: Accessible `v0.44.0`,
+  Trashable `v0.17.0` (`require: false`), Metrics `v0.9.0`. FlatPack stays
+  `v0.1.356`. This gem does not depend on Admin, API, Users, or
+  Internationalization.
+- Dummy seeds create roots with `RecordingStudio.create_root_recording!`.
+  `root_recording_for` stays find-only and returns nil when the root is
+  missing. The dummy `authorize_write` allows a persisted user to start a
+  root (`root_recording` is nil on that call). Later writes still need an
+  Accessible role on the root.
+- Dummy schema includes core's event `root_recording_id` column, its indexes,
+  and the unique root recording index. Those migrations ship with Recording
+  Studio, not with this gem. The copied index migration is dated after the
+  dummy schema version so `db:schema:load` still applies it.
+
+### Upgrade Notes
+- Hosts need Recording Studio 7.0 or newer, and below 8. Accessible 0.44 or
+  newer, and Metrics 0.9 or newer, both below 1.0. No migration.
+- Paths that created a root by calling `root_recording_for` call
+  `create_root_recording!(recordable, actor:)`. Lookup call sites keep
+  `root_recording_for` and handle nil.
+- `create_root_recording!` runs `authorize_write` with `recording`,
+  `root_recording`, and `parent_recording` all nil. Allow that create in the
+  host authorizer. Do not set `allow_unauthorized_writes`.
+- This release supersedes the gemspec-only ceiling in 0.15.1
+  ([#65](https://github.com/bowerbird-app/RecordingStudio_root_switchable/pull/65)).
+  The floor is now 7.0, not 6.3.0.
 
 ## [0.15.1] - 2026-11-15
 
@@ -795,7 +826,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.15.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.15.1...v0.16.0
 [0.15.1]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.15.0...v0.15.1
 [0.15.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.13.0...v0.14.0
