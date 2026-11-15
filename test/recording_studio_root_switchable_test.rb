@@ -11,7 +11,7 @@ require_relative "../app/controllers/recording_studio_root_switchable/root_switc
 
 class RecordingStudioRootSwitchableTest < Minitest::Test
   def test_version_exists
-    assert_equal "0.15.1", RecordingStudioRootSwitchable::VERSION
+    assert_equal "0.16.0", RecordingStudioRootSwitchable::VERSION
   end
 
   def test_root_switch_controller_uses_recording_studio_layout
@@ -69,26 +69,59 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     refute_includes initializer_source, "config.layout ="
   end
 
-  def test_dummy_recording_studio_initializer_sets_authorize_write_for_core_6_5
+  def test_dummy_recording_studio_initializer_sets_authorize_write_for_core_7
     initializer_path = File.expand_path("dummy/config/initializers/recording_studio.rb", __dir__)
     initializer_source = File.read(initializer_path)
 
     assert_includes initializer_source, "config.authorize_write"
     assert_includes initializer_source, "RecordingStudioAccessible.authorized?"
     assert_includes initializer_source, "AccessCreationContext.allowed?"
+    assert_includes initializer_source, "RecordingStudio.root_allowed?(recordable)"
+    assert_includes initializer_source, "context[:recording].nil?"
+    assert_includes initializer_source, "context[:parent_recording].nil?"
+    refute_includes initializer_source, "allow_unauthorized_writes"
     refute_includes initializer_source, "recordable.actor == actor"
     refute_match(/authorize_write\s*=\s*->\(actor:, \*\*\) \{ actor\.is_a\?\(User\) && actor\.persisted\? \}/, initializer_source)
     refute_match(/authorize_write\s*=\s*->\(actor:, \*\*\) \{ actor\.present\? \}/, initializer_source)
   end
 
-  def test_dummy_seeds_bootstrap_owner_access_without_authorize_write_swap
+  def test_dummy_seeds_create_roots_and_bootstrap_owner_access
     seeds_path = File.expand_path("dummy/db/seeds.rb", __dir__)
     seeds_source = File.read(seeds_path)
 
+    assert_includes seeds_source, "create_root_recording!(workspace, actor: admin)"
+    assert_includes seeds_source, "create_root_recording!(team, actor: admin)"
+    assert_includes seeds_source, "create_root_recording!(message_root, actor: admin)"
+    refute_includes seeds_source, "root_recording_for"
     assert_includes seeds_source, "bootstrap_owner_access!"
     assert_includes seeds_source, "grant_access"
     refute_includes seeds_source, "previous_authorize_write"
     refute_includes seeds_source, "configuration.authorize_write ="
+  end
+
+  def test_root_recording_lookups_stay_find_only
+    root = File.expand_path("dummy", __dir__)
+    lookups = [
+      "app/controllers/home_controller.rb",
+      "config/initializers/recording_studio_root_switchable.rb",
+      "test/integration/new_root_flow_test.rb",
+      "test/integration/root_switch_demo_test.rb",
+      "test/integration/root_switch_placements_test.rb",
+      "test/models/root_selections_metrics_test.rb"
+    ]
+
+    lookups.each do |relative|
+      source = File.read(File.join(root, relative))
+
+      assert_includes source, "root_recording_for", relative
+      refute_includes source, "create_root_recording!", relative
+    end
+
+    scope = File.read(File.expand_path("../lib/recording_studio/root_switchable/scope_definition.rb", __dir__))
+
+    refute_includes scope, "RecordingStudio.root_recording_for"
+    refute_includes scope, "create_root_recording!"
+    assert_includes scope, "def find_existing_root_recording_for(recordable)"
   end
 
   def test_dummy_accessible_initializer_registers_access_capability_for_recording_studio_v3
@@ -99,19 +132,19 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes initializer_source, 'child_recordables: [ "RecordingStudio::Access" ]'
   end
 
-  def test_gemspec_allows_recording_studio_through_7_and_flat_pack_0_1_341
+  def test_gemspec_requires_recording_studio_7_and_open_addon_ranges
     gemspec_path = File.expand_path("../recording_studio_root_switchable.gemspec", __dir__)
     gemspec_source = File.read(gemspec_path)
 
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", ">= 6.3.0", "< 8.0"'
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.18"'
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_cache", "~> 0.5"'
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_metrics", ">= 0.3.0", "< 1.0"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", ">= 7.0", "< 8.0"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", ">= 0.44.0", "< 1.0"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_cache", ">= 0.5", "< 1.0"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_metrics", ">= 0.9.0", "< 1.0"'
     assert_includes gemspec_source, 'spec.add_dependency "flat_pack", ">= 0.1.341"'
     assert_includes gemspec_source, 'spec.add_dependency "view_component", ">= 4.14", "< 5"'
   end
 
-  def test_development_pins_flat_pack_0_1_356_and_recording_studio_6_7
+  def test_development_pins_recording_studio_7_and_core_7_addons
     root = File.expand_path("..", __dir__)
 
     [File.join(root, "Gemfile"), File.join(root, "test/dummy/Gemfile")].each do |gemfile|
@@ -119,11 +152,11 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
 
       refute_includes source, "widen_recording_studio_requirement"
       assert_includes source, 'tag: "v0.1.356"'
-      assert_includes source, 'tag: "v6.7.0"'
-      assert_includes source, 'tag: "v0.32.0"'
+      assert_includes source, 'tag: "v7.0.0"'
+      assert_includes source, 'tag: "v0.44.0"'
       assert_includes source, 'tag: "v0.6.3"'
-      assert_includes source, 'tag: "v0.8.0"'
-      assert_includes source, 'tag: "v0.14.0"'
+      assert_includes source, 'tag: "v0.9.0"'
+      assert_includes source, 'tag: "v0.17.0"'
       assert_includes source, 'gem "view_component", "4.19.0"'
     end
 
@@ -133,17 +166,17 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
       lock = File.read(File.join(root, relative))
 
       assert_includes lock, "flat_pack (0.1.356)", relative
-      assert_includes lock, "recording_studio (6.7.0)", relative
-      assert_includes lock, "recording_studio_accessible (0.32.0)", relative
+      assert_includes lock, "recording_studio (7.0.0)", relative
+      assert_includes lock, "recording_studio_accessible (0.44.0)", relative
       assert_includes lock, "recording_studio_cache (0.6.3)", relative
-      assert_includes lock, "recording_studio_metrics (0.8.0)", relative
-      assert_includes lock, "recording_studio_trashable (0.14.0)", relative
+      assert_includes lock, "recording_studio_metrics (0.9.0)", relative
+      assert_includes lock, "recording_studio_trashable (0.17.0)", relative
       assert_includes lock, "view_component (4.19.0)", relative
       assert_includes lock, "crass (1.0.8)", relative
-      assert_includes lock, "recording_studio_root_switchable (0.15.1)", relative
+      assert_includes lock, "recording_studio_root_switchable (0.16.0)", relative
       assert_includes lock, "rails (8.1.4.1)", relative
       assert_includes lock, "flat_pack (>= 0.1.341)", relative
-      assert_includes lock, "recording_studio (>= 6.3.0, < 8.0)", relative
+      assert_includes lock, "recording_studio (>= 7.0, < 8.0)", relative
     end
   end
 

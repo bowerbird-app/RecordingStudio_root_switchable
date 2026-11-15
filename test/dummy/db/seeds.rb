@@ -71,14 +71,14 @@ pages_by_workspace = {
 
 root_recordings = workspace_names.index_with do |name|
   workspace = Workspace.find_or_create_by!(name: name)
-  RecordingStudio.root_recording_for(workspace)
+  RecordingStudio.create_root_recording!(workspace, actor: admin)
 end
 
 team = Team.find_or_create_by!(name: "Operations Team")
-team_root_recording = RecordingStudio.root_recording_for(team)
+team_root_recording = RecordingStudio.create_root_recording!(team, actor: admin)
 
 message_root = MessageRoot.find_or_create_by!(name: "Studio Messages")
-RecordingStudio.root_recording_for(message_root)
+RecordingStudio.create_root_recording!(message_root, actor: admin)
 
 ensure_owner_access = lambda do |recording:|
   result = RecordingStudioAccessible.bootstrap_owner_access!(
