@@ -341,6 +341,21 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Selected root is not available for this scope."
   end
 
+  test "mounted Accessible pages allow the Studio Workspace admin" do
+    sign_in(@admin)
+
+    get "/recording_studio_accessible"
+
+    assert_response :success
+
+    sign_in(User.find_by!(email: "viewer@admin.com"))
+
+    get "/recording_studio_accessible"
+
+    assert_response :redirect
+    assert_redirected_to "/"
+  end
+
   test "access management follows Accessible admin role, not the seeded admin email" do
     studio = root_recording_for("Studio Workspace")
     viewer = User.find_by!(email: "viewer@admin.com")
@@ -356,7 +371,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
   # Card fill is background:/border:/shadow:, not style:. PageNav close is
   # Spec with_close when return_anchor_url is present.
   def assert_flatpack_switch_page(body)
-    assert_equal "0.1.356", FlatPack::VERSION
+    assert_equal "0.1.377", FlatPack::VERSION
 
     assert_select "nav.flat-pack-page-nav button[aria-label='Go back']", count: 0
     assert_select "nav.flat-pack-page-nav a[aria-label='Close'][href='/']", minimum: 1
