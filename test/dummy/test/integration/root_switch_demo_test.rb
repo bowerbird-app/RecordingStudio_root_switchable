@@ -341,6 +341,21 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Selected root is not available for this scope."
   end
 
+  test "mounted Accessible pages allow the Studio Workspace admin" do
+    sign_in(@admin)
+
+    get "/recording_studio_accessible"
+
+    assert_response :success
+
+    sign_in(User.find_by!(email: "viewer@admin.com"))
+
+    get "/recording_studio_accessible"
+
+    assert_response :redirect
+    assert_redirected_to "/"
+  end
+
   test "access management follows Accessible admin role, not the seeded admin email" do
     studio = root_recording_for("Studio Workspace")
     viewer = User.find_by!(email: "viewer@admin.com")
