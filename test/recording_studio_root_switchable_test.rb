@@ -147,30 +147,60 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
   def test_development_pins_recording_studio_7_and_core_7_addons
     root = File.expand_path("..", __dir__)
 
-    [File.join(root, "Gemfile"), File.join(root, "test/dummy/Gemfile")].each do |gemfile|
+    {
+      File.join(root, "Gemfile") => {
+        flat_pack: "v0.1.356",
+        recording_studio: "v7.0.0",
+        accessible: "v0.44.0",
+        cache: "v0.6.3",
+        trashable: "v0.17.0"
+      },
+      File.join(root, "test/dummy/Gemfile") => {
+        flat_pack: "v0.1.377",
+        recording_studio: "v7.3.0",
+        accessible: "v0.45.1",
+        cache: "v0.7.0",
+        trashable: "v1.0.1"
+      }
+    }.each do |gemfile, pins|
       source = File.read(gemfile)
 
       refute_includes source, "widen_recording_studio_requirement"
-      assert_includes source, 'tag: "v0.1.356"'
-      assert_includes source, 'tag: "v7.0.0"'
-      assert_includes source, 'tag: "v0.44.0"'
-      assert_includes source, 'tag: "v0.6.3"'
+      assert_includes source, %(tag: "#{pins[:flat_pack]}")
+      assert_includes source, %(tag: "#{pins[:recording_studio]}")
+      assert_includes source, %(tag: "#{pins[:accessible]}")
+      assert_includes source, %(tag: "#{pins[:cache]}")
       assert_includes source, 'tag: "v0.9.0"'
-      assert_includes source, 'tag: "v0.17.0"'
+      assert_includes source, %(tag: "#{pins[:trashable]}")
       assert_includes source, 'gem "view_component", "4.19.0"'
     end
 
     refute File.exist?(File.join(root, "test/support/widen_recording_studio_requirement.rb"))
 
-    %w[Gemfile.lock test/dummy/Gemfile.lock].each do |relative|
+    {
+      "Gemfile.lock" => {
+        flat_pack: "0.1.356",
+        recording_studio: "7.0.0",
+        accessible: "0.44.0",
+        cache: "0.6.3",
+        trashable: "0.17.0"
+      },
+      "test/dummy/Gemfile.lock" => {
+        flat_pack: "0.1.377",
+        recording_studio: "7.3.0",
+        accessible: "0.45.1",
+        cache: "0.7.0",
+        trashable: "1.0.1"
+      }
+    }.each do |relative, pins|
       lock = File.read(File.join(root, relative))
 
-      assert_includes lock, "flat_pack (0.1.356)", relative
-      assert_includes lock, "recording_studio (7.0.0)", relative
-      assert_includes lock, "recording_studio_accessible (0.44.0)", relative
-      assert_includes lock, "recording_studio_cache (0.6.3)", relative
+      assert_includes lock, "flat_pack (#{pins[:flat_pack]})", relative
+      assert_includes lock, "recording_studio (#{pins[:recording_studio]})", relative
+      assert_includes lock, "recording_studio_accessible (#{pins[:accessible]})", relative
+      assert_includes lock, "recording_studio_cache (#{pins[:cache]})", relative
       assert_includes lock, "recording_studio_metrics (0.9.0)", relative
-      assert_includes lock, "recording_studio_trashable (0.17.0)", relative
+      assert_includes lock, "recording_studio_trashable (#{pins[:trashable]})", relative
       assert_includes lock, "view_component (4.19.0)", relative
       assert_includes lock, "crass (1.0.8)", relative
       assert_includes lock, "recording_studio_root_switchable (0.16.0)", relative
