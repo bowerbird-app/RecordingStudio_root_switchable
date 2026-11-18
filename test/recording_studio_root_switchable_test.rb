@@ -11,7 +11,7 @@ require_relative "../app/controllers/recording_studio_root_switchable/root_switc
 
 class RecordingStudioRootSwitchableTest < Minitest::Test
   def test_version_exists
-    assert_equal "0.16.0", RecordingStudioRootSwitchable::VERSION
+    assert_equal "0.16.1", RecordingStudioRootSwitchable::VERSION
   end
 
   def test_root_switch_controller_uses_recording_studio_layout
@@ -132,6 +132,21 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     assert_includes initializer_source, 'child_recordables: [ "RecordingStudio::Access" ]'
   end
 
+  def test_upgrade_notes_tell_hosts_to_run_recording_studio_7_migrations
+    root = File.expand_path("..", __dir__)
+    notes = [
+      File.read(File.join(root, "CHANGELOG.md")),
+      File.read(File.join(root, "README.md"))
+    ]
+
+    notes.each do |source|
+      assert_includes source, "MUST run"
+      assert_includes source, "add_recording_studio_recordings_root_type_creation_index"
+      assert_includes source, "enforce_recording_studio_recording_root_invariant"
+      assert_includes source, "replace_recording_studio_recordings_root_index"
+    end
+  end
+
   def test_gemspec_requires_recording_studio_7_and_open_addon_ranges
     gemspec_path = File.expand_path("../recording_studio_root_switchable.gemspec", __dir__)
     gemspec_source = File.read(gemspec_path)
@@ -147,21 +162,18 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
   def test_development_pins_recording_studio_7_and_core_7_addons
     root = File.expand_path("..", __dir__)
 
+    latest = {
+      flat_pack: "v0.1.378",
+      recording_studio: "v7.7.1",
+      accessible: "v0.54.1",
+      cache: "v0.7.1",
+      metrics: "v0.9.2",
+      trashable: "v1.2.1"
+    }
+
     {
-      File.join(root, "Gemfile") => {
-        flat_pack: "v0.1.356",
-        recording_studio: "v7.0.0",
-        accessible: "v0.44.0",
-        cache: "v0.6.3",
-        trashable: "v0.17.0"
-      },
-      File.join(root, "test/dummy/Gemfile") => {
-        flat_pack: "v0.1.377",
-        recording_studio: "v7.3.0",
-        accessible: "v0.45.1",
-        cache: "v0.7.0",
-        trashable: "v1.0.1"
-      }
+      File.join(root, "Gemfile") => latest,
+      File.join(root, "test/dummy/Gemfile") => latest
     }.each do |gemfile, pins|
       source = File.read(gemfile)
 
@@ -170,40 +182,34 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
       assert_includes source, %(tag: "#{pins[:recording_studio]}")
       assert_includes source, %(tag: "#{pins[:accessible]}")
       assert_includes source, %(tag: "#{pins[:cache]}")
-      assert_includes source, 'tag: "v0.9.0"'
+      assert_includes source, %(tag: "#{pins[:metrics]}")
       assert_includes source, %(tag: "#{pins[:trashable]}")
       assert_includes source, 'gem "view_component", "4.19.0"'
     end
 
     refute File.exist?(File.join(root, "test/support/widen_recording_studio_requirement.rb"))
 
-    {
-      "Gemfile.lock" => {
-        flat_pack: "0.1.356",
-        recording_studio: "7.0.0",
-        accessible: "0.44.0",
-        cache: "0.6.3",
-        trashable: "0.17.0"
-      },
-      "test/dummy/Gemfile.lock" => {
-        flat_pack: "0.1.377",
-        recording_studio: "7.3.0",
-        accessible: "0.45.1",
-        cache: "0.7.0",
-        trashable: "1.0.1"
-      }
-    }.each do |relative, pins|
+    locked = {
+      flat_pack: "0.1.378",
+      recording_studio: "7.7.1",
+      accessible: "0.54.1",
+      cache: "0.7.1",
+      metrics: "0.9.2",
+      trashable: "1.2.1"
+    }
+
+    %w[Gemfile.lock test/dummy/Gemfile.lock].each do |relative|
       lock = File.read(File.join(root, relative))
 
-      assert_includes lock, "flat_pack (#{pins[:flat_pack]})", relative
-      assert_includes lock, "recording_studio (#{pins[:recording_studio]})", relative
-      assert_includes lock, "recording_studio_accessible (#{pins[:accessible]})", relative
-      assert_includes lock, "recording_studio_cache (#{pins[:cache]})", relative
-      assert_includes lock, "recording_studio_metrics (0.9.0)", relative
-      assert_includes lock, "recording_studio_trashable (#{pins[:trashable]})", relative
+      assert_includes lock, "flat_pack (#{locked[:flat_pack]})", relative
+      assert_includes lock, "recording_studio (#{locked[:recording_studio]})", relative
+      assert_includes lock, "recording_studio_accessible (#{locked[:accessible]})", relative
+      assert_includes lock, "recording_studio_cache (#{locked[:cache]})", relative
+      assert_includes lock, "recording_studio_metrics (#{locked[:metrics]})", relative
+      assert_includes lock, "recording_studio_trashable (#{locked[:trashable]})", relative
       assert_includes lock, "view_component (4.19.0)", relative
       assert_includes lock, "crass (1.0.8)", relative
-      assert_includes lock, "recording_studio_root_switchable (0.16.0)", relative
+      assert_includes lock, "recording_studio_root_switchable (0.16.1)", relative
       assert_includes lock, "rails (8.1.4.1)", relative
       assert_includes lock, "flat_pack (>= 0.1.341)", relative
       assert_includes lock, "recording_studio (>= 7.0, < 8.0)", relative

@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.1] - 2026-11-18
+
+### Changed
+- Ship the dummy refresh that landed on main after 0.16.0 and was not in a
+  release. That commit pinned the dummy to Recording Studio `v7.3.0`,
+  Accessible `v0.45.1`, Cache `v0.7.0`, Trashable `v1.0.1`, and FlatPack
+  `v0.1.377`, and pointed the dummy Accessible admin root at Studio
+  Workspace so mounted Accessible pages are not denied when
+  `admin_root_resolver` is unset.
+- Move development and dummy git pins to the latest tags: Recording Studio
+  `v7.7.1`, Accessible `v0.54.1`, Cache `v0.7.1`, Metrics `v0.9.2`,
+  Trashable `v1.2.1` (`require: false`), and FlatPack `v0.1.378`.
+  Published gemspec ranges already accept these tags.
+
+### Upgrade Notes
+- No migration from this gem.
+- Hosts that move to Recording Studio 7.7 MUST run the Recording Studio 7.4,
+  7.5, and 7.7 migrations:
+  `add_recording_studio_recordings_root_type_creation_index`,
+  `enforce_recording_studio_recording_root_invariant`, and
+  `replace_recording_studio_recordings_root_index`. This gem does not copy
+  them into the dummy app.
+- Hosts that use Accessible access requests run Accessible's access-request
+  migrations. This release does not add those tables here.
+
 ## [0.16.0] - 2026-11-15
 
 ### Changed
@@ -826,7 +851,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.16.1...HEAD
+[0.16.1]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.16.0...v0.16.1
 [0.16.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.15.1...v0.16.0
 [0.15.1]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.15.0...v0.15.1
 [0.15.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.14.0...v0.15.0
