@@ -371,7 +371,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
   # Card fill is background:/border:/shadow:, not style:. PageNav close is
   # Spec with_close when return_anchor_url is present.
   def assert_flatpack_switch_page(body)
-    assert_equal "0.1.377", FlatPack::VERSION
+    assert_equal "0.1.378", FlatPack::VERSION
 
     assert_select "nav.flat-pack-page-nav button[aria-label='Go back']", count: 0
     assert_select "nav.flat-pack-page-nav a[aria-label='Close'][href='/']", minimum: 1
