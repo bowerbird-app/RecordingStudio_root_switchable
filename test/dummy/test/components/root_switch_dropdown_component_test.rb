@@ -118,7 +118,7 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
 
     assert_equal "None selected", trigger["aria-label"]
     refute_equal "NS", compact_avatar(trigger)&.text&.strip
-    assert trigger.at_css("svg[data-flat-pack--icon-name-value='building-office-2']")
+    assert trigger.at_css("svg path[d*='M2.25 21h19.5m-18-18v18']")
   end
 
   test "emoji name compact trigger falls back to an icon" do
@@ -141,7 +141,7 @@ class RootSwitchDropdownComponentTest < ViewComponent::TestCase
     trigger = trigger_element
 
     assert_equal "🚀", trigger["aria-label"]
-    assert trigger.at_css("svg[data-flat-pack--icon-name-value='building-office-2']")
+    assert trigger.at_css("svg path[d*='M2.25 21h19.5m-18-18v18']")
   end
 
   test "invalid compact raises" do

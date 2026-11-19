@@ -11,7 +11,7 @@ require_relative "../app/controllers/recording_studio_root_switchable/root_switc
 
 class RecordingStudioRootSwitchableTest < Minitest::Test
   def test_version_exists
-    assert_equal "0.16.1", RecordingStudioRootSwitchable::VERSION
+    assert_equal "0.17.0", RecordingStudioRootSwitchable::VERSION
   end
 
   def test_root_switch_controller_uses_recording_studio_layout
@@ -163,12 +163,12 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     root = File.expand_path("..", __dir__)
 
     latest = {
-      flat_pack: "v0.1.378",
-      recording_studio: "v7.7.1",
-      accessible: "v0.54.1",
-      cache: "v0.7.1",
-      metrics: "v0.9.2",
-      trashable: "v1.2.1"
+      flat_pack: "v0.2.0",
+      recording_studio: "v7.8.0",
+      accessible: "v0.56.0",
+      cache: "v0.8.0",
+      metrics: "v0.10.0",
+      trashable: "v1.2.3"
     }
 
     {
@@ -178,6 +178,12 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
       source = File.read(gemfile)
 
       refute_includes source, "widen_recording_studio_requirement"
+      assert_includes source, 'gem "flat_pack", "~> 0.2"'
+      assert_includes source, 'gem "recording_studio", "~> 7.8"'
+      assert_includes source, 'gem "recording_studio_accessible", "~> 0.56"'
+      assert_includes source, 'gem "recording_studio_cache", "~> 0.8"'
+      assert_includes source, 'gem "recording_studio_metrics", "~> 0.10"'
+      assert_includes source, 'gem "recording_studio_trashable", "~> 1.2"'
       assert_includes source, %(tag: "#{pins[:flat_pack]}")
       assert_includes source, %(tag: "#{pins[:recording_studio]}")
       assert_includes source, %(tag: "#{pins[:accessible]}")
@@ -190,12 +196,12 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
     refute File.exist?(File.join(root, "test/support/widen_recording_studio_requirement.rb"))
 
     locked = {
-      flat_pack: "0.1.378",
-      recording_studio: "7.7.1",
-      accessible: "0.54.1",
-      cache: "0.7.1",
-      metrics: "0.9.2",
-      trashable: "1.2.1"
+      flat_pack: "0.2.0",
+      recording_studio: "7.8.0",
+      accessible: "0.56.0",
+      cache: "0.8.0",
+      metrics: "0.10.0",
+      trashable: "1.2.3"
     }
 
     %w[Gemfile.lock test/dummy/Gemfile.lock].each do |relative|
@@ -209,7 +215,7 @@ class RecordingStudioRootSwitchableTest < Minitest::Test
       assert_includes lock, "recording_studio_trashable (#{locked[:trashable]})", relative
       assert_includes lock, "view_component (4.19.0)", relative
       assert_includes lock, "crass (1.0.8)", relative
-      assert_includes lock, "recording_studio_root_switchable (0.16.1)", relative
+      assert_includes lock, "recording_studio_root_switchable (0.17.0)", relative
       assert_includes lock, "rails (8.1.4.1)", relative
       assert_includes lock, "flat_pack (>= 0.1.341)", relative
       assert_includes lock, "recording_studio (>= 7.0, < 8.0)", relative

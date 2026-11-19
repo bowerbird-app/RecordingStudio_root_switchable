@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-11-19
+
+### Changed
+- Development and dummy pins move to Recording Studio `v7.8.0` (`~> 7.8`),
+  FlatPack `v0.2.0` (`~> 0.2`), Accessible `v0.56.0` (`~> 0.56`), Cache
+  `v0.8.0` (`~> 0.8`), Metrics `v0.10.0` (`~> 0.10`), and Trashable `v1.2.3`
+  (`~> 1.2`, `require: false`). Published gemspec ranges already accept these
+  tags. `view_component` stays `4.19.0`.
+- Dummy tests assert FlatPack 0.2 server-rendered icon SVG paths. The dummy
+  importmap has no manual `flat_pack/heroicons` pin and no `flat-pack--icon`
+  controller registration.
+
+### Upgrade Notes
+- No migration from this gem.
+- Hosts MUST run the Recording Studio 7.4, 7.5 and 7.7 migrations if they
+  have not:
+  `add_recording_studio_recordings_root_type_creation_index`,
+  `enforce_recording_studio_recording_root_invariant`, and
+  `replace_recording_studio_recordings_root_index`. This gem does not copy
+  them into the dummy app.
+- flat_pack 0.2.0 is supported; hosts moving to 0.2 must remove the manual `flat_pack/heroicons` importmap pin and any `flat-pack--icon` controller registration.
+- Hosts that stay on FlatPack 0.1.x still resolve. The gemspec floor stays
+  `flat_pack >= 0.1.341`.
+
 ## [0.16.1] - 2026-11-18
 
 ### Changed
@@ -851,7 +875,8 @@ the dummy database, and Tailwind when they are already usable.
 - RecordingStudioAccessible integration for default access checks
 - Dummy app coverage for multiple scopes and fallback behavior
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.16.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.17.0...HEAD
+[0.17.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.16.1...v0.17.0
 [0.16.1]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.16.0...v0.16.1
 [0.16.0]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.15.1...v0.16.0
 [0.15.1]: https://github.com/bowerbird-app/RecordingStudio_root_switchable/compare/v0.15.0...v0.15.1
