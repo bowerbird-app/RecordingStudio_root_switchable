@@ -122,7 +122,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     assert_operator response.body.index("Studio Workspace"), :<, response.body.index("Client Alpha")
     refute_includes response.body, "max-w-3xl"
     assert_select "a[href*='/v1/new_root'][href*='type=Workspace']", text: "New workspace", minimum: 1
-    assert_select "a[href*='/v1/new_root'][href*='type=Workspace'] svg[data-flat-pack--icon-name-value='plus']", minimum: 1
+    assert_select "a[href*='/v1/new_root'][href*='type=Workspace'] svg path[d*='M12 4.5v15m7.5-7.5h-15']", minimum: 1
     assert_flatpack_switch_page(response.body)
   end
 
@@ -168,7 +168,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "a[role='menuitem'][href*='/workspaces/new']", text: /New workspace/, minimum: 1
-    assert_select "a[role='menuitem'][href*='/workspaces/new'] svg[data-flat-pack--icon-name-value='plus']", minimum: 1
+    assert_select "a[role='menuitem'][href*='/workspaces/new'] svg path[d*='M12 4.5v15m7.5-7.5h-15']", minimum: 1
     assert_select "button[disabled]", count: 0
   ensure
     scope.available_roots = original_available_roots if scope
@@ -182,7 +182,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select(
       "#root-switch-host-menu .fp-menu-collapse__items a[href*='/workspaces/new'] " \
-      "svg[data-flat-pack--icon-name-value='plus']",
+      "svg path[d*='M12 4.5v15m7.5-7.5h-15']",
       minimum: 1
     )
   end
@@ -196,7 +196,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     get "/recording_studio_root_switchable/v1/root_switch", params: { scope: "all_workspaces" }
 
     assert_response :success
-    assert_select "a[href*='/v1/new_root'][href*='type=Workspace'] svg[data-flat-pack--icon-name-value='folder']", minimum: 1
+    assert_select "a[href*='/v1/new_root'][href*='type=Workspace'] svg path[d*='M2.25 12.75V12A2.25']", minimum: 1
   ensure
     scope.new_root_icon = original_icon if scope
   end
@@ -210,7 +210,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
     get "/recording_studio_root_switchable/v1/root_switch", params: { scope: "all_workspaces" }
 
     assert_response :success
-    assert_select "a[href*='/v1/new_root'][href*='type=Workspace'] svg[data-flat-pack--icon-name-value='sparkles']", minimum: 1
+    assert_select "a[href*='/v1/new_root'][href*='type=Workspace'] svg path[d*='M9.813 15.904']", minimum: 1
   ensure
     scope.new_root_icon = original_icon if scope
   end
@@ -371,7 +371,7 @@ class RootSwitchDemoTest < ActionDispatch::IntegrationTest
   # Card fill is background:/border:/shadow:, not style:. PageNav close is
   # Spec with_close when return_anchor_url is present.
   def assert_flatpack_switch_page(body)
-    assert_equal "0.1.378", FlatPack::VERSION
+    assert_equal "0.2.0", FlatPack::VERSION
 
     assert_select "nav.flat-pack-page-nav button[aria-label='Go back']", count: 0
     assert_select "nav.flat-pack-page-nav a[aria-label='Close'][href='/']", minimum: 1

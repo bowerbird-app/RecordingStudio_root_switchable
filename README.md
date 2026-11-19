@@ -19,6 +19,28 @@ It lets a host app resolve and persist a current root recording per actor, per d
 
 This addon was derived from the Recording Studio gem template and keeps the same engine-oriented structure, dummy app workflow, install generator, migration generator, and FlatPack-first UI conventions while replacing the template sample feature with root-switching behavior.
 
+## Upgrading to 0.17.0
+
+No migration from this gem. Development and dummy pins move to Recording
+Studio `v7.8.0` (`~> 7.8`), FlatPack `v0.2.0` (`~> 0.2`), Accessible
+`v0.56.0` (`~> 0.56`), Cache `v0.8.0` (`~> 0.8`), Metrics `v0.10.0`
+(`~> 0.10`), and Trashable `v1.2.3` (`~> 1.2`, `require: false`). Published
+gemspec ranges already accept those tags. `view_component` stays `4.19.0`.
+
+Hosts MUST run the Recording Studio 7.4, 7.5 and 7.7 migrations if they have
+not (`add_recording_studio_recordings_root_type_creation_index`,
+`enforce_recording_studio_recording_root_invariant`, and
+`replace_recording_studio_recordings_root_index`). This gem does not ship
+them.
+
+flat_pack 0.2.0 is supported; hosts moving to 0.2 must remove the manual
+`flat_pack/heroicons` importmap pin and any `flat-pack--icon` controller
+registration. Hosts that stay on FlatPack 0.1.x still resolve.
+
+```ruby
+gem "recording_studio_root_switchable", "~> 0.17.0"
+```
+
 ## Upgrading to 0.16.1
 
 No migration from this gem. Development and dummy pins move to Recording
@@ -741,6 +763,9 @@ import "@hotwired/turbo-rails"
 
 Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 
+### 0.17.0
+- Development and dummy pins: Recording Studio `v7.8.0`, FlatPack `v0.2.0`, Accessible `v0.56.0`, Cache `v0.8.0`, Metrics `v0.10.0`, Trashable `v1.2.3`. Gemspec floors are unchanged. Hosts MUST run the Recording Studio 7.4, 7.5 and 7.7 migrations if they have not. flat_pack 0.2.0 is supported; hosts moving to 0.2 must remove the manual `flat_pack/heroicons` importmap pin and any `flat-pack--icon` controller registration.
+
 ### 0.16.1
 - Development and dummy pins: Recording Studio `v7.7.1`, Accessible `v0.54.1`, Cache `v0.7.1`, Metrics `v0.9.2`, Trashable `v1.2.1`, FlatPack `v0.1.378`. Includes the unreleased dummy pin refresh from main (dummy was on Recording Studio `v7.3.0` and FlatPack `v0.1.377`, and the dummy Accessible admin root points at Studio Workspace). Hosts on Recording Studio 7.7 MUST run the 7.4, 7.5, and 7.7 migrations. This gem does not copy them.
 
@@ -821,15 +846,15 @@ Short summaries; full detail is in [`CHANGELOG.md`](CHANGELOG.md).
 Add the gems to your host app:
 
 ```ruby
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v7.7.1"
-gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.378"
+gem "recording_studio", "~> 7.8", github: "bowerbird-app/RecordingStudio", tag: "v7.8.0"
+gem "flat_pack", "~> 0.2", github: "bowerbird-app/flatpack", tag: "v0.2.0"
 gem "view_component", "4.19.0"
-gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.54.1"
-gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable",
-                                  tag: "v1.2.1", require: false
-gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.7.1"
-gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.9.2"
-gem "recording_studio_root_switchable", "~> 0.16.1"
+gem "recording_studio_accessible", "~> 0.56", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.56.0"
+gem "recording_studio_trashable", "~> 1.2", github: "bowerbird-app/RecordingStudio_trashable",
+                                            tag: "v1.2.3", require: false
+gem "recording_studio_cache", "~> 0.8", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.8.0"
+gem "recording_studio_metrics", "~> 0.10", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.10.0"
+gem "recording_studio_root_switchable", "~> 0.17.0"
 ```
 
 Then run:
